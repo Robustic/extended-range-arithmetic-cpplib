@@ -12,7 +12,12 @@ namespace floatingExp2Integer
             double mantissa() const { return mant; }
             int exponent() const { return exp; }
             double asDouble();
+            void scale();
+
+            DoubleExp2Int& operator+=(DoubleExp2Int z);
     };
+
+    DoubleExp2Int operator+(DoubleExp2Int a, DoubleExp2Int b);
 }
 
 #endif
