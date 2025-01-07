@@ -17,14 +17,30 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
+ADD_LIBRARY(floatingExp2IntegerModule 
+  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/DoubleExp2Int.cpp
+)
+
+add_executable(
+  DoubleExp2Int.try
+  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/DoubleExp2Int.try.cpp
+)
+target_link_libraries(
+  DoubleExp2Int.try
+  floatingExp2IntegerModule
+)
+
 add_executable(
   DoubleExp2Int.test
   ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/DoubleExp2Int.test.cpp
 )
 target_link_libraries(
   DoubleExp2Int.test
+  floatingExp2IntegerModule
+)
+target_link_libraries(
+  DoubleExp2Int.test
   GTest::gtest_main
 )
-
 include(GoogleTest)
 gtest_discover_tests(DoubleExp2Int.test)

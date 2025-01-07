@@ -6,11 +6,12 @@ namespace floatingExp2Integer
     class DoubleExp2Int {
         private:
             double mant;
-            int exp;        
+            std::int32_t exp;        
         public:
-            DoubleExp2Int(double number) :mant{number}, exp{0} {}
+            DoubleExp2Int(double number);
             double mantissa() const { return mant; }
             int exponent() const { return exp; }
+            double asDouble();
     };
 }
 
