@@ -2,7 +2,7 @@
 #include <vector>
 #include <random>
 #include <chrono>
-#include "DoubleExp2Int.h"
+#include "Float64Exp2Int64.h"
 
 typedef std::mt19937 MyRNG;
 uint32_t seed_val = 1337;
@@ -27,7 +27,7 @@ int main() {
     // std::cout << std::dec << test2.mantissa() << " " << test2.exponent() << std::endl;
     // std::cout << std::dec << test2.asDouble() << std::endl;
 
-    floatingExp2Integer::DoubleExp2Int sum {1};
+    floatingExp2Integer::Float64Exp2Int64 sum {1};
     double s1 = 0.0;
     double s2 = 0.0;
     double simpleSum = 0.0;
