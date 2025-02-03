@@ -32,12 +32,25 @@ namespace floatingExp2Integer
         return *this;
     }
 
-    void DoubleExp2Int::scale() {
-        if (mant == 0) {
-            mant = 0.0;
-            exp = 0;
-            return;
-        }
+    DoubleExp2Int& DoubleExp2Int::operator*=(DoubleExp2Int z) {
+        mant *= z.mant;
+        exp += z.exp;
+        this->scale();
+        return *this;
+    }
+
+    DoubleExp2Int& DoubleExp2Int::operator*=(double& z) {
+        mant *= z;
+        this->scale();
+        return *this;
+    }
+
+    inline void DoubleExp2Int::scale() {
+        // if (mant == 0) {
+        //     mant = 0.0;
+        //     exp = 0;
+        //     return;
+        // }
 
         std::int32_t parts[2];
         std::memcpy(&parts, &mant, sizeof(std::int32_t) * 2);
@@ -48,6 +61,7 @@ namespace floatingExp2Integer
     }
 
     DoubleExp2Int operator+(DoubleExp2Int a, const DoubleExp2Int b) { return a+=b; }
+    DoubleExp2Int operator*(DoubleExp2Int a, const DoubleExp2Int b) { return a*=b; }
 
     double DoubleExp2Int::asDouble()
     { 
