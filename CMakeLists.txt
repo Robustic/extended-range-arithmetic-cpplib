@@ -17,30 +17,57 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
+# Float64Exp2Int64 & Float64PosExp2Int64
 ADD_LIBRARY(floatingExp2IntegerModule 
-  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/DoubleExp2Int.cpp
+  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Float64Exp2Int64/Float64Exp2Int64.cpp
+  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Float64PosExp2Int64/Float64PosExp2Int64.cpp
 )
 
 add_executable(
-  DoubleExp2Int.try
-  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/DoubleExp2Int.try.cpp
+  Float64Exp2Int64.try
+  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Float64Exp2Int64/Float64Exp2Int64.try.cpp
 )
 target_link_libraries(
-  DoubleExp2Int.try
+  Float64Exp2Int64.try
   floatingExp2IntegerModule
 )
 
 add_executable(
-  DoubleExp2Int.test
-  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/DoubleExp2Int.test.cpp
+  Float64Exp2Int64.test
+  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Float64Exp2Int64/Float64Exp2Int64.test.cpp
 )
 target_link_libraries(
-  DoubleExp2Int.test
+  Float64Exp2Int64.test
   floatingExp2IntegerModule
 )
 target_link_libraries(
-  DoubleExp2Int.test
+  Float64Exp2Int64.test
   GTest::gtest_main
 )
 include(GoogleTest)
-gtest_discover_tests(DoubleExp2Int.test)
+gtest_discover_tests(Float64Exp2Int64.test)
+
+
+add_executable(
+  Float64PosExp2Int64.try
+  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Float64PosExp2Int64/Float64PosExp2Int64.try.cpp
+)
+target_link_libraries(
+  Float64PosExp2Int64.try
+  floatingExp2IntegerModule
+)
+
+add_executable(
+  Float64PosExp2Int64.test
+  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Float64PosExp2Int64/Float64PosExp2Int64.test.cpp
+)
+target_link_libraries(
+  Float64PosExp2Int64.test
+  floatingExp2IntegerModule
+)
+target_link_libraries(
+  Float64PosExp2Int64.test
+  GTest::gtest_main
+)
+include(GoogleTest)
+gtest_discover_tests(Float64PosExp2Int64.test)
