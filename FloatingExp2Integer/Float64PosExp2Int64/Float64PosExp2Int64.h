@@ -8,8 +8,11 @@ namespace floatingExp2Integer
             double mant;
             std::int64_t exp;
         public:
+            Float64PosExp2Int64();
             Float64PosExp2Int64(double number);
             Float64PosExp2Int64(double dbl, std::int64_t ex);
+            void Log2ToFloat64Exp2Int64(double logarithm2);
+            double Float64Exp2Int64ToLog2();
             double mantissa() const { return mant; }
             int exponent() const { return exp; }
             double asDouble();

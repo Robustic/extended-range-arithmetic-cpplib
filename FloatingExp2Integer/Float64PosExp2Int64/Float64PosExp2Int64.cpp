@@ -6,6 +6,12 @@
 
 namespace floatingExp2Integer
 {
+    Float64PosExp2Int64::Float64PosExp2Int64() {
+        mant = 1.0;
+        exp = 0;
+        this->scale();
+    }
+
     Float64PosExp2Int64::Float64PosExp2Int64(double dbl) {
         mant = dbl;
         exp = 0;
@@ -18,34 +24,49 @@ namespace floatingExp2Integer
         this->scale();
     }
 
-    Float64PosExp2Int64& Float64PosExp2Int64::operator+=(Float64PosExp2Int64 z) {
-        if (z.mant == 0) {
-            return *this;
-        }
-        if (mant == 0) {
-            mant = z.mant;
-            exp = z.exp;
-            return *this;
-        }
-
-        std::int64_t exp_diff = exp - z.exp;
-        if (exp_diff > 53) {
-            return *this;
-        }
-        if (exp_diff < -53) {
-            mant = z.mant;
-            exp = z.exp;
-            return *this;
-        }
-
-        std::int64_t parts[1];
-        std::memcpy(&parts, &z.mant, sizeof(std::int64_t) * 1);
-        std::int64_t zMantOldExp = parts[0] & 0x7FF0000000000000;
-        parts[0] &= 0x800FFFFFFFFFFFFF;
-        parts[0] |= zMantOldExp + ((z.exp - this->exp) << 52);
-        std::memcpy(&z.mant, &parts, sizeof(double));
-        mant += z.mant;
+    void Float64PosExp2Int64::Log2ToFloat64Exp2Int64(double logarithm2) {
+        exp = logarithm2;
+        mant = std::exp2(logarithm2 - exp);
         this->scale();
+    }
+
+    double Float64PosExp2Int64::Float64Exp2Int64ToLog2() {
+        return std::log2(mant) + exp ;
+    }
+
+    Float64PosExp2Int64& Float64PosExp2Int64::operator+=(Float64PosExp2Int64 z) {
+        std::int64_t exp_diff = exp - z.exp;
+        if (exp_diff > 63) {
+            return *this;
+        }
+        if (exp_diff < -63) {
+            mant = z.mant;
+            exp = z.exp;
+            return *this;
+        }
+
+        // std::int64_t parts[1];
+        // std::memcpy(&parts, &z.mant, sizeof(std::int64_t) * 1);
+        // std::int64_t zMantOldExp = parts[0] & 0x7FF0000000000000;
+        // parts[0] &= 0x800FFFFFFFFFFFFF;
+        // parts[0] |= zMantOldExp + ((z.exp - this->exp) << 52);
+        // std::memcpy(&z.mant, &parts, sizeof(double));
+
+        std::uint64_t one = 1;
+        if (exp_diff > 0) {
+            std::uint64_t offset = one << exp_diff;
+            z.mant /= (double)(offset);
+         }
+        else if (exp_diff < 0) {
+            std::uint64_t offset = one << (-exp_diff);
+            z.mant *= (double)(offset);
+        }
+
+        mant += z.mant;
+        if (mant < 1e-1 || 1e1 < mant) {
+            this->scale();
+        }
+        
         return *this;
     }
 

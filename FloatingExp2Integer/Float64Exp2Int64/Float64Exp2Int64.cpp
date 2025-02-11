@@ -18,6 +18,16 @@ namespace floatingExp2Integer
         this->scale();
     }
 
+    void Float64Exp2Int64::Log2ToFloat64Exp2Int64(double logarithm2) {
+        exp = logarithm2;
+        mant = std::exp2(logarithm2 - exp);
+        this->scale();
+    }
+
+    double Float64Exp2Int64::Float64Exp2Int64ToLog2() {
+        return std::log2(mant) + exp ;
+    }
+
     Float64Exp2Int64& Float64Exp2Int64::operator+=(Float64Exp2Int64 z) {
         if (z.mant == 0) {
             return *this;

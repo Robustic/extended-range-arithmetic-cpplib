@@ -7,7 +7,7 @@
 typedef std::mt19937 MyRNG;
 uint32_t seed_val = 1337;
 
-void GetRandomNumbers(std::vector<double>& vec);
+void InitializeRandomNumbers(std::vector<double>& vec);
 
 int main() {
     union {
@@ -34,7 +34,7 @@ int main() {
     double test = 0.0;
 
     std::vector<double> vec(1000000);
-    GetRandomNumbers(vec);
+    InitializeRandomNumbers(vec);
 
     int bad = 0;
     for (int k = 0; k < 10; k++) {
@@ -84,7 +84,7 @@ int main() {
 }
 
 
-void GetRandomNumbers(std::vector<double>& vec) {
+void InitializeRandomNumbers(std::vector<double>& vec) {
     MyRNG rng;
     rng.seed(seed_val);
     std::uniform_real_distribution<double> unif(0, 10);

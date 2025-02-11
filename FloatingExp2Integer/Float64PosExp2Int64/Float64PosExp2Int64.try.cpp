@@ -2,97 +2,120 @@
 #include <vector>
 #include <random>
 #include <chrono>
+#include <iomanip>
+#include "Dbl.h"
 #include "Float64PosExp2Int64.h"
 
-typedef std::mt19937 MyRNG;
-uint32_t seed_val = 1337;
+const uint32_t seed_val = 1337;
 
-void GetRandomNumbers(std::vector<double>& vec);
+void InitializeRandomNumbers(std::vector<double>& vec);
+void DoubleToDblValues(std::vector<double>& doubleValues, std::vector<floatingExp2Integer::Dbl>& dblValues);
+void DblToLog2Values(std::vector<floatingExp2Integer::Dbl>& dblValues, std::vector<double>& log2Values);
+void Log2ToFloat64PosExp2Int64Values(std::vector<double>& log2Values, 
+    std::vector<floatingExp2Integer::Float64PosExp2Int64>& float64PosExp2Int64Values);
+double LogSumExp2Trick(std::vector<double>& log2Values);
 
 int main() {
-    union {
-        unsigned long long num;
-        double fp;
-    } pun;
-    
-    // floatingExp2Integer::DoubleExp2Int test0 {0};
-    // std::cout << std::dec << test0.mantissa() << " " << test0.exponent() << std::endl;
-    // std::cout << std::dec << test0.asDouble() << std::endl;
+    const int n = 100000000;
 
-    // floatingExp2Integer::DoubleExp2Int test1 {1};
-    // std::cout << std::dec << test1.mantissa() << " " << test1.exponent() << std::endl;
-    // std::cout << std::dec << test1.asDouble() << std::endl;
-    
-    // floatingExp2Integer::DoubleExp2Int test2 {2};
-    // std::cout << std::dec << test2.mantissa() << " " << test2.exponent() << std::endl;
-    // std::cout << std::dec << test2.asDouble() << std::endl;
+    std::vector<double> doubleValues(n);
+    std::vector<floatingExp2Integer::Dbl> dblValues(n);
+    std::vector<double> log2Values(n);
+    std::vector<floatingExp2Integer::Float64PosExp2Int64> float64PosExp2Int64Values(n);
 
-    floatingExp2Integer::Float64PosExp2Int64 sum {1};
-    double s1 = 0.0;
-    double s2 = 0.0;
-    double simpleSum = 0.0;
-    double test = 0.0;
+    InitializeRandomNumbers(doubleValues);
+    DoubleToDblValues(doubleValues, dblValues);
+    DblToLog2Values(dblValues, log2Values);
+    Log2ToFloat64PosExp2Int64Values(log2Values, float64PosExp2Int64Values);
 
-    std::vector<double> vec(1000000);
-    GetRandomNumbers(vec);
 
-    int bad = 0;
-    for (int k = 0; k < 10; k++) {
-        for (int i = 0; i < vec.size(); i++)
-            bad += vec[i];
-    }  
-
-    test += bad;
+    auto start0 = std::chrono::high_resolution_clock::now();
+    double doubleSum = 0.0;
+    for (int i = 0; i < doubleValues.size(); i++) {
+        doubleSum += doubleValues[i];
+    }
+    auto stop0 = std::chrono::high_resolution_clock::now();
 
     auto start1 = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < vec.size(); i++) {
-        sum *= vec[i];
+    floatingExp2Integer::Dbl dblSum = 0.0;
+    for (int i = 0; i < dblValues.size(); i++) {
+        dblSum += dblValues[i];
     }
     auto stop1 = std::chrono::high_resolution_clock::now();
 
-    test += sum.mantissa();
-
     auto start2 = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < vec.size(); i+=2) {
-        s1 += std::log2(vec[i]);
-        s2 += std::log2(vec[i+1]);
-    }
+    double log2sum = 0.0;
+    log2sum = LogSumExp2Trick(log2Values);
     auto stop2 = std::chrono::high_resolution_clock::now();
 
-    test += s1 + s2;
-
     auto start3 = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < vec.size(); i++) {
-        simpleSum *= vec[i];//*vec[i];
+    floatingExp2Integer::Float64PosExp2Int64 float64PosExp2Int64Sum = float64PosExp2Int64Values[0];
+    for (int i = 1; i < float64PosExp2Int64Values.size(); i++) {
+        float64PosExp2Int64Sum += float64PosExp2Int64Values[i];
     }
     auto stop3 = std::chrono::high_resolution_clock::now();
 
-    std::cout << sum.mantissa() << "  " << sum.exponent() << std::endl;
-    std::cout << s1+s2 << std::endl;
 
+    std::cout << std::setprecision(std::numeric_limits<double>::max_digits10);
+    std::cout << "Double sum:               " << doubleSum << std::endl;
+    std::cout << "Dbl sum:                  " << dblSum.asDouble() << std::endl;
+    std::cout << "Log2 sum:                 " << std::exp2(log2sum) << std::endl;
+    std::cout << "Float64PosExp2Int64 sum:  " << float64PosExp2Int64Sum.asDouble() << std::endl;
 
+    auto duration0 = std::chrono::duration_cast<std::chrono::microseconds>(stop0 - start0);
     auto duration1 = std::chrono::duration_cast<std::chrono::microseconds>(stop1 - start1);
     auto duration2 = std::chrono::duration_cast<std::chrono::microseconds>(stop2 - start2);
     auto duration3 = std::chrono::duration_cast<std::chrono::microseconds>(stop3 - start3);
 
+    std::cout << std::endl;
+    std::cout << "Double time:              " << duration0.count() << std::endl;
+    std::cout << "Dbl time:                 " << duration1.count() << std::endl;
+    std::cout << "Log2 time:                " << duration2.count() << std::endl;
+    std::cout << "Float64PosExp2Int64 time: " << duration3.count() << std::endl;
+    std::cout << std::endl;
 
-    std::cout << bad << std::endl;
-    std::cout << duration1.count() << std::endl;
-    std::cout << duration2.count() << std::endl;
-    std::cout << duration3.count() << std::endl;
-    std::cout << test << std::endl;
+    std::cout << "Float64PosExp2Int64 time / Log2 time " << (double)duration3.count() / (double)duration2.count() << std::endl;
+    std::cout << "Log2 time / Float64PosExp2Int64 time " << (double)duration2.count() / (double)duration3.count() << std::endl;
 }
 
-
-void GetRandomNumbers(std::vector<double>& vec) {
-    MyRNG rng;
+void InitializeRandomNumbers(std::vector<double>& vec) {
+    std::mt19937 rng;
     rng.seed(seed_val);
-    std::uniform_real_distribution<double> unif(0, 10);
+    std::uniform_real_distribution<double> unif(1e-300, 1e-10);
     for (int i = 0; i < vec.size(); i++) {
         double a_random_double = unif(rng);
         vec[i] = a_random_double;
     }
 }
 
+void DoubleToDblValues(std::vector<double>& doubleValues, std::vector<floatingExp2Integer::Dbl>& dblValues) {
+    for (int i = 0; i < dblValues.size(); i++) {
+        dblValues[i] += doubleValues[i];
+    }
+}
+
+void DblToLog2Values(std::vector<floatingExp2Integer::Dbl>& dblValues, std::vector<double>& log2Values) {
+    for (int i = 0; i < log2Values.size(); i++) {
+        log2Values[i] = std::log2(dblValues[i].asDouble());
+    }
+}
+
+void Log2ToFloat64PosExp2Int64Values(std::vector<double>& log2Values, 
+    std::vector<floatingExp2Integer::Float64PosExp2Int64>& float64PosExp2Int64Values) {
+    for (int i = 0; i < float64PosExp2Int64Values.size(); i++) {
+        float64PosExp2Int64Values[i].Log2ToFloat64Exp2Int64(log2Values[i]);
+    }
+}
+
+double LogSumExp2Trick(std::vector<double>& log2Values) {
+    double max = *std::max_element(log2Values.begin(), log2Values.end());
+    double sum = 0;
+
+    for (double val : log2Values) {
+        sum += std::exp2(val - max);
+    }
+
+    return max + std::log2(sum);
+}
 
 
