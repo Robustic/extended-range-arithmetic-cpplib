@@ -2,7 +2,8 @@
 #define FLOAT32POS_EXP2INT32_H_
 
 namespace floatingExp2Integer
-{
+{   
+
     class Float32PosExp2Int32 {
         private:
             float scnfcnd;
@@ -29,3 +30,4 @@ namespace floatingExp2Integer
 }
 
 #endif
+

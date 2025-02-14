@@ -22,6 +22,8 @@ ADD_LIBRARY(floatingExp2IntegerModule
   ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Float64Exp2Int64/Float64Exp2Int64.cpp
   ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Float64PosExp2Int64/Float64PosExp2Int64.cpp
   ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Float32PosExp2Int32/Float32PosExp2Int32.cpp
+  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Float32Exp2Int32/Float32Exp2Int32.cpp
+  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Int32PosExp2Int32/Int32PosExp2Int32.cpp
 )
 
 add_executable(
@@ -97,3 +99,53 @@ target_link_libraries(
 )
 include(GoogleTest)
 gtest_discover_tests(Float32PosExp2Int32.test)
+
+
+add_executable(
+  Float32Exp2Int32.try
+  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Float32Exp2Int32/Float32Exp2Int32.try.cpp
+)
+target_link_libraries(
+  Float32Exp2Int32.try
+  floatingExp2IntegerModule
+)
+
+add_executable(
+  Float32Exp2Int32.test
+  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Float32Exp2Int32/Float32Exp2Int32.test.cpp
+)
+target_link_libraries(
+  Float32Exp2Int32.test
+  floatingExp2IntegerModule
+)
+target_link_libraries(
+  Float32Exp2Int32.test
+  GTest::gtest_main
+)
+include(GoogleTest)
+gtest_discover_tests(Float32Exp2Int32.test)
+
+
+add_executable(
+  Int32PosExp2Int32.try
+  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Int32PosExp2Int32/Int32PosExp2Int32.try.cpp
+)
+target_link_libraries(
+  Int32PosExp2Int32.try
+  floatingExp2IntegerModule
+)
+
+add_executable(
+  Int32PosExp2Int32.test
+  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Int32PosExp2Int32/Int32PosExp2Int32.test.cpp
+)
+target_link_libraries(
+  Int32PosExp2Int32.test
+  floatingExp2IntegerModule
+)
+target_link_libraries(
+  Int32PosExp2Int32.test
+  GTest::gtest_main
+)
+include(GoogleTest)
+gtest_discover_tests(Int32PosExp2Int32.test)
