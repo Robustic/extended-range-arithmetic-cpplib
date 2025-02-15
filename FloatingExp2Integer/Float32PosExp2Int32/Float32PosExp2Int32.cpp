@@ -67,7 +67,7 @@ namespace floatingExp2Integer
                 exp = z.exp;
                 return *this;
             }
-            *sgnfcndBitsZ += exp_diff << 23;
+            *sgnfcndBitsZ += (-exp_diff) << 23;
         }
         
         scnfcnd += z.scnfcnd;
