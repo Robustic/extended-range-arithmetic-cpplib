@@ -65,3 +65,4 @@ namespace {
         EXPECT_EQ(result.asFloat(), (float)33.618434);
     }
 }
+
