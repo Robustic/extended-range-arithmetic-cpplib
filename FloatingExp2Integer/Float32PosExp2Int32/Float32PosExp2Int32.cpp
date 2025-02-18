@@ -1,8 +1,5 @@
 #include <cstdint>
 #include <cmath>
-#include <cstring>
-// #include <limits>
-#include <iostream>
 #include "Float32PosExp2Int32.h"
 
 namespace floatingExp2Integer

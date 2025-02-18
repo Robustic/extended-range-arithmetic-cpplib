@@ -7,7 +7,7 @@ namespace {
         floatingExp2Integer::Float32Exp2Int32 num {0.0};
 
         EXPECT_EQ(num.sicnificand(), 0.0);
-        EXPECT_EQ(num.exponent(), 0);
+        EXPECT_EQ(num.exponent(), -2147483648);
         EXPECT_EQ(num.asFloat(), 0.0);
     }
 

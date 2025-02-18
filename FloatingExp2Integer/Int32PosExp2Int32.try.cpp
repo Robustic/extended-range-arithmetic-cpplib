@@ -55,7 +55,6 @@ int main() {
         }
         std::cout << std::endl;
     }
-    std::cout << std::numeric_limits<float>::min() << std::endl;
 }
 
 void loop(int n, double results[], std::int64_t time[]) {
