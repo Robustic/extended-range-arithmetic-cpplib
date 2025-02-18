@@ -5,8 +5,8 @@
 #include <iomanip>
 #include "Flt.h"
 #include "Flt2.h"
-#include "Int32PosExp2Int32.h"
-#include "../Float32PosExp2Int32/Float32PosExp2Int32.h"
+#include "./Int32PosExp2Int32/Int32PosExp2Int32.h"
+#include "./Float32PosExp2Int32/Float32PosExp2Int32.h"
 
 const uint32_t seed_val = 1337;
 
