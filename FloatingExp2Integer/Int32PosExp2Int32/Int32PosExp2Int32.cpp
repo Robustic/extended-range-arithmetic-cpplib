@@ -1,9 +1,5 @@
 #include <cstdint>
 #include <cmath>
-#include <cstring>
-// #include <limits>
-#include <iostream>
-#include <iomanip>
 #include "Int32PosExp2Int32.h"
 
 namespace floatingExp2Integer
@@ -22,9 +18,11 @@ namespace floatingExp2Integer
         this->scale();
     }
 
-    Int32PosExp2Int32::Int32PosExp2Int32(std::uint32_t sicnificand, std::int32_t exponent) {
-        scnfcnd = sicnificand;
-        exp = exponent;
+    void Int32PosExp2Int32::floatToInt32PosExp2Int32(float flt) {
+        std::uint32_t* fltBits = reinterpret_cast<std::uint32_t*>(&flt);
+        scnfcnd = *fltBits & 0x007FFFFF;
+        scnfcnd |= 0x00800000;
+        exp = ((*fltBits & 0x7F800000) >> 23) - 127 - 23;
         this->scale();
     }
 

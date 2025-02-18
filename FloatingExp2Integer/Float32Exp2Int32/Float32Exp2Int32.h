@@ -12,7 +12,7 @@ namespace floatingExp2Integer
         public:
             Float32Exp2Int32();
             Float32Exp2Int32(float flt);
-            Float32Exp2Int32(float sicnificand, std::int32_t exponent);
+            void floatToFloat32Exp2Int32(float flt);
             void log2ToFloat32Exp2Int32(float logarithm2);
             float float32Exp2Int32ToLog2();
             float sicnificand();

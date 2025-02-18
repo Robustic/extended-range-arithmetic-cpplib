@@ -12,7 +12,7 @@ namespace floatingExp2Integer
         public:
             Int32PosExp2Int32();
             Int32PosExp2Int32(float flt);
-            Int32PosExp2Int32(std::uint32_t sicnificand, std::int32_t exponent);
+            void floatToInt32PosExp2Int32(float flt);
             void log2ToInt32Exp2Int32(float logarithm2);
             float int32Exp2Int32ToLog2();
             std::int32_t sicnificand();

@@ -1,8 +1,5 @@
 #include <cstdint>
 #include <cmath>
-#include <cstring>
-// #include <limits>
-#include <iostream>
 #include "Float32Exp2Int32.h"
 
 namespace floatingExp2Integer
@@ -19,9 +16,9 @@ namespace floatingExp2Integer
         this->scale();
     }
 
-    Float32Exp2Int32::Float32Exp2Int32(float sicnificand, std::int32_t exponent) {
-        scnfcnd = sicnificand;
-        exp = exponent;
+    void Float32Exp2Int32::floatToFloat32Exp2Int32(float flt) {
+        scnfcnd = flt;
+        exp = 0;
         this->scale();
     }
 
@@ -100,18 +97,23 @@ namespace floatingExp2Integer
     }
 
     inline void Float32Exp2Int32::checkLimitForScale() {
-        if (16 <= scnfcnd || (-0.0625 <= scnfcnd && scnfcnd <= 0.0625) || -16 >= scnfcnd) {
+        if (16 <= scnfcnd || -16 >= scnfcnd) {
             this->scale();
+        } else if ((scnfcnd > 0.0625 || -0.0625 > scnfcnd)) {
+
+        }
+        else {
+            if (0x1p-126f > scnfcnd && scnfcnd > -0x1p-126f) {
+                scnfcnd = 0.0;
+                exp = 0;
+            }
+            else {
+                this->scale();
+            }
         }
     }
 
     inline void Float32Exp2Int32::scale() {
-        if (std::numeric_limits<float>::min() > scnfcnd && scnfcnd > -std::numeric_limits<float>::min()) {
-            scnfcnd = 0.0;
-            exp = 0;
-            return;
-        }
-
         int32_t* sgnfcndBits = reinterpret_cast<int32_t*>(&scnfcnd);
         exp += ((*sgnfcndBits & 0x7F800000) >> 23) - 127;
         *sgnfcndBits &= 0x807FFFFF;

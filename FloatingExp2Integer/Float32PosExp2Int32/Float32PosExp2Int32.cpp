@@ -19,19 +19,19 @@ namespace floatingExp2Integer
         this->scale();
     }
 
-    Float32PosExp2Int32::Float32PosExp2Int32(float sicnificand, std::int32_t exponent) {
-        scnfcnd = sicnificand;
-        exp = exponent;
+    void Float32PosExp2Int32::floatToFloat32PosExp2Int32(float flt) {
+        scnfcnd = flt;
+        exp = 0;
         this->scale();
     }
 
-    void Float32PosExp2Int32::log2ToFloat32Exp2Int32(float logarithm2) {
+    void Float32PosExp2Int32::log2ToFloat32PosExp2Int32(float logarithm2) {
         exp = (std::int32_t)logarithm2;
         scnfcnd = std::exp2(logarithm2 - exp);
         this->scale();
     }
 
-    float Float32PosExp2Int32::float32Exp2Int32ToLog2() {
+    float Float32PosExp2Int32::float32PosExp2Int32ToLog2() {
         return std::log2(scnfcnd) + exp ;
     }
 
