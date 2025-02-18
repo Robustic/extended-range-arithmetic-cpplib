@@ -31,14 +31,14 @@ int main() {
 
     auto start0 = std::chrono::high_resolution_clock::now();
     double doubleSum = 0.0;
-    for (int i = 0; i < doubleValues.size(); i++) {
+    for (unsigned int i = 0; i < doubleValues.size(); i++) {
         doubleSum += doubleValues[i];
     }
     auto stop0 = std::chrono::high_resolution_clock::now();
 
     auto start1 = std::chrono::high_resolution_clock::now();
     floatingExp2Integer::Dbl dblSum = 0.0;
-    for (int i = 0; i < dblValues.size(); i++) {
+    for (unsigned int i = 0; i < dblValues.size(); i++) {
         dblSum += dblValues[i];
     }
     auto stop1 = std::chrono::high_resolution_clock::now();
@@ -50,7 +50,7 @@ int main() {
 
     auto start3 = std::chrono::high_resolution_clock::now();
     floatingExp2Integer::Float64PosExp2Int64 float64PosExp2Int64Sum = float64PosExp2Int64Values[0];
-    for (int i = 1; i < float64PosExp2Int64Values.size(); i++) {
+    for (unsigned int i = 1; i < float64PosExp2Int64Values.size(); i++) {
         float64PosExp2Int64Sum += float64PosExp2Int64Values[i];
     }
     auto stop3 = std::chrono::high_resolution_clock::now();
@@ -82,27 +82,27 @@ void InitializeRandomNumbers(std::vector<double>& vec) {
     std::mt19937 rng;
     rng.seed(seed_val);
     std::uniform_real_distribution<double> unif(1e-300, 1e-10);
-    for (int i = 0; i < vec.size(); i++) {
+    for (unsigned int i = 0; i < vec.size(); i++) {
         double a_random_double = unif(rng);
         vec[i] = a_random_double;
     }
 }
 
 void DoubleToDblValues(std::vector<double>& doubleValues, std::vector<floatingExp2Integer::Dbl>& dblValues) {
-    for (int i = 0; i < dblValues.size(); i++) {
+    for (unsigned int i = 0; i < dblValues.size(); i++) {
         dblValues[i] += doubleValues[i];
     }
 }
 
 void DblToLog2Values(std::vector<floatingExp2Integer::Dbl>& dblValues, std::vector<double>& log2Values) {
-    for (int i = 0; i < log2Values.size(); i++) {
+    for (unsigned int i = 0; i < log2Values.size(); i++) {
         log2Values[i] = std::log2(dblValues[i].asDouble());
     }
 }
 
 void Log2ToFloat64PosExp2Int64Values(std::vector<double>& log2Values, 
     std::vector<floatingExp2Integer::Float64PosExp2Int64>& float64PosExp2Int64Values) {
-    for (int i = 0; i < float64PosExp2Int64Values.size(); i++) {
+    for (unsigned int i = 0; i < float64PosExp2Int64Values.size(); i++) {
         float64PosExp2Int64Values[i].Log2ToFloat64Exp2Int64(log2Values[i]);
     }
 }

@@ -35,21 +35,21 @@ int main() {
 
     auto start0 = std::chrono::high_resolution_clock::now();
     float floatSum = 0.0;
-    for (int i = 0; i < floatValues.size(); i++) {
+    for (unsigned int i = 0; i < floatValues.size(); i++) {
         floatSum += floatValues[i];
     }
     auto stop0 = std::chrono::high_resolution_clock::now();
 
     auto start1 = std::chrono::high_resolution_clock::now();
     floatingExp2Integer::Flt fltSum = 0.0;
-    for (int i = 0; i < fltValues.size(); i++) {
+    for (unsigned int i = 0; i < fltValues.size(); i++) {
         fltSum += fltValues[i];
     }
     auto stop1 = std::chrono::high_resolution_clock::now();
 
     auto start1_2 = std::chrono::high_resolution_clock::now();
     floatingExp2Integer::Flt2 flt2Sum = 0.0;
-    for (int i = 0; i < flt2Values.size(); i++) {
+    for (unsigned int i = 0; i < flt2Values.size(); i++) {
         flt2Sum += flt2Values[i];
     }
     auto stop1_2 = std::chrono::high_resolution_clock::now();
@@ -61,7 +61,7 @@ int main() {
 
     auto start3 = std::chrono::high_resolution_clock::now();
     floatingExp2Integer::Float32Exp2Int32 float32Exp2Int32Sum = float32Exp2Int32Values[0];
-    for (int i = 1; i < float32Exp2Int32Values.size(); i++) {
+    for (unsigned int i = 1; i < float32Exp2Int32Values.size(); i++) {
         float32Exp2Int32Sum += float32Exp2Int32Values[i];
     }
     auto stop3 = std::chrono::high_resolution_clock::now();
@@ -96,33 +96,33 @@ void InitializeRandomNumbers(std::vector<float>& vec) {
     std::mt19937 rng;
     rng.seed(seed_val);
     std::uniform_real_distribution<float> unif(1e-30, 1e-10);
-    for (int i = 0; i < vec.size(); i++) {
+    for (unsigned int i = 0; i < vec.size(); i++) {
         float a_random_float = unif(rng);
         vec[i] = a_random_float;
     }
 }
 
 void FloatToFltValues(std::vector<float>& floatValues, std::vector<floatingExp2Integer::Flt>& fltValues) {
-    for (int i = 0; i < fltValues.size(); i++) {
+    for (unsigned int i = 0; i < fltValues.size(); i++) {
         fltValues[i] += floatValues[i];
     }
 }
 
 void FloatToFlt2Values(std::vector<float>& floatValues, std::vector<floatingExp2Integer::Flt2>& flt2Values) {
-    for (int i = 0; i < flt2Values.size(); i++) {
+    for (unsigned int i = 0; i < flt2Values.size(); i++) {
         flt2Values[i] += floatValues[i];
     }
 }
 
 void FltToLog2Values(std::vector<floatingExp2Integer::Flt>& fltValues, std::vector<float>& log2Values) {
-    for (int i = 0; i < log2Values.size(); i++) {
+    for (unsigned int i = 0; i < log2Values.size(); i++) {
         log2Values[i] = std::log2(fltValues[i].asFloat());
     }
 }
 
 void Log2ToFloat32Exp2Int32Values(std::vector<float>& log2Values, 
     std::vector<floatingExp2Integer::Float32Exp2Int32>& float32Exp2Int32Values) {
-    for (int i = 0; i < float32Exp2Int32Values.size(); i++) {
+    for (unsigned int i = 0; i < float32Exp2Int32Values.size(); i++) {
         float32Exp2Int32Values[i].log2ToFloat32Exp2Int32(log2Values[i]);
     }
 }

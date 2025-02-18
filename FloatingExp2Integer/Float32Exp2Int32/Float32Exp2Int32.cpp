@@ -112,11 +112,11 @@ namespace floatingExp2Integer
             return;
         }
 
-        int32_t sgnfcndBits = *reinterpret_cast<int32_t*>(&scnfcnd);
-        exp += ((sgnfcndBits & 0x7F800000) >> 23) - 127;
-        sgnfcndBits &= 0x807FFFFF;
-        sgnfcndBits |= 0x3F800000;
-        scnfcnd = *reinterpret_cast<float*>(&sgnfcndBits);
+        int32_t* sgnfcndBits = reinterpret_cast<int32_t*>(&scnfcnd);
+        exp += ((*sgnfcndBits & 0x7F800000) >> 23) - 127;
+        *sgnfcndBits &= 0x807FFFFF;
+        *sgnfcndBits |= 0x3F800000;
+        scnfcnd = *reinterpret_cast<float*>(sgnfcndBits);
     }
 
     Float32Exp2Int32 operator+(Float32Exp2Int32 a, const Float32Exp2Int32 b) { return a+=b; }
