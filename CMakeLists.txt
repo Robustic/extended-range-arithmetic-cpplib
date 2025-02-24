@@ -91,11 +91,11 @@ gtest_discover_tests(Float32Exp2Int32.test)
 
 
 add_executable(
-  Int32PosExp2Int32.try
-  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Int32PosExp2Int32.try.cpp
+  Float32.try
+  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Float32.try.cpp
 )
 target_link_libraries(
-  Int32PosExp2Int32.try
+  Float32.try
   floatingExp2IntegerModule
 )
 

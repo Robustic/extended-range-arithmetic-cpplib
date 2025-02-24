@@ -158,7 +158,7 @@ void loop(int n, double results[], std::int64_t time[]) {
     std::cout << "Float32PosExp2Int32 sum:      " << float32PosExp2Int32Sum.asFloat() << std::endl;
     std::cout << "Float32Exp2Int32 sum:         " << float32Exp2Int32Sum.asFloat() << std::endl;
     std::cout << "Log2 multiply:                " << log2sum_2 << std::endl;
-    std::cout << "Int32PosExp2Int32 multiply:   " << int32PosExp2Int32Sum_2.int32Exp2Int32ToLog2() << std::endl;
+    std::cout << "Int32PosExp2Int32 multiply:   " << int32PosExp2Int32Sum_2.int32PosExp2Int32ToLog2() << std::endl;
     std::cout << "Float32PosExp2Int32 multiply: " << float32PosExp2Int32Sum_2.float32PosExp2Int32ToLog2() << std::endl;
     std::cout << "Float32Exp2Int32 multiply:    " << float32Exp2Int32Sum_2.float32Exp2Int32ToLog2() << std::endl;
 
@@ -170,7 +170,7 @@ void loop(int n, double results[], std::int64_t time[]) {
     results[5] = float32PosExp2Int32Sum.asFloat();
     results[6] = float32Exp2Int32Sum.asFloat();
     results[7] = log2sum_2;
-    results[8] = int32PosExp2Int32Sum_2.int32Exp2Int32ToLog2();
+    results[8] = int32PosExp2Int32Sum_2.int32PosExp2Int32ToLog2();
     results[9] = float32PosExp2Int32Sum_2.float32PosExp2Int32ToLog2();
     results[10] = float32Exp2Int32Sum_2.float32Exp2Int32ToLog2();
 
