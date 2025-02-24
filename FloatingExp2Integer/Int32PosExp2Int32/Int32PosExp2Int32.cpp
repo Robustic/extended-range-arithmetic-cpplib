@@ -5,43 +5,34 @@
 namespace floatingExp2Integer
 {
     Int32PosExp2Int32::Int32PosExp2Int32() {
-        scnfcnd = 1.0;
-        exp = 0;
+        this->fromFloat(1.0f);
         this->scale();
     }
 
     Int32PosExp2Int32::Int32PosExp2Int32(float flt) {
-        std::uint32_t* fltBits = reinterpret_cast<std::uint32_t*>(&flt);
-        scnfcnd = *fltBits & 0x007FFFFF;
-        scnfcnd |= 0x00800000;
-        exp = ((*fltBits & 0x7F800000) >> 23) - 127 - 23;
+        this->fromFloat(flt);
         this->scale();
     }
 
     void Int32PosExp2Int32::floatToInt32PosExp2Int32(float flt) {
-        std::uint32_t* fltBits = reinterpret_cast<std::uint32_t*>(&flt);
-        scnfcnd = *fltBits & 0x007FFFFF;
-        scnfcnd |= 0x00800000;
-        exp = ((*fltBits & 0x7F800000) >> 23) - 127 - 23;
+        this->fromFloat(flt);
         this->scale();
     }
 
-    void Int32PosExp2Int32::log2ToInt32Exp2Int32(float logarithm2) {
-        exp = (std::int32_t)logarithm2;
-        float flt = std::exp2(logarithm2 - exp);
-        std::uint32_t* fltBits = reinterpret_cast<std::uint32_t*>(&flt);
-        scnfcnd = *fltBits & 0x807FFFFF;
-        scnfcnd |= 0x00800000;
-        exp += ((*fltBits & 0x7F800000) >> 23) - 127 - 23;
+    void Int32PosExp2Int32::log2ToInt32PosExp2Int32(float log2) {
+        std::int32_t exponent = (std::int32_t)log2;
+        float flt = std::exp2f(log2 - exponent);
+        this->fromFloat(flt);
+        exp += exponent;
         this->scale();
     }
 
-    float Int32PosExp2Int32::int32Exp2Int32ToLog2() {
-        return std::log2(scnfcnd) + exp ;
+    float Int32PosExp2Int32::int32PosExp2Int32ToLog2() const {
+        return std::log2(scnfcnd) + exp;
     }
 
 
-    std::int32_t Int32PosExp2Int32::sicnificand() { 
+    std::uint32_t Int32PosExp2Int32::sicnificand() { 
         this->scale();
         return scnfcnd; 
     }
@@ -51,9 +42,8 @@ namespace floatingExp2Integer
         return exp;
     }
 
-    float Int32PosExp2Int32::asFloat() const
-    { 
-        return (float)scnfcnd * std::pow(2, exp);
+    float Int32PosExp2Int32::asFloat() const { 
+        return (float)scnfcnd * std::pow(2.0f, exp);
     }
 
     Int32PosExp2Int32& Int32PosExp2Int32::operator+=(Int32PosExp2Int32 z) {
@@ -74,30 +64,36 @@ namespace floatingExp2Integer
             exp -= exp_diff;
             scnfcnd = scnfcnd >> (-exp_diff);
             scnfcnd += z.scnfcnd;
-        }
+        }        
         
-        
-        this->checkLimitForScale();    
+        this->checkRuleForScale();    
         return *this;
     }
 
     Int32PosExp2Int32& Int32PosExp2Int32::operator*=(Int32PosExp2Int32 z) {
-        std::int32_t offset = 16 - __builtin_clz(scnfcnd);
-        std::int32_t offsetZ = 16 - __builtin_clz(z.scnfcnd);
-        scnfcnd = (scnfcnd >> offset) * (z.scnfcnd >> offsetZ);
-        exp += z.exp + offset + offsetZ;
-        this->checkLimitForScale();
+        std::uint32_t offset = 16 - __builtin_clz(scnfcnd);
+        std::uint32_t offset_z = 16 - __builtin_clz(z.scnfcnd);
+        scnfcnd = (scnfcnd >> offset) * (z.scnfcnd >> offset_z);
+        exp += z.exp + offset + offset_z;
+        this->checkRuleForScale();
         return *this;
     }
 
-    inline void Int32PosExp2Int32::checkLimitForScale() {
-        if (2147483648 <= scnfcnd) {
+    inline void Int32PosExp2Int32::fromFloat(float flt) {
+        std::uint32_t* sgnfcnd_bits = reinterpret_cast<std::uint32_t*>(&flt);
+        scnfcnd = *sgnfcnd_bits & 0x007FFFFFu;
+        scnfcnd |= 0x00800000u;
+        exp = ((*sgnfcnd_bits & 0x7F800000u) >> 23) - (127 + 23);
+    }
+
+    inline void Int32PosExp2Int32::checkRuleForScale() {
+        if (0x80000000u <= scnfcnd) {
             this->scale();
         }
     }
 
     inline void Int32PosExp2Int32::scale() {
-        std::int32_t offset = 8 - __builtin_clz(scnfcnd);
+        std::uint32_t offset = 8 - __builtin_clz(scnfcnd);
         exp += offset;
         scnfcnd = scnfcnd >> offset;
     }
