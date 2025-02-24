@@ -8,6 +8,7 @@ namespace floatingExp2Integer
             float scnfcnd;
             std::int32_t exp;
             inline void checkRuleForScale();
+            inline void scaleIfNotZero();
             inline void scale();
         public:
             Float32Exp2Int32();

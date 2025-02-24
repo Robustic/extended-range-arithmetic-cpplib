@@ -7,25 +7,25 @@ namespace floatingExp2Integer
     Float32PosExp2Int32::Float32PosExp2Int32() {
         scnfcnd = 1.0f;
         exp = 0;
-        this->checkRuleForScale();
+        this->scale();
     }
 
     Float32PosExp2Int32::Float32PosExp2Int32(float flt) {
         scnfcnd = flt;
         exp = 0;
-        this->checkRuleForScale();
+        this->scale();
     }
 
     void Float32PosExp2Int32::floatToFloat32PosExp2Int32(float flt) {
         scnfcnd = flt;
         exp = 0;
-        this->checkRuleForScale();
+        this->scale();
     }
 
     void Float32PosExp2Int32::log2ToFloat32PosExp2Int32(float log2) {
         exp = (std::int32_t)log2;
         scnfcnd = std::exp2f(log2 - exp);
-        this->checkRuleForScale();
+        this->scale();
     }
 
     float Float32PosExp2Int32::float32PosExp2Int32ToLog2() const {
@@ -51,13 +51,13 @@ namespace floatingExp2Integer
         std::uint32_t* sgnfcnd_bits_z = reinterpret_cast<std::uint32_t*>(&z.scnfcnd);
 
         if (exp_diff >= 0) {
-            if (exp_diff > 31) {
+            if (exp_diff > 35) {
                 return *this;
             }
             *sgnfcnd_bits_z -= exp_diff << 23;
         }
         else {
-            if (exp_diff < -31) {
+            if (exp_diff < -35) {
                 scnfcnd = z.scnfcnd;
                 exp = z.exp;
                 return *this;
@@ -86,7 +86,7 @@ namespace floatingExp2Integer
     }
 
     inline void Float32PosExp2Int32::checkRuleForScale() {
-        if (16 <= scnfcnd || scnfcnd <= 0.0625) {
+        if (0x1p6f <= scnfcnd || scnfcnd <= 0x1p-6f) {
             this->scale();
         }
     }
