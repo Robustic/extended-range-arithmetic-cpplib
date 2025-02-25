@@ -58,6 +58,7 @@ namespace floatingExp2Integer
                 return *this;
             }
             *sgnfcnd_bits_z -= exp_diff << 23;
+            scnfcnd += z.scnfcnd;
         }
         else {
             if (exp_diff < -35) {
@@ -66,9 +67,9 @@ namespace floatingExp2Integer
                 return *this;
             }
             *sgnfcnd_bits_z += (-exp_diff) << 23;
+            scnfcnd += z.scnfcnd;
         }
 
-        scnfcnd += z.scnfcnd;
         this->checkRuleForScale();    
         return *this;
     }
