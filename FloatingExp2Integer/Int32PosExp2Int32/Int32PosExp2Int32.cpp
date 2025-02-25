@@ -31,7 +31,6 @@ namespace floatingExp2Integer
         return std::log2(scnfcnd) + exp;
     }
 
-
     std::uint32_t Int32PosExp2Int32::sicnificand() { 
         this->scale();
         return scnfcnd; 

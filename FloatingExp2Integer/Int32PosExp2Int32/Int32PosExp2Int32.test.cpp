@@ -8,13 +8,6 @@ namespace {
     {
         return std::round(value / precision) * precision;
     }
-    // TEST(DoubleExp2Int, ConstructorWorksWith_0) {
-    //     floatingExp2Integer::Int32PosExp2Int32 num {0.0};
-
-    //     EXPECT_EQ(num.sicnificand(), 0.0);
-    //     EXPECT_EQ(num.exponent(), 0);
-    //     EXPECT_EQ(num.asFloat(), 0.0);
-    // }
 
     TEST(DoubleExp2Int, ConstructorWorksWith_1) {
         floatingExp2Integer::Int32PosExp2Int32 num {1.0};
