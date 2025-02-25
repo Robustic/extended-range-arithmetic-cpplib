@@ -204,10 +204,10 @@ void loop(int n, double results[], std::int64_t time[]) {
 void InitializeRandomNumbers(std::vector<float>& vec) {
     std::mt19937 rng;
     rng.seed(seed_val);
-    std::uniform_real_distribution<float> unif(1e-30, 1e-10);
+    std::uniform_real_distribution<float> unif(std::log2(1e-15), std::log2(1e-10));
     for (unsigned int i = 0; i < vec.size(); i++) {
         float a_random_float = unif(rng);
-        vec[i] = a_random_float;
+        vec[i] = std::exp2f(a_random_float);
     }
 }
 
