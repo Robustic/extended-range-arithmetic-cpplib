@@ -87,7 +87,7 @@ namespace floatingExp2Integer
     }
 
     inline void Float32PosExp2Int32::checkRuleForScale() {
-        if (0x1p6f <= scnfcnd || scnfcnd <= 0x1p-6f) {
+        if (0x1p6f <= scnfcnd) {
             this->scale();
         }
     }
