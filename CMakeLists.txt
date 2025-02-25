@@ -142,3 +142,12 @@ target_link_libraries(
   floatingExp2IntegerModule
 )
 
+
+add_executable(
+  Int32VsInt64
+  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Int32VsInt64.cpp
+)
+target_link_libraries(
+  Int32VsInt64
+)
+

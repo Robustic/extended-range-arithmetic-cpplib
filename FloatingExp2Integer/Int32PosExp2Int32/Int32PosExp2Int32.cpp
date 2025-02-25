@@ -31,7 +31,7 @@ namespace floatingExp2Integer
         return std::log2(scnfcnd) + exp;
     }
 
-    std::uint32_t Int32PosExp2Int32::sicnificand() { 
+    std::uint64_t Int32PosExp2Int32::sicnificand() { 
         this->scale();
         return scnfcnd; 
     }
@@ -46,16 +46,16 @@ namespace floatingExp2Integer
     }
 
     Int32PosExp2Int32& Int32PosExp2Int32::operator+=(Int32PosExp2Int32 z) {
-        std::int32_t exp_diff = exp - z.exp;
+        std::int64_t exp_diff = exp - z.exp;
 
         if (exp_diff >= 0) {
-            if (exp_diff > 31) {
+            if (exp_diff > 63) {
                 return *this;
             }
             scnfcnd += z.scnfcnd >> exp_diff;
         }
         else {
-            if (exp_diff < -31) {
+            if (exp_diff < -63) {
                 scnfcnd = z.scnfcnd;
                 exp = z.exp;
                 return *this;
@@ -70,8 +70,8 @@ namespace floatingExp2Integer
     }
 
     Int32PosExp2Int32& Int32PosExp2Int32::operator*=(Int32PosExp2Int32 z) {
-        std::uint32_t offset = 16 - __builtin_clz(scnfcnd);
-        std::uint32_t offset_z = 16 - __builtin_clz(z.scnfcnd);
+        std::uint32_t offset = 32 - __builtin_clzll(scnfcnd);
+        std::uint32_t offset_z = 32 - __builtin_clzll(z.scnfcnd);
         scnfcnd = (scnfcnd >> offset) * (z.scnfcnd >> offset_z);
         exp += z.exp + offset + offset_z;
         this->checkRuleForScale();
@@ -80,19 +80,19 @@ namespace floatingExp2Integer
 
     inline void Int32PosExp2Int32::fromFloat(float flt) {
         std::uint32_t* sgnfcnd_bits = reinterpret_cast<std::uint32_t*>(&flt);
-        scnfcnd = *sgnfcnd_bits & 0x007FFFFFu;
-        scnfcnd |= 0x00800000u;
-        exp = ((*sgnfcnd_bits & 0x7F800000u) >> 23) - (127 + 23);
+        scnfcnd = ((std::uint64_t)(*sgnfcnd_bits & 0x007FFFFFu)) << 29;
+        scnfcnd |= 0x0010000000000000ull;
+        exp = ((*sgnfcnd_bits & 0x7F800000) >> 23) - (127 + 52);
     }
 
     inline void Int32PosExp2Int32::checkRuleForScale() {
-        if (0x80000000u <= scnfcnd) {
+        if (0x1000000000000000ull <= scnfcnd) {
             this->scale();
         }
     }
 
     inline void Int32PosExp2Int32::scale() {
-        std::uint32_t offset = 8 - __builtin_clz(scnfcnd);
+        std::uint32_t offset = 11 - __builtin_clzll(scnfcnd);
         exp += offset;
         scnfcnd = scnfcnd >> offset;
     }

@@ -5,7 +5,7 @@ namespace floatingExp2Integer
 {
     class Int32PosExp2Int32 {
         private:
-            std::uint32_t scnfcnd;
+            std::uint64_t scnfcnd;
             std::int32_t exp;
             inline void fromFloat(float flt);
             inline void checkRuleForScale();
@@ -16,7 +16,7 @@ namespace floatingExp2Integer
             void floatToInt32PosExp2Int32(float flt);
             void log2ToInt32PosExp2Int32(float log2);
             float int32PosExp2Int32ToLog2() const;
-            std::uint32_t sicnificand();
+            std::uint64_t sicnificand();
             std::int32_t exponent();
             float asFloat() const;
 
