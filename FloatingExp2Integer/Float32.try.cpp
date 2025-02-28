@@ -22,8 +22,8 @@ void FloatToFloat32PosExp2Int32Values(std::vector<float>& floatValues,
     std::vector<floatingExp2Integer::Float32PosExp2Int32>& float32PosExp2Int32Values);
 void FloatToFloat32Exp2Int32Values(std::vector<float>& floatValues, 
     std::vector<floatingExp2Integer::Float32Exp2Int32>& float32Exp2Int32Values);
-float LogSumExp2Trick(std::vector<float>& log2Values);
-float Log2Multiply(std::vector<float>& log2Values);
+float LogSumExp2Trick(std::vector<float>& log2Values, int64_t& time);
+float Log2Multiply(std::vector<float>& log2Values, int64_t& time);
 
 void loop(int n, double results[], std::int64_t time[]);
 
@@ -57,75 +57,102 @@ int main() {
     }
 }
 
-float sum_float(std::vector<float>& floatValues) {
+float sum_float(std::vector<float>& floatValues, int64_t& time) {
+    floatingExp2Integer::Timer timer;
     float floatSum = 0.0;
     for (unsigned int i = 0; i < floatValues.size(); i++) {
         floatSum += floatValues[i];
     }
+    timer.stop();
+    time = timer.time();
     return floatSum;
 }
 
-float sum_Flt(std::vector<floatingExp2Integer::Flt>& fltValues) {
+float sum_Flt(std::vector<floatingExp2Integer::Flt>& fltValues, int64_t& time) {
+    floatingExp2Integer::Timer timer;
     floatingExp2Integer::Flt fltSum = 0.0;
     for (unsigned int i = 0; i < fltValues.size(); i++) {
         fltSum += fltValues[i];
     }
+    timer.stop();
+    time = timer.time();
     return fltSum.asFloat();
 }
 
-float sum_Flt2(std::vector<floatingExp2Integer::Flt2>& flt2Values) {
+float sum_Flt2(std::vector<floatingExp2Integer::Flt2>& flt2Values, int64_t& time) {
+    floatingExp2Integer::Timer timer;
     floatingExp2Integer::Flt2 flt2Sum = 0.0;
     for (unsigned int i = 0; i < flt2Values.size(); i++) {
         flt2Sum += flt2Values[i];
     }
+    timer.stop();
+    time = timer.time();
     return flt2Sum.asFloat();
 }
 
-float sum_Int32PosExp2Int32(std::vector<floatingExp2Integer::Int32PosExp2Int32>& int32PosExp2Int32Values) {
+float sum_Int32PosExp2Int32(std::vector<floatingExp2Integer::Int32PosExp2Int32>& int32PosExp2Int32Values, int64_t& time) {
+    floatingExp2Integer::Timer timer;
     floatingExp2Integer::Int32PosExp2Int32 int32PosExp2Int32Sum = int32PosExp2Int32Values[0];
     for (unsigned int i = 1; i < int32PosExp2Int32Values.size(); i++) {
         int32PosExp2Int32Sum += int32PosExp2Int32Values[i];
     }
+    timer.stop();
+    time = timer.time();
     return int32PosExp2Int32Sum.asFloat();
 }
 
-float sum_Float32PosExp2Int32(std::vector<floatingExp2Integer::Float32PosExp2Int32>& float32PosExp2Int32Values) {
+float sum_Float32PosExp2Int32(std::vector<floatingExp2Integer::Float32PosExp2Int32>& float32PosExp2Int32Values, int64_t& time) {
+    floatingExp2Integer::Timer timer;
     floatingExp2Integer::Float32PosExp2Int32 float32PosExp2Int32Sum = float32PosExp2Int32Values[0];
     for (unsigned int i = 1; i < float32PosExp2Int32Values.size(); i++) {
         float32PosExp2Int32Sum += float32PosExp2Int32Values[i];
     }
+    timer.stop();
+    time = timer.time();
     return float32PosExp2Int32Sum.asFloat();
 }
 
-float sum_Float32Exp2Int32(std::vector<floatingExp2Integer::Float32Exp2Int32>& float32Exp2Int32Values) {
+float sum_Float32Exp2Int32(std::vector<floatingExp2Integer::Float32Exp2Int32>& float32Exp2Int32Values, int64_t& time) {
+    floatingExp2Integer::Timer timer;
     floatingExp2Integer::Float32Exp2Int32 float32Exp2Int32Sum = float32Exp2Int32Values[0];
     for (unsigned int i = 1; i < float32Exp2Int32Values.size(); i++) {
         float32Exp2Int32Sum += float32Exp2Int32Values[i];
     }
+    timer.stop();
+    time = timer.time();
     return float32Exp2Int32Sum.asFloat();
 }
 
-float multiply_Int32PosExp2Int32(std::vector<floatingExp2Integer::Int32PosExp2Int32>& int32PosExp2Int32Values) {
+float multiply_Int32PosExp2Int32(std::vector<floatingExp2Integer::Int32PosExp2Int32>& int32PosExp2Int32Values, int64_t& time) {
+    floatingExp2Integer::Timer timer;
     floatingExp2Integer::Int32PosExp2Int32 int32PosExp2Int32Multiply = int32PosExp2Int32Values[0];
     for (unsigned int i = 1; i < int32PosExp2Int32Values.size(); i++) {
         int32PosExp2Int32Multiply *= int32PosExp2Int32Values[i];
     }
+    timer.stop();
+    time = timer.time();
     return int32PosExp2Int32Multiply.int32PosExp2Int32ToLog2();
 }
 
-float multiply_Float32PosExp2Int32(std::vector<floatingExp2Integer::Float32PosExp2Int32>& float32PosExp2Int32Values) {
+float multiply_Float32PosExp2Int32(std::vector<floatingExp2Integer::Float32PosExp2Int32>& float32PosExp2Int32Values, int64_t& time) {
+    floatingExp2Integer::Timer timer;
     floatingExp2Integer::Float32PosExp2Int32 float32PosExp2Int32Multiply = float32PosExp2Int32Values[0];
     for (unsigned int i = 1; i < float32PosExp2Int32Values.size(); i++) {
         float32PosExp2Int32Multiply *= float32PosExp2Int32Values[i];
     }
+    timer.stop();
+    time = timer.time();
     return float32PosExp2Int32Multiply.float32PosExp2Int32ToLog2();
 }
 
-float multiply_Float32Exp2Int32(std::vector<floatingExp2Integer::Float32Exp2Int32>& float32Exp2Int32Values) {
+float multiply_Float32Exp2Int32(std::vector<floatingExp2Integer::Float32Exp2Int32>& float32Exp2Int32Values, int64_t& time) {
+    floatingExp2Integer::Timer timer;
     floatingExp2Integer::Float32Exp2Int32 float32Exp2Int32Multiply = float32Exp2Int32Values[0];
     for (unsigned int i = 1; i < float32Exp2Int32Values.size(); i++) {
         float32Exp2Int32Multiply *= float32Exp2Int32Values[i];
     }
+    timer.stop();
+    time = timer.time();
     return float32Exp2Int32Multiply.float32Exp2Int32ToLog2();
 }
 
@@ -147,49 +174,38 @@ void loop(int n, double results[], std::int64_t time[]) {
     FloatToFloat32PosExp2Int32Values(floatValues, float32PosExp2Int32Values);
     FloatToFloat32Exp2Int32Values(floatValues, float32Exp2Int32Values);
 
-    floatingExp2Integer::Timer timer_float;
-    float floatSum = sum_float(floatValues);
-    timer_float.stop();
+    int64_t timer_float;
+    float floatSum = sum_float(floatValues, timer_float);
 
-    floatingExp2Integer::Timer timer_Flt;
-    float fltSum = sum_Flt(fltValues);
-    timer_Flt.stop();
+    int64_t timer_Flt;
+    float fltSum = sum_Flt(fltValues, timer_Flt);
 
-    floatingExp2Integer::Timer timer_Flt2;
-    float flt2Sum = sum_Flt2(flt2Values);
-    timer_Flt2.stop();
+    int64_t timer_Flt2;
+    float flt2Sum = sum_Flt2(flt2Values, timer_Flt2);
 
-    floatingExp2Integer::Timer timer_log2;
-    float log2sum = LogSumExp2Trick(log2Values);
-    timer_log2.stop();
+    int64_t timer_log2;
+    float log2sum = LogSumExp2Trick(log2Values, timer_log2);
 
-    floatingExp2Integer::Timer timer_Int32PosExp2Int32;
-    float int32PosExp2Int32Sum = sum_Int32PosExp2Int32(int32PosExp2Int32Values);
-    timer_Int32PosExp2Int32.stop();
+    int64_t timer_Int32PosExp2Int32;
+    float int32PosExp2Int32Sum = sum_Int32PosExp2Int32(int32PosExp2Int32Values, timer_Int32PosExp2Int32);
 
-    floatingExp2Integer::Timer timer_Float32PosExp2Int32;
-    float float32PosExp2Int32Sum = sum_Float32PosExp2Int32(float32PosExp2Int32Values);
-    timer_Float32PosExp2Int32.stop();
+    int64_t timer_Float32PosExp2Int32;
+    float float32PosExp2Int32Sum = sum_Float32PosExp2Int32(float32PosExp2Int32Values, timer_Float32PosExp2Int32);
 
-    floatingExp2Integer::Timer timer_Float32Exp2Int32;
-    float float32Exp2Int32Sum = sum_Float32Exp2Int32(float32Exp2Int32Values);
-    timer_Float32Exp2Int32.stop();
+    int64_t timer_Float32Exp2Int32;
+    float float32Exp2Int32Sum = sum_Float32Exp2Int32(float32Exp2Int32Values, timer_Float32Exp2Int32);
 
-    floatingExp2Integer::Timer timer_multiply_log2;
-    float log2sum_2 = Log2Multiply(log2Values);
-    timer_multiply_log2.stop();
+    int64_t timer_multiply_log2;
+    float log2sum_2 = Log2Multiply(log2Values, timer_multiply_log2);
 
-    floatingExp2Integer::Timer timer_multiply_Int32PosExp2Int32;
-    float int32PosExp2Int32Multiply = multiply_Int32PosExp2Int32(int32PosExp2Int32Values);
-    timer_multiply_Int32PosExp2Int32.stop();
+    int64_t timer_multiply_Int32PosExp2Int32;
+    float int32PosExp2Int32Multiply = multiply_Int32PosExp2Int32(int32PosExp2Int32Values, timer_multiply_Int32PosExp2Int32);
 
-    floatingExp2Integer::Timer timer_multiply_Float32PosExp2Int32;
-    float float32PosExp2Int32Multiply = multiply_Float32PosExp2Int32(float32PosExp2Int32Values);
-    timer_multiply_Float32PosExp2Int32.stop();
+    int64_t timer_multiply_Float32PosExp2Int32;
+    float float32PosExp2Int32Multiply = multiply_Float32PosExp2Int32(float32PosExp2Int32Values, timer_multiply_Float32PosExp2Int32);
 
-    floatingExp2Integer::Timer timer_multiply_Float32Exp2Int32;
-    float float32Exp2Int32Multiply = multiply_Float32Exp2Int32(float32Exp2Int32Values);
-    timer_multiply_Float32Exp2Int32.stop();
+    int64_t timer_multiply_Float32Exp2Int32;
+    float float32Exp2Int32Multiply = multiply_Float32Exp2Int32(float32Exp2Int32Values, timer_multiply_Float32Exp2Int32);
 
 
     std::cout << std::setprecision(std::numeric_limits<float>::max_digits10);
@@ -217,30 +233,30 @@ void loop(int n, double results[], std::int64_t time[]) {
     results[9] = float32PosExp2Int32Multiply;
     results[10] = float32Exp2Int32Multiply;
 
-    time[0] = timer_float.time();
-    time[1] = timer_Flt.time();
-    time[2] = timer_Flt2.time();
-    time[3] = timer_log2.time();
-    time[4] = timer_Int32PosExp2Int32.time();
-    time[5] = timer_Float32PosExp2Int32.time();
-    time[6] = timer_Float32Exp2Int32.time();
-    time[7] = timer_multiply_log2.time();
-    time[8] = timer_multiply_Int32PosExp2Int32.time();
-    time[9] = timer_multiply_Float32PosExp2Int32.time();
-    time[10] = timer_multiply_Float32Exp2Int32.time();
+    time[0] = timer_float;
+    time[1] = timer_Flt;
+    time[2] = timer_Flt2;
+    time[3] = timer_log2;
+    time[4] = timer_Int32PosExp2Int32;
+    time[5] = timer_Float32PosExp2Int32;
+    time[6] = timer_Float32Exp2Int32;
+    time[7] = timer_multiply_log2;
+    time[8] = timer_multiply_Int32PosExp2Int32;
+    time[9] = timer_multiply_Float32PosExp2Int32;
+    time[10] = timer_multiply_Float32Exp2Int32;
 
     std::cout << std::endl;
-    std::cout << "Float time:                   " << timer_float.time() << std::endl;
-    std::cout << "Flt time:                     " << timer_Flt.time() << std::endl;
-    std::cout << "Flt2 time:                    " << timer_Flt2.time() << std::endl;
-    std::cout << "Log2 time:                    " << timer_log2.time() << std::endl;
-    std::cout << "Int32PosExp2Int32 time:       " << timer_Int32PosExp2Int32.time() << std::endl;
-    std::cout << "Float32PosExp2Int32 time:     " << timer_Float32PosExp2Int32.time() << std::endl;
-    std::cout << "Float32Exp2Int32 time:        " << timer_Float32Exp2Int32.time() << std::endl;
-    std::cout << "Log2 multiply:                " << timer_multiply_log2.time() << std::endl;
-    std::cout << "Int32PosExp2Int32 multiply:   " << timer_multiply_Int32PosExp2Int32.time() << std::endl;
-    std::cout << "Float32PosExp2Int32 multiply: " << timer_multiply_Float32PosExp2Int32.time() << std::endl;
-    std::cout << "Float32Exp2Int32 multiply:    " << timer_multiply_Float32Exp2Int32.time() << std::endl;
+    std::cout << "Float time:                   " << timer_float << std::endl;
+    std::cout << "Flt time:                     " << timer_Flt << std::endl;
+    std::cout << "Flt2 time:                    " << timer_Flt2 << std::endl;
+    std::cout << "Log2 time:                    " << timer_log2 << std::endl;
+    std::cout << "Int32PosExp2Int32 time:       " << timer_Int32PosExp2Int32 << std::endl;
+    std::cout << "Float32PosExp2Int32 time:     " << timer_Float32PosExp2Int32 << std::endl;
+    std::cout << "Float32Exp2Int32 time:        " << timer_Float32Exp2Int32 << std::endl;
+    std::cout << "Log2 multiply:                " << timer_multiply_log2 << std::endl;
+    std::cout << "Int32PosExp2Int32 multiply:   " << timer_multiply_Int32PosExp2Int32 << std::endl;
+    std::cout << "Float32PosExp2Int32 multiply: " << timer_multiply_Float32PosExp2Int32 << std::endl;
+    std::cout << "Float32Exp2Int32 multiply:    " << timer_multiply_Float32Exp2Int32 << std::endl;
     std::cout << std::endl;
 }
 
@@ -293,23 +309,26 @@ void FloatToFloat32Exp2Int32Values(std::vector<float>& floatValues,
     }
 }
 
-float LogSumExp2Trick(std::vector<float>& log2Values) {
+float LogSumExp2Trick(std::vector<float>& log2Values, int64_t& time) {
+    floatingExp2Integer::Timer timer;
     float max = *std::max_element(log2Values.begin(), log2Values.end());
     float sum = 0;
-
     for (float val : log2Values) {
         sum += std::exp2(val - max);
     }
-
+    timer.stop();
+    time = timer.time();
     return max + std::log2(sum);
 }
 
-float Log2Multiply(std::vector<float>& log2Values) {
+float Log2Multiply(std::vector<float>& log2Values, int64_t& time) {
+    floatingExp2Integer::Timer timer;
     float sum = 0;
     for (float val : log2Values) {
         sum += val;
     }
-
+    timer.stop();
+    time = timer.time();
     return sum;
 }
 
