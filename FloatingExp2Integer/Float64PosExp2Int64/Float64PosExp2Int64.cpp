@@ -32,60 +32,93 @@ namespace floatingExp2Integer
     }
 
     Float64PosExp2Int64::Float64PosExp2Int64(std::vector<floatingExp2Integer::Float64PosExp2Int64>& vector) {
+        if (vector.size() < 4 * 2) {
+            Float64PosExp2Int64 a(vector[0].scnfcnd, vector[0].exp);
+            for (unsigned int i = 0; i < vector.size(); i++) {
+                a += vector[i];
+            }    
+            scnfcnd = a.scnfcnd;
+            exp = a.exp;
+        }
+
         double4_t sa1;
         int64_4_t ea1;
+        double4_t sa2;
+        int64_4_t ea2;
+
+        double4_t sb1;
+        int64_4_t eb1;
+        double4_t sb2;
+        int64_4_t eb2;
     
         for (int k = 0; k < 4; k++) {
             sa1[k] = vector[k].scnfcnd;
             ea1[k] = vector[k].exp;
+            sa2[k] = vector[k + 4].scnfcnd;
+            ea2[k] = vector[k + 4].exp;
         }
+
+        const auto* vec_ptr = vector.data();
     
+        int counter = 0;
         unsigned int i;
-        for (i = 4; i + 3 < vector.size(); i += 4) {
-            double4_t sb1;
-            int64_4_t eb1;
+        for (i = 8; i + 7 < vector.size(); i += 8) {
     
             for (int k = 0; k < 4; k++) {
-                sb1[k] = vector[i + k].scnfcnd;
-                eb1[k] = vector[i + k].exp;
+                int ik = i + k;
+                int ik4 = ik + 4;
+                sb1[k] = vector[ik].scnfcnd;
+                eb1[k] = vector[ik].exp;
+                sb2[k] = vector[ik4].scnfcnd;
+                eb2[k] = vector[ik4].exp;
             }
     
-            int64_4_t exp_diff = ea1 - eb1;
-            int64_4_t sign_exp_diff = exp_diff >= 0LL ? 1LL : -1LL;
-            
-            uint64_4_t ib1;
-            std::memcpy(&ib1, &sb1, sizeof ib1);
+            int64_4_t exp_diff1 = ea1 - eb1;
+            int64_4_t exp_diff2 = ea2 - eb2;
+
+            uint64_4_t& ib1 = reinterpret_cast<uint64_4_t&>(sb1); 
+            uint64_4_t& ib2 = reinterpret_cast<uint64_4_t&>(sb2);
+            ib1 = ((((ib1 & 0x7FF0000000000000ull) >> 52) - exp_diff1) << 52) | (ib1 & 0x800FFFFFFFFFFFFFull);
+            ib2 = ((((ib2 & 0x7FF0000000000000ull) >> 52) - exp_diff2) << 52) | (ib2 & 0x800FFFFFFFFFFFFFull);
     
-            uint64_4_t add = (uint64_4_t)((exp_diff * sign_exp_diff) << 52) & 0x7FF0000000000000ull;
-            ib1 -= add * sign_exp_diff;
-    
-            std::memcpy(&sb1, &ib1, sizeof sb1);
-    
-            sa1 = exp_diff <= -64LL ? double4_0 : sa1;
-            sb1 = exp_diff >= 64LL ? double4_0 : sb1;
+            sa1 = exp_diff1 <= -64LL ? double4_0 : sa1;
+            sb1 = exp_diff1 >= 64LL ? double4_0 : sb1;
+            sa2 = exp_diff2 <= -64LL ? double4_0 : sa2;
+            sb2 = exp_diff2 >= 64LL ? double4_0 : sb2;
     
             sa1 += sb1;
+            sa2 += sb2;
     
-            uint64_4_t ia1;
-            std::memcpy(&ia1, &sa1, sizeof ia1);
-            ea1 = (ea1 - int64_4_1023) + (int64_4_t)((ia1 & 0x7FF0000000000000ull) >> 52);
-            ia1 &= 0x800FFFFFFFFFFFFFull;
-            ia1 |= 0x3FF0000000000000ull;
-            std::memcpy(&sa1, &ia1, sizeof sa1);
+            counter++;
+            if (counter > 30) {
+                counter = 0;
+                uint64_4_t& ia1 = reinterpret_cast<uint64_4_t&>(sa1); 
+                uint64_4_t& ia2 = reinterpret_cast<uint64_4_t&>(sa2);
+                ea1 = (ea1 - int64_4_1023) + (int64_4_t)((ia1 & 0x7FF0000000000000ull) >> 52);
+                ea2 = (ea2 - int64_4_1023) + (int64_4_t)((ia2 & 0x7FF0000000000000ull) >> 52);
+                ia1 &= 0x800FFFFFFFFFFFFFull;
+                ia1 |= 0x3FF0000000000000ull;
+                ia2 &= 0x800FFFFFFFFFFFFFull;
+                ia2 |= 0x3FF0000000000000ull;
+            }
         }        
         
-        Float64PosExp2Int64 a(sa1[0], ea1[0]);
+        Float64PosExp2Int64 a1(sa1[0], ea1[0]);
+        Float64PosExp2Int64 a2(sa2[0], ea2[0]);
         for (int k = 1; k < 4; k++) {
-            Float64PosExp2Int64 z(sa1[k], ea1[k]);
-            a += z;
+            Float64PosExp2Int64 z1(sa1[k], ea1[k]);
+            Float64PosExp2Int64 z2(sa2[k], ea2[k]);
+            a1 += z1;
+            a2 += z2;
         }
+        a1 += a2;
 
         for (i = i; i < vector.size(); i++) {
-            a += vector[i];
+            a1 += vector[i];
         }
 
-        scnfcnd = a.scnfcnd;
-        exp = a.exp;
+        scnfcnd = a1.scnfcnd;
+        exp = a1.exp;
     }
 
     void Float64PosExp2Int64::doubleToFloat64PosExp2Int64(double dbl) {
