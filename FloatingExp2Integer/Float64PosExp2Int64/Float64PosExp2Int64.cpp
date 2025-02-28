@@ -2,6 +2,10 @@
 #include <cmath>
 #include <vector>
 #include <cstring>
+
+#include <cstdint>
+#include <bit>
+#include <iostream>
 #include "Float64PosExp2Int64.h"
 
 typedef double double4_t __attribute__((vector_size(4 * sizeof(double))));
@@ -32,56 +36,99 @@ namespace floatingExp2Integer
     }
 
     Float64PosExp2Int64::Float64PosExp2Int64(std::vector<floatingExp2Integer::Float64PosExp2Int64>& vector) {
-        double4_t sa1;
-        int64_4_t ea1;
-    
-        for (int k = 0; k < 4; k++) {
-            sa1[k] = vector[k].scnfcnd;
-            ea1[k] = vector[k].exp;
-        }
-    
-        unsigned int i;
-        for (i = 4; i + 3 < vector.size(); i += 4) {
-            double4_t sb1;
-            int64_4_t eb1;
-    
-            for (int k = 0; k < 4; k++) {
-                sb1[k] = vector[i + k].scnfcnd;
-                eb1[k] = vector[i + k].exp;
-            }
-    
-            int64_4_t exp_diff = ea1 - eb1;
-            int64_4_t sign_exp_diff = exp_diff >= 0LL ? 1LL : -1LL;
-            
-            uint64_4_t ib1;
-            std::memcpy(&ib1, &sb1, sizeof ib1);
-    
-            uint64_4_t add = (uint64_4_t)((exp_diff * sign_exp_diff) << 52) & 0x7FF0000000000000ull;
-            ib1 -= add * sign_exp_diff;
-    
-            std::memcpy(&sb1, &ib1, sizeof sb1);
-    
-            sa1 = exp_diff <= -64LL ? double4_0 : sa1;
-            sb1 = exp_diff >= 64LL ? double4_0 : sb1;
-    
-            sa1 += sb1;
-    
-            uint64_4_t ia1;
-            std::memcpy(&ia1, &sa1, sizeof ia1);
-            ea1 = (ea1 - int64_4_1023) + (int64_4_t)((ia1 & 0x7FF0000000000000ull) >> 52);
-            ia1 &= 0x800FFFFFFFFFFFFFull;
-            ia1 |= 0x3FF0000000000000ull;
-            std::memcpy(&sa1, &ia1, sizeof sa1);
-        }        
-        
-        Float64PosExp2Int64 a(sa1[0], ea1[0]);
-        for (int k = 1; k < 4; k++) {
-            Float64PosExp2Int64 z(sa1[k], ea1[k]);
-            a += z;
+        const int pn = 3;
+
+        if (vector.size() < 4 * pn) {
+            Float64PosExp2Int64 a(0, std::numeric_limits<int64_t>::min());
+            for (unsigned int i = i; i < vector.size(); i++) {
+                a += vector[i];
+            }    
+            scnfcnd = a.scnfcnd;
+            exp = a.exp;
         }
 
-        for (i = i; i < vector.size(); i++) {
-            a += vector[i];
+        double4_t sa[pn];
+        int64_4_t ea[pn];
+    
+        for (int p = 0; p < pn; p++) {
+            for (int k = 0; k < 4; k++) {
+                sa[p][k] = vector[p*4 + k].scnfcnd;
+                ea[p][k] = vector[p*4 + k].exp;
+            }
+        }
+
+        double4_t sb[pn];
+        int64_4_t eb[pn];
+
+        int64_4_t exp_diff[pn];
+        int64_4_t sign_exp_diff[pn];
+
+        uint64_4_t ib1[pn];
+        uint64_4_t add[pn];
+
+        uint64_4_t ia1[pn];
+    
+        unsigned int index;
+        int counter = 0;
+        for (index = 4 * pn; index + (4 * pn - 1) < vector.size(); index += 4 * pn) {    
+            for (int p = 0; p < pn; p++) {
+                for (int k = 0; k < 4; k++) {
+                    int vector_index = index + p*4 + k;
+                    sb[p][k] = vector[vector_index].scnfcnd;
+                    eb[p][k] = vector[vector_index].exp;
+                }
+            }
+            for (int p = 0; p < pn; p++) {
+                exp_diff[p] = ea[p] - eb[p];
+                sign_exp_diff[p] = exp_diff[p] >= 0LL ? 1LL : -1LL;
+            // }
+            // //uint64_4_t& ib1 = reinterpret_cast<uint64_4_t&>(sb[p]);
+            // std::memcpy(&ib1, &sb, sizeof ib1); 
+            // for (int p = 0; p < pn; p++) {
+            
+                ib1[p] = std::bit_cast<uint64_4_t>(sb[p]);
+
+                add[p] = (uint64_4_t)((exp_diff[p] * sign_exp_diff[p]) << 52) & 0x7FF0000000000000ull;
+                ib1[p] -= add[p] * sign_exp_diff[p];
+
+                sb[p] = std::bit_cast<double4_t>(ib1[p]);
+            // }
+            // std::memcpy(&sb, &ib1, sizeof sb);
+            // for (int p = 0; p < pn; p++) {
+        
+                sa[p] = exp_diff[p] <= -64LL ? double4_0 : sa[p];
+                ea[p] = exp_diff[p] <= -64LL ? eb[p] : ea[p];
+                sb[p] = exp_diff[p] >= 64LL ? double4_0 : sb[p];
+        
+                sa[p] += sb[p];
+            }
+            counter++;
+            if (counter == 10) {
+                //std::memcpy(&ia1, &sa, sizeof ia1);
+                for (int p = 0; p < pn; p++) {
+                    //uint64_4_t& ia1 = reinterpret_cast<uint64_4_t&>(sa[p]);
+                    ia1[p] = std::bit_cast<uint64_4_t>(sa[p]);
+                    ea[p] = (ea[p] - int64_4_1023) + (int64_4_t)((ia1[p] & 0x7FF0000000000000ull) >> 52);
+                    ia1[p] &= 0x800FFFFFFFFFFFFFull;
+                    ia1[p] |= 0x3FF0000000000000ull;
+                    sa[p] = std::bit_cast<double4_t>(ia1[p]);
+                }
+                //std::memcpy(&sa, &ia1, sizeof sa);
+                counter = 0;
+            }
+        }        
+        
+        Float64PosExp2Int64 a(1, std::numeric_limits<int64_t>::min());
+        for (int p = 0; p < pn; p++) {
+            for (int k = 0; k < 4; k++) {
+                Float64PosExp2Int64 z(sa[p][k], ea[p][k]);
+                a += z;
+            }
+            std::cout << std::endl;
+        }
+
+        for (index = index; index < vector.size(); index++) {
+            a += vector[index];
         }
 
         scnfcnd = a.scnfcnd;
