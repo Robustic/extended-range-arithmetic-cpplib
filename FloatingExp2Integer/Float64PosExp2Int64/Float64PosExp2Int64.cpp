@@ -1,6 +1,15 @@
 #include <cstdint>
 #include <cmath>
+#include <vector>
+#include <cstring>
 #include "Float64PosExp2Int64.h"
+
+typedef double double4_t __attribute__((vector_size(4 * sizeof(double))));
+typedef uint64_t uint64_4_t __attribute__((vector_size(4 * sizeof(uint64_t))));
+typedef int64_t int64_4_t __attribute__((vector_size(4 * sizeof(int64_t))));
+
+constexpr int64_4_t int64_4_1023 { 1023LL, 1023LL, 1023LL, 1023LL };
+constexpr double4_t double4_0 { 0.0, 0.0, 0.0, 0.0 };
 
 namespace floatingExp2Integer
 {
@@ -14,6 +23,69 @@ namespace floatingExp2Integer
         scnfcnd = dbl;
         exp = 0;
         this->scale();
+    }
+
+    Float64PosExp2Int64::Float64PosExp2Int64(double sicnificand, std::int64_t exponent) {
+        scnfcnd = sicnificand;
+        exp = exponent;
+        this->scale();
+    }
+
+    Float64PosExp2Int64::Float64PosExp2Int64(std::vector<floatingExp2Integer::Float64PosExp2Int64>& vector) {
+        double4_t sa1;
+        int64_4_t ea1;
+    
+        for (int k = 0; k < 4; k++) {
+            sa1[k] = vector[k].scnfcnd;
+            ea1[k] = vector[k].exp;
+        }
+    
+        unsigned int i;
+        for (i = 4; i + 3 < vector.size(); i += 4) {
+            double4_t sb1;
+            int64_4_t eb1;
+    
+            for (int k = 0; k < 4; k++) {
+                sb1[k] = vector[i + k].scnfcnd;
+                eb1[k] = vector[i + k].exp;
+            }
+    
+            int64_4_t exp_diff = ea1 - eb1;
+            int64_4_t sign_exp_diff = exp_diff >= 0LL ? 1LL : -1LL;
+            
+            uint64_4_t ib1;
+            std::memcpy(&ib1, &sb1, sizeof ib1);
+    
+            uint64_4_t add = (uint64_4_t)((exp_diff * sign_exp_diff) << 52) & 0x7FF0000000000000ull;
+            ib1 -= add * sign_exp_diff;
+    
+            std::memcpy(&sb1, &ib1, sizeof sb1);
+    
+            sa1 = exp_diff <= -64LL ? double4_0 : sa1;
+            sb1 = exp_diff >= 64LL ? double4_0 : sb1;
+    
+            sa1 += sb1;
+    
+            uint64_4_t ia1;
+            std::memcpy(&ia1, &sa1, sizeof ia1);
+            ea1 = (ea1 - int64_4_1023) + (int64_4_t)((ia1 & 0x7FF0000000000000ull) >> 52);
+            ia1 &= 0x800FFFFFFFFFFFFFull;
+            ia1 |= 0x3FF0000000000000ull;
+            std::memcpy(&sa1, &ia1, sizeof sa1);
+        }        
+        
+        Float64PosExp2Int64 a(sa1[0], ea1[0]);
+        for (int k = 1; k < 4; k++) {
+            Float64PosExp2Int64 z(sa1[k], ea1[k]);
+            a += z;
+        }
+
+        for (i = i; i < vector.size(); i++) {
+            a += vector[i];
+        }
+
+        scnfcnd = a.scnfcnd;
+        exp = a.exp;
     }
 
     void Float64PosExp2Int64::doubleToFloat64PosExp2Int64(double dbl) {
