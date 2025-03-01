@@ -34,3 +34,5 @@
 .vscode/
 build_debug/
 build_release/
+eigen-3.4.0/
+vectorclass/

@@ -53,8 +53,8 @@ namespace floatingExp2Integer
     
         for (int k = 0; k < 4; k++) {
             sa1[k] = vector[k].scnfcnd;
-            ea1[k] = vector[k].exp;
             sa2[k] = vector[k + 4].scnfcnd;
+            ea1[k] = vector[k].exp;
             ea2[k] = vector[k + 4].exp;
         }
 
@@ -68,8 +68,8 @@ namespace floatingExp2Integer
                 int ik = i + k;
                 int ik4 = ik + 4;
                 sb1[k] = vector[ik].scnfcnd;
-                eb1[k] = vector[ik].exp;
                 sb2[k] = vector[ik4].scnfcnd;
+                eb1[k] = vector[ik].exp;
                 eb2[k] = vector[ik4].exp;
             }
     
@@ -88,7 +88,7 @@ namespace floatingExp2Integer
     
             sa1 += sb1;
             sa2 += sb2;
-    
+
             counter++;
             if (counter > 30) {
                 counter = 0;

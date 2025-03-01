@@ -5,6 +5,8 @@ project(FloatingExp2Integer)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+include_directories(${CMAKE_SOURCE_DIR}/eigen-3.4.0)
+
 include(FetchContent)
 FetchContent_Declare(
   googletest
