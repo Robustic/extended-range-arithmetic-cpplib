@@ -18,6 +18,7 @@ extern "C"{
 
 const uint32_t seed_val = 1337;
 
+
 void InitializeRandomNumbers(std::vector<double>& vec);
 void DoubleToDblValues(std::vector<double>& doubleValues, std::vector<floatingExp2Integer::Dbl>& dblValues);
 void DoubleToDbl2Values(std::vector<double>& doubleValues, std::vector<floatingExp2Integer::Dbl2>& dbl2Values);
