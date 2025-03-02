@@ -5,7 +5,11 @@ project(FloatingExp2Integer)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-include_directories(${CMAKE_SOURCE_DIR}/eigen-3.4.0)
+# include_directories(${CMAKE_SOURCE_DIR}/eigen-3.4.0)
+# include_directories(/opt/glibc-2.35/include)
+# link_directories(/opt/glibc-2.35/lib)
+link_directories(${PROJECT_SOURCE_DIR}/libmvec_ex)
+
 
 include(FetchContent)
 FetchContent_Declare(
@@ -142,5 +146,6 @@ add_executable(
 target_link_libraries(
   Float64.try
   floatingExp2IntegerModule
+  libmvec_ex.so
 )
 

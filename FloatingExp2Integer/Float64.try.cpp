@@ -1,12 +1,9 @@
 #include <iostream>
 #include <vector>
 #include <immintrin.h>
-#define _GNU_SOURCE      /* These two lines are optional. They are only needed to use the scalar */
-#include <math.h> 
 #include <random>
 #include <chrono>
 #include <iomanip>
-#include <Eigen/Dense>
 #include "Timer.h"
 #include "Dbl.h"
 #include "Dbl2.h"
@@ -15,14 +12,18 @@
 #include "./Float64PosExp2Int64/Float64PosExp2Int64.h"
 #include "./Float64Exp2Int64/Float64Exp2Int64.h"
 
+extern "C"{
+    double logsumexp_avx2(const double* x, size_t size);
+}
+
 const uint32_t seed_val = 1337;
 
 void InitializeRandomNumbers(std::vector<double>& vec);
-void DoubleToEigenValues(std::vector<double>& doubleValues, Eigen::VectorXd& eigen_values);
 void DoubleToDblValues(std::vector<double>& doubleValues, std::vector<floatingExp2Integer::Dbl>& dblValues);
 void DoubleToDbl2Values(std::vector<double>& doubleValues, std::vector<floatingExp2Integer::Dbl2>& dbl2Values);
 void DoubleToDbl3Values(std::vector<double>& doubleValues, std::vector<floatingExp2Integer::Dbl3>& dbl3Values);
 void DoubleToLog2Values(std::vector<double>& dblValues, std::vector<double>& log2Values);
+void DoubleToLogValues(std::vector<double>& dblValues, std::vector<double>& logValues);
 void DoubleToInt64PosExp2Int64Values(std::vector<double>& doubleValues, 
     std::vector<floatingExp2Integer::Int64PosExp2Int64>& int64PosExp2Int64Values);
 void DoubleToFloat64PosExp2Int64Values(std::vector<double>& doubleValues, 
@@ -35,7 +36,7 @@ double Log2Multiply(std::vector<double>& log2Values, int64_t& time);
 void loop(int n, double results[], std::int64_t time[]);
 
 int main() {
-    const int number_of_types = 15;
+    const int number_of_types = 16;
     const int n[] = { 1000, 3000, 10000, 30000, 100000, 300000, 1000000, 3000000, 10000000, 30000000, 100000000 };
     const unsigned int number_of_cases = sizeof(n) / sizeof(n[0]);
     double results[number_of_cases][number_of_types];
@@ -241,60 +242,34 @@ double sum_parallelization_Dbl3(std::vector<floatingExp2Integer::Dbl3>& dbl3Valu
     return dbl3ParallelizationSum.asDouble();
 }
 
-// double logsumexp_avx2(const std::vector<double>& x) {
-//     size_t size = x.size();
-//     __m256d maxVec = _mm256_set1_pd(-INFINITY);
-    
-//     // Compute max_x using AVX2
-//     for (size_t i = 0; i < size; i += 4) {
-//         __m256d data = _mm256_loadu_pd(&x[i]);
-//         maxVec = _mm256_max_pd(maxVec, data);
-//     }
-//     double max_x[4];
-//     _mm256_storeu_pd(max_x, maxVec);
-//     double max_val = std::max({max_x[0], max_x[1], max_x[2], max_x[3]});
+double sum_vectorization_log(std::vector<double>& logValues, int64_t& time) {
+    double* ptr = logValues.data();
+    floatingExp2Integer::Timer timer;
+    double logVectorizationSum = logsumexp_avx2(ptr, (size_t)logValues.size());
+    timer.stop();
+    time = timer.time();
 
-//     // Compute sum(exp(x - max_x))
-//     __m256d sumVec = _mm256_setzero_pd();
-//     for (size_t i = 0; i < size; i += 4) {
-//         __m256d data = _mm256_loadu_pd(&x[i]);
-//         __m256d expData = _mm256_exp2_pd(_mm256_sub_pd(data, _mm256_set1_pd(max_val)));
-//         sumVec = _mm256_add_pd(sumVec, expData);
-//     }
-    
-//     double sumExp[4];
-//     _mm256_storeu_pd(sumExp, sumVec);
-//     double sum = sumExp[0] + sumExp[1] + sumExp[2] + sumExp[3];
-
-//     return max_val + std::log(sum);
-// }
-
-// double eigen_logsumexp(Eigen::VectorXd& eigen_values, int64_t& time) {
-//     floatingExp2Integer::Timer timer;
-//     double eigen_sum = eigen_values.array().exp().sum().log();;
-//     timer.stop();
-//     time = timer.time();
-//     return eigen_sum;
-// }
+    return logVectorizationSum;
+}
 
 void loop(int n, double results[], std::int64_t time[]) {
 
     std::vector<double> doubleValues(n);
-    Eigen::VectorXd eigen_values(n);
     std::vector<floatingExp2Integer::Dbl> dblValues(n);
     std::vector<floatingExp2Integer::Dbl2> dbl2Values(n);
     std::vector<floatingExp2Integer::Dbl3> dbl3Values(n);
     std::vector<double> log2Values(n);
+    std::vector<double> logValues(n);
     std::vector<floatingExp2Integer::Int64PosExp2Int64> int64PosExp2Int64Values(n);
     std::vector<floatingExp2Integer::Float64PosExp2Int64> float64PosExp2Int64Values(n);
     std::vector<floatingExp2Integer::Float64Exp2Int64> float64Exp2Int64Values(n);
 
     InitializeRandomNumbers(doubleValues);
-    DoubleToEigenValues(doubleValues, eigen_values);
     DoubleToDblValues(doubleValues, dblValues);
     DoubleToDbl2Values(doubleValues, dbl2Values);
     DoubleToDbl3Values(doubleValues, dbl3Values);
     DoubleToLog2Values(doubleValues, log2Values);
+    DoubleToLogValues(doubleValues, logValues);
     DoubleToInt64PosExp2Int64Values(doubleValues, int64PosExp2Int64Values);
     DoubleToFloat64PosExp2Int64Values(doubleValues, float64PosExp2Int64Values);
     DoubleToFloat64Exp2Int64Values(doubleValues, float64Exp2Int64Values);
@@ -344,6 +319,9 @@ void loop(int n, double results[], std::int64_t time[]) {
     int64_t timer_Dbl3_paral;
     double dbl3ParallelizationSum = sum_parallelization_Dbl3(dbl3Values, timer_Dbl3_paral);
 
+    int64_t timer_log_vector;
+    double logVectorizationSum = sum_vectorization_log(logValues, timer_log_vector);
+
 
     std::cout << std::setprecision(std::numeric_limits<double>::max_digits10);
     std::cout << "Double sum:                             " << doubleSum << std::endl;
@@ -361,6 +339,8 @@ void loop(int n, double results[], std::int64_t time[]) {
     std::cout << "Dbl sum parallelization:                " << dblParallelizationSum << std::endl;
     std::cout << "Dbl2 sum parallelization:               " << dbl2ParallelizationSum << std::endl;
     std::cout << "Dbl3 sum parallelization:               " << dbl3ParallelizationSum << std::endl;
+    std::cout << "Double sum vectorization:               " << std::exp(logVectorizationSum) << std::endl;
+
 
     results[0] = doubleSum;
     results[1] = dblSum;
@@ -377,6 +357,7 @@ void loop(int n, double results[], std::int64_t time[]) {
     results[12] = dblParallelizationSum;
     results[13] = dbl2ParallelizationSum;
     results[14] = dbl3ParallelizationSum;
+    results[15] = std::exp(logVectorizationSum);
 
     time[0] = timer_double;
     time[1] = timer_Dbl;
@@ -393,6 +374,7 @@ void loop(int n, double results[], std::int64_t time[]) {
     time[12] = timer_Dbl_paral;
     time[13] = timer_Dbl2_paral;
     time[14] = timer_Dbl3_paral;
+    time[15] = timer_log_vector;
 
     std::cout << std::endl;
     std::cout << "Double time:                              " << timer_double << std::endl;
@@ -406,10 +388,11 @@ void loop(int n, double results[], std::int64_t time[]) {
     std::cout << "Int64PosExp2Int64 multiply:               " << timer_multiply_Int64PosExp2Int64 << std::endl;
     std::cout << "Float64PosExp2Int64 multiply:             " << timer_multiply_Float64PosExp2Int64 << std::endl;
     std::cout << "Float64Exp2Int64 multiply:                " << timer_multiply_Float64Exp2Int64 << std::endl;
-    std::cout << "Float64PosExp2Int64 time: vectorization:  " << timer_Float64PosExp2Int64_vec << std::endl;
+    std::cout << "Float64PosExp2Int64 time vectorization:   " << timer_Float64PosExp2Int64_vec << std::endl;
     std::cout << "Dbl time parallelization:                 " << timer_Dbl_paral << std::endl;
     std::cout << "Dbl2 time parallelization:                " << timer_Dbl2_paral << std::endl;
     std::cout << "Dbl3 time parallelization:                " << timer_Dbl3_paral << std::endl;
+    std::cout << "Double time vectorization:                " << timer_log_vector << std::endl;
     std::cout << std::endl;
 }
 
@@ -420,12 +403,6 @@ void InitializeRandomNumbers(std::vector<double>& vec) {
     for (unsigned int i = 0; i < vec.size(); i++) {
         float a_random_float = unif(rng);
         vec[i] = (double)std::exp2f(a_random_float);
-    }
-}
-
-void DoubleToEigenValues(std::vector<double>& doubleValues, Eigen::VectorXd& eigen_values) {
-    for (unsigned int i = 0; i < eigen_values.size(); i++) {
-        eigen_values[i] += doubleValues[i];
     }
 }
 
@@ -450,6 +427,12 @@ void DoubleToDbl3Values(std::vector<double>& doubleValues, std::vector<floatingE
 void DoubleToLog2Values(std::vector<double>& doubleValues, std::vector<double>& log2Values) {
     for (unsigned int i = 0; i < log2Values.size(); i++) {
         log2Values[i] = std::log2(doubleValues[i]);
+    }
+}
+
+void DoubleToLogValues(std::vector<double>& doubleValues, std::vector<double>& logValues) {
+    for (unsigned int i = 0; i < logValues.size(); i++) {
+        logValues[i] = std::log(doubleValues[i]);
     }
 }
 
