@@ -4,6 +4,7 @@
 #include <random>
 #include <chrono>
 #include <iomanip>
+#include <cstring>
 #include "Timer.h"
 #include "Dbl.h"
 #include "Dbl2.h"
@@ -12,9 +13,9 @@
 #include "./Float64PosExp2Int64/Float64PosExp2Int64.h"
 #include "./Float64Exp2Int64/Float64Exp2Int64.h"
 
-extern "C"{
-    double logsumexp_avx2(const double* x, size_t size);
-}
+// extern "C"{
+//     double logsumexp_avx2(const double* x, size_t size);
+// }
 
 const uint32_t seed_val = 1337;
 
@@ -243,10 +244,94 @@ double sum_parallelization_Dbl3(std::vector<floatingExp2Integer::Dbl3>& dbl3Valu
     return dbl3ParallelizationSum.asDouble();
 }
 
+inline __m256d fastExp_avx2(__m256d x) {
+    constexpr double ac = (1ll << 52) / 0.6931471805599453;
+    constexpr double bc = (1ll << 52) * (1023 - 0.04367744890362246);
+    const __m256d a = _mm256_set1_pd(ac);
+    const __m256d b = _mm256_set1_pd(bc);
+
+    x = _mm256_fmadd_pd(x, a, b); // Compute x = a * x + b
+
+    __m256i ii;
+    ii[0] = static_cast<uint64_t>(x[0]);
+    ii[1] = static_cast<uint64_t>(x[1]);
+    ii[2] = static_cast<uint64_t>(x[2]);
+    ii[3] = static_cast<uint64_t>(x[3]);;
+
+    __m256d result;
+    memcpy(&result, &ii, sizeof(result)); // Bit-cast integer to double
+    return result;
+}
+double logsumexp_avx2_cpp(const double* x, size_t size) {
+    __m256d maxVec1 = _mm256_set1_pd(-INFINITY);
+    __m256d maxVec2 = _mm256_set1_pd(-INFINITY);
+    __m256d maxVec3 = _mm256_set1_pd(-INFINITY);
+    __m256d maxVec4 = _mm256_set1_pd(-INFINITY);
+
+    // Compute max_x using AVX2
+    for (size_t i = 0; i + 15 < size; i += 16) {
+        __m256d data1 = _mm256_loadu_pd(&x[i]);
+        __m256d data2 = _mm256_loadu_pd(&x[i+4]);
+        __m256d data3 = _mm256_loadu_pd(&x[i+8]);
+        __m256d data4 = _mm256_loadu_pd(&x[i+12]);
+        maxVec1 = _mm256_max_pd(maxVec1, data1);
+        maxVec2 = _mm256_max_pd(maxVec2, data2);
+        maxVec3 = _mm256_max_pd(maxVec3, data3);
+        maxVec4 = _mm256_max_pd(maxVec4, data4);
+    }
+
+    double max_x1[4];
+    double max_x2[4];
+    double max_x3[4];
+    double max_x4[4];
+    _mm256_storeu_pd(max_x1, maxVec1);
+    _mm256_storeu_pd(max_x2, maxVec2);
+    _mm256_storeu_pd(max_x3, maxVec3);
+    _mm256_storeu_pd(max_x4, maxVec4);
+    double max_val = fmax(fmax(fmax(fmax(max_x1[0], max_x1[1]), fmax(max_x1[2], max_x1[3])),
+                               fmax(fmax(max_x2[0], max_x2[1]), fmax(max_x2[2], max_x2[3]))),
+                          fmax(fmax(fmax(max_x3[0], max_x3[1]), fmax(max_x3[2], max_x3[3])),
+                               fmax(fmax(max_x4[0], max_x4[1]), fmax(max_x4[2], max_x4[3]))));
+
+    __m256d max = _mm256_set1_pd(max_val);
+
+    // Compute sum(exp(x - max_x))
+    __m256d sumVec1 = _mm256_setzero_pd();
+    __m256d sumVec2 = _mm256_setzero_pd();
+    __m256d sumVec3 = _mm256_setzero_pd();
+    __m256d sumVec4 = _mm256_setzero_pd();
+    for (size_t i = 0; i + 15 < size; i += 16) {
+        __m256d data1 = _mm256_loadu_pd(&x[i]);
+        __m256d data2 = _mm256_loadu_pd(&x[i+4]);
+        __m256d data3 = _mm256_loadu_pd(&x[i+8]);
+        __m256d data4 = _mm256_loadu_pd(&x[i+12]);
+        __m256d expData1 = fastExp_avx2(_mm256_sub_pd(data1, max));
+        __m256d expData2 = fastExp_avx2(_mm256_sub_pd(data2, max));
+        __m256d expData3 = fastExp_avx2(_mm256_sub_pd(data3, max));
+        __m256d expData4 = fastExp_avx2(_mm256_sub_pd(data4, max));
+        sumVec1 = _mm256_add_pd(sumVec1, expData1);
+        sumVec2 = _mm256_add_pd(sumVec2, expData2);
+        sumVec3 = _mm256_add_pd(sumVec3, expData3);
+        sumVec4 = _mm256_add_pd(sumVec4, expData4);
+    }
+
+    double sumExp[4];
+    _mm256_storeu_pd(sumExp, sumVec1);
+    double sum = sumExp[0] + sumExp[1] + sumExp[2] + sumExp[3];
+    _mm256_storeu_pd(sumExp, sumVec2);
+    sum += sumExp[0] + sumExp[1] + sumExp[2] + sumExp[3];
+    _mm256_storeu_pd(sumExp, sumVec3);
+    sum += sumExp[0] + sumExp[1] + sumExp[2] + sumExp[3];
+    _mm256_storeu_pd(sumExp, sumVec4);
+    sum += sumExp[0] + sumExp[1] + sumExp[2] + sumExp[3];
+
+    return max_val + log(sum);
+}
+
 double sum_vectorization_log(std::vector<double>& logValues, int64_t& time) {
     double* ptr = logValues.data();
     floatingExp2Integer::Timer timer;
-    double logVectorizationSum = logsumexp_avx2(ptr, (size_t)logValues.size());
+    double logVectorizationSum = logsumexp_avx2_cpp(ptr, (size_t)logValues.size());
     timer.stop();
     time = timer.time();
 
