@@ -245,70 +245,12 @@ double sum_parallelization_Dbl3(std::vector<floatingExp2Integer::Dbl3>& dbl3Valu
     return dbl3ParallelizationSum.asDouble();
 }
 
-inline __m256d fastExp_avx2(__m256d x) {
-    constexpr double ac = (1ll << 52) / 0.6931471805599453;
-    constexpr double bc = (1ll << 52) * (1023 - 0.04367744890362246);
-    const __m256d a = _mm256_set1_pd(ac);
-    const __m256d b = _mm256_set1_pd(bc);
-
-    x = _mm256_fmadd_pd(x, a, b); // Compute x = a * x + b
-
-    __m256i ii;
-    ii[0] = static_cast<uint64_t>(x[0]);
-    ii[1] = static_cast<uint64_t>(x[1]);
-    ii[2] = static_cast<uint64_t>(x[2]);
-    ii[3] = static_cast<uint64_t>(x[3]);;
-
-    __m256d result;
-    memcpy(&result, &ii, sizeof(result)); // Bit-cast integer to double
-    return result;
-}
-
-// double __attribute__((noinline)) fast_exp(double x) {
-//     double integer = trunc(x);
-//     // X is now the fractional part of the number.
-//     x = x - integer;
-
-//     // Use a 4-part polynomial to approximate exp(x);
-//     double c[] = { 0.28033708, 0.425302, 1.01273643, 1.00020947 };
-
-//     // Use Horner's method to evaluate the polynomial.
-//     double val = c[3] + x * (c[2] + x * (c[1] + x * (c[0])));
-//     return val * EXP_TABLE[(unsigned)integer + 710];
-// }
-
-// __m256d fast_exp(__m256d x) {
-//     __m256d integer = _mm256_round_pd(x, _MM_FROUND_TO_ZERO);
-//     __m256d fractional = _mm256_sub_pd(x, integer);
-
-//     // Polynomial coefficients
-//     __m256d c0 = _mm256_set1_pd(0.28033708);
-//     __m256d c1 = _mm256_set1_pd(0.425302);
-//     __m256d c2 = _mm256_set1_pd(1.01273643);
-//     __m256d c3 = _mm256_set1_pd(1.00020947);
-
-//     // Horner's method for polynomial evaluation
-//     __m256d val = _mm256_fmadd_pd(fractional, c0, c1);  // c1 + x * c0
-//     val = _mm256_fmadd_pd(fractional, val, c2);         // c2 + x * (c1 + x * c0)
-//     val = _mm256_fmadd_pd(fractional, val, c3);         // c3 + x * (c2 + x * (c1 + x * c0))
-
-//     // Convert integer part to indices for lookup
-//     __m128i indices = _mm256_cvtpd_epi32(_mm256_add_pd(integer, _mm256_set1_pd(710LL)));
-
-//     // Gather values from the lookup table
-//     __m256d table_vals = _mm256_i32gather_pd(EXP_TABLE, indices, sizeof(double));
-
-//     return _mm256_mul_pd(val, table_vals);
-// }
-
-
 inline double logsumexp_avx2_cpp(const double* x, size_t size, __m256d* data1, __m256d* data2, __m256d* data3, __m256d* data4) {
     __m256d maxVec1 = _mm256_set1_pd(-INFINITY);
     __m256d maxVec2 = _mm256_set1_pd(-INFINITY);
     __m256d maxVec3 = _mm256_set1_pd(-INFINITY);
     __m256d maxVec4 = _mm256_set1_pd(-INFINITY);
 
-    // Compute max_x using AVX2
     for (size_t i = 0; i < 128; i++) {
         data1[i] = _mm256_loadu_pd(&x[16*i]);
         data2[i] = _mm256_loadu_pd(&x[16*i+4]);
@@ -335,48 +277,78 @@ inline double logsumexp_avx2_cpp(const double* x, size_t size, __m256d* data1, _
 
     __m256d max = _mm256_set1_pd(max_val);
 
-    // Compute sum(exp(x - max_x))
     __m256d sumVec1 = _mm256_setzero_pd();
     __m256d sumVec2 = _mm256_setzero_pd();
     __m256d sumVec3 = _mm256_setzero_pd();
     __m256d sumVec4 = _mm256_setzero_pd();
 
-    constexpr double ac = (1ll << 52) / 0.6931471805599453;
-    constexpr double bc = (1ll << 52) * (1023 - 0.04367744890362246);
-    const __m256d a = _mm256_set1_pd(ac);
-    const __m256d b = _mm256_set1_pd(bc);
+    __m256d one = _mm256_set1_pd(1.0);
+    __m256d half = _mm256_set1_pd(0.5);
+    __m256d sixth = _mm256_set1_pd(1.0 / 6.0);
+    __m256d th24 = _mm256_set1_pd(1.0 / 24.0);
+    __m256d th120 = _mm256_set1_pd(1.0 / 120.0);
+    __m256d th720 = _mm256_set1_pd(1.0 / 720.0);
 
     for (size_t i = 0; i < 128; i++) {
-        __m256d x1 = _mm256_fmadd_pd(_mm256_sub_pd(data1[i], max), a, b); // Compute x = a * x + b
-        __m256d x2 = _mm256_fmadd_pd(_mm256_sub_pd(data2[i], max), a, b); // Compute x = a * x + b
-        __m256d x3 = _mm256_fmadd_pd(_mm256_sub_pd(data3[i], max), a, b); // Compute x = a * x + b
-        __m256d x4 = _mm256_fmadd_pd(_mm256_sub_pd(data4[i], max), a, b); // Compute x = a * x + b
-        
-        __m256i ii1;
-        ii1[0] = static_cast<uint64_t>(x1[0]);
-        ii1[1] = static_cast<uint64_t>(x1[1]);
-        ii1[2] = static_cast<uint64_t>(x1[2]);
-        ii1[3] = static_cast<uint64_t>(x1[3]);
-        __m256i ii2;
-        ii2[0] = static_cast<uint64_t>(x2[0]);
-        ii2[1] = static_cast<uint64_t>(x2[1]);
-        ii2[2] = static_cast<uint64_t>(x2[2]);
-        ii2[3] = static_cast<uint64_t>(x2[3]);
-        __m256i ii3;
-        ii3[0] = static_cast<uint64_t>(x3[0]);
-        ii3[1] = static_cast<uint64_t>(x3[1]);
-        ii3[2] = static_cast<uint64_t>(x3[2]);
-        ii3[3] = static_cast<uint64_t>(x3[3]);
-        __m256i ii4;
-        ii4[0] = static_cast<uint64_t>(x4[0]);
-        ii4[1] = static_cast<uint64_t>(x4[1]);
-        ii4[2] = static_cast<uint64_t>(x4[2]);
-        ii4[3] = static_cast<uint64_t>(x4[3]);
+        __m256d x1 = _mm256_sub_pd(data1[i], max);
+        __m256d x2 = _mm256_sub_pd(data2[i], max);
+        __m256d x3 = _mm256_sub_pd(data3[i], max);
+        __m256d x4 = _mm256_sub_pd(data4[i], max);
 
-        x1 = _mm256_castsi256_pd(ii1);
-        x2 = _mm256_castsi256_pd(ii2);
-        x3 = _mm256_castsi256_pd(ii3);
-        x4 = _mm256_castsi256_pd(ii4);
+        __m256d x1_2 = _mm256_mul_pd(x1, x1);
+        __m256d x2_2 = _mm256_mul_pd(x2, x2);
+        __m256d x3_2 = _mm256_mul_pd(x3, x3);
+        __m256d x4_2 = _mm256_mul_pd(x4, x4);
+    
+        __m256d x1_3 = _mm256_mul_pd(x1, x1_2);
+        __m256d x2_3 = _mm256_mul_pd(x2, x2_2);
+        __m256d x3_3 = _mm256_mul_pd(x3, x3_2);
+        __m256d x4_3 = _mm256_mul_pd(x4, x4_2);
+    
+        __m256d x1_4 = _mm256_mul_pd(x1, x1_3);
+        __m256d x2_4 = _mm256_mul_pd(x2, x2_3);
+        __m256d x3_4 = _mm256_mul_pd(x3, x3_3);
+        __m256d x4_4 = _mm256_mul_pd(x4, x4_3);
+    
+        __m256d x1_5 = _mm256_mul_pd(x1, x1_4);
+        __m256d x2_5 = _mm256_mul_pd(x2, x2_4);
+        __m256d x3_5 = _mm256_mul_pd(x3, x3_4);
+        __m256d x4_5 = _mm256_mul_pd(x4, x4_4);
+    
+        __m256d x1_6 = _mm256_mul_pd(x1, x1_5);
+        __m256d x2_6 = _mm256_mul_pd(x2, x2_5);
+        __m256d x3_6 = _mm256_mul_pd(x3, x3_5);
+        __m256d x4_6 = _mm256_mul_pd(x4, x4_5);
+    
+        x1 = _mm256_add_pd(x1, one);
+        x2 = _mm256_add_pd(x2, one);
+        x3 = _mm256_add_pd(x3, one);
+        x4 = _mm256_add_pd(x4, one);
+
+        x1 = _mm256_fmadd_pd(x1_2, half, x1);
+        x2 = _mm256_fmadd_pd(x2_2, half, x2);
+        x3 = _mm256_fmadd_pd(x3_2, half, x3);
+        x4 = _mm256_fmadd_pd(x4_2, half, x4);
+
+        x1 = _mm256_fmadd_pd(x1_3, sixth, x1);
+        x2 = _mm256_fmadd_pd(x2_3, sixth, x2);
+        x3 = _mm256_fmadd_pd(x3_3, sixth, x3);
+        x4 = _mm256_fmadd_pd(x4_3, sixth, x4);
+
+        x1 = _mm256_fmadd_pd(x1_4, th24, x1);
+        x2 = _mm256_fmadd_pd(x2_4, th24, x2);
+        x3 = _mm256_fmadd_pd(x3_4, th24, x3);
+        x4 = _mm256_fmadd_pd(x4_4, th24, x4);
+
+        x1 = _mm256_fmadd_pd(x1_5, th120, x1);
+        x2 = _mm256_fmadd_pd(x2_5, th120, x2);
+        x3 = _mm256_fmadd_pd(x3_5, th120, x3);
+        x4 = _mm256_fmadd_pd(x4_5, th120, x4);
+
+        x1 = _mm256_fmadd_pd(x1_6, th720, x1);
+        x2 = _mm256_fmadd_pd(x2_6, th720, x2);
+        x3 = _mm256_fmadd_pd(x3_6, th720, x3);
+        x4 = _mm256_fmadd_pd(x4_6, th720, x4);
 
         sumVec1 = _mm256_add_pd(sumVec1, x1);
         sumVec2 = _mm256_add_pd(sumVec2, x2);
