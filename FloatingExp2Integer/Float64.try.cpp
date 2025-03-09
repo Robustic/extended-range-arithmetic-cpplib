@@ -5,6 +5,7 @@
 #include <chrono>
 #include <iomanip>
 #include <cstring>
+#include "exp_table.h"
 #include "Timer.h"
 #include "Dbl.h"
 #include "Dbl2.h"
@@ -262,22 +263,61 @@ inline __m256d fastExp_avx2(__m256d x) {
     memcpy(&result, &ii, sizeof(result)); // Bit-cast integer to double
     return result;
 }
-double logsumexp_avx2_cpp(const double* x, size_t size) {
+
+// double __attribute__((noinline)) fast_exp(double x) {
+//     double integer = trunc(x);
+//     // X is now the fractional part of the number.
+//     x = x - integer;
+
+//     // Use a 4-part polynomial to approximate exp(x);
+//     double c[] = { 0.28033708, 0.425302, 1.01273643, 1.00020947 };
+
+//     // Use Horner's method to evaluate the polynomial.
+//     double val = c[3] + x * (c[2] + x * (c[1] + x * (c[0])));
+//     return val * EXP_TABLE[(unsigned)integer + 710];
+// }
+
+// __m256d fast_exp(__m256d x) {
+//     __m256d integer = _mm256_round_pd(x, _MM_FROUND_TO_ZERO);
+//     __m256d fractional = _mm256_sub_pd(x, integer);
+
+//     // Polynomial coefficients
+//     __m256d c0 = _mm256_set1_pd(0.28033708);
+//     __m256d c1 = _mm256_set1_pd(0.425302);
+//     __m256d c2 = _mm256_set1_pd(1.01273643);
+//     __m256d c3 = _mm256_set1_pd(1.00020947);
+
+//     // Horner's method for polynomial evaluation
+//     __m256d val = _mm256_fmadd_pd(fractional, c0, c1);  // c1 + x * c0
+//     val = _mm256_fmadd_pd(fractional, val, c2);         // c2 + x * (c1 + x * c0)
+//     val = _mm256_fmadd_pd(fractional, val, c3);         // c3 + x * (c2 + x * (c1 + x * c0))
+
+//     // Convert integer part to indices for lookup
+//     __m128i indices = _mm256_cvtpd_epi32(_mm256_add_pd(integer, _mm256_set1_pd(710LL)));
+
+//     // Gather values from the lookup table
+//     __m256d table_vals = _mm256_i32gather_pd(EXP_TABLE, indices, sizeof(double));
+
+//     return _mm256_mul_pd(val, table_vals);
+// }
+
+
+inline double logsumexp_avx2_cpp(const double* x, size_t size, __m256d* data1, __m256d* data2, __m256d* data3, __m256d* data4) {
     __m256d maxVec1 = _mm256_set1_pd(-INFINITY);
     __m256d maxVec2 = _mm256_set1_pd(-INFINITY);
     __m256d maxVec3 = _mm256_set1_pd(-INFINITY);
     __m256d maxVec4 = _mm256_set1_pd(-INFINITY);
 
     // Compute max_x using AVX2
-    for (size_t i = 0; i + 15 < size; i += 16) {
-        __m256d data1 = _mm256_loadu_pd(&x[i]);
-        __m256d data2 = _mm256_loadu_pd(&x[i+4]);
-        __m256d data3 = _mm256_loadu_pd(&x[i+8]);
-        __m256d data4 = _mm256_loadu_pd(&x[i+12]);
-        maxVec1 = _mm256_max_pd(maxVec1, data1);
-        maxVec2 = _mm256_max_pd(maxVec2, data2);
-        maxVec3 = _mm256_max_pd(maxVec3, data3);
-        maxVec4 = _mm256_max_pd(maxVec4, data4);
+    for (size_t i = 0; i < 128; i++) {
+        data1[i] = _mm256_loadu_pd(&x[16*i]);
+        data2[i] = _mm256_loadu_pd(&x[16*i+4]);
+        data3[i] = _mm256_loadu_pd(&x[16*i+8]);
+        data4[i] = _mm256_loadu_pd(&x[16*i+12]);
+        maxVec1 = _mm256_max_pd(maxVec1, data1[i]);
+        maxVec2 = _mm256_max_pd(maxVec2, data2[i]);
+        maxVec3 = _mm256_max_pd(maxVec3, data3[i]);
+        maxVec4 = _mm256_max_pd(maxVec4, data4[i]);
     }
 
     double max_x1[4];
@@ -300,19 +340,48 @@ double logsumexp_avx2_cpp(const double* x, size_t size) {
     __m256d sumVec2 = _mm256_setzero_pd();
     __m256d sumVec3 = _mm256_setzero_pd();
     __m256d sumVec4 = _mm256_setzero_pd();
-    for (size_t i = 0; i + 15 < size; i += 16) {
-        __m256d data1 = _mm256_loadu_pd(&x[i]);
-        __m256d data2 = _mm256_loadu_pd(&x[i+4]);
-        __m256d data3 = _mm256_loadu_pd(&x[i+8]);
-        __m256d data4 = _mm256_loadu_pd(&x[i+12]);
-        __m256d expData1 = fastExp_avx2(_mm256_sub_pd(data1, max));
-        __m256d expData2 = fastExp_avx2(_mm256_sub_pd(data2, max));
-        __m256d expData3 = fastExp_avx2(_mm256_sub_pd(data3, max));
-        __m256d expData4 = fastExp_avx2(_mm256_sub_pd(data4, max));
-        sumVec1 = _mm256_add_pd(sumVec1, expData1);
-        sumVec2 = _mm256_add_pd(sumVec2, expData2);
-        sumVec3 = _mm256_add_pd(sumVec3, expData3);
-        sumVec4 = _mm256_add_pd(sumVec4, expData4);
+
+    constexpr double ac = (1ll << 52) / 0.6931471805599453;
+    constexpr double bc = (1ll << 52) * (1023 - 0.04367744890362246);
+    const __m256d a = _mm256_set1_pd(ac);
+    const __m256d b = _mm256_set1_pd(bc);
+
+    for (size_t i = 0; i < 128; i++) {
+        __m256d x1 = _mm256_fmadd_pd(_mm256_sub_pd(data1[i], max), a, b); // Compute x = a * x + b
+        __m256d x2 = _mm256_fmadd_pd(_mm256_sub_pd(data2[i], max), a, b); // Compute x = a * x + b
+        __m256d x3 = _mm256_fmadd_pd(_mm256_sub_pd(data3[i], max), a, b); // Compute x = a * x + b
+        __m256d x4 = _mm256_fmadd_pd(_mm256_sub_pd(data4[i], max), a, b); // Compute x = a * x + b
+        
+        __m256i ii1;
+        ii1[0] = static_cast<uint64_t>(x1[0]);
+        ii1[1] = static_cast<uint64_t>(x1[1]);
+        ii1[2] = static_cast<uint64_t>(x1[2]);
+        ii1[3] = static_cast<uint64_t>(x1[3]);
+        __m256i ii2;
+        ii2[0] = static_cast<uint64_t>(x2[0]);
+        ii2[1] = static_cast<uint64_t>(x2[1]);
+        ii2[2] = static_cast<uint64_t>(x2[2]);
+        ii2[3] = static_cast<uint64_t>(x2[3]);
+        __m256i ii3;
+        ii3[0] = static_cast<uint64_t>(x3[0]);
+        ii3[1] = static_cast<uint64_t>(x3[1]);
+        ii3[2] = static_cast<uint64_t>(x3[2]);
+        ii3[3] = static_cast<uint64_t>(x3[3]);
+        __m256i ii4;
+        ii4[0] = static_cast<uint64_t>(x4[0]);
+        ii4[1] = static_cast<uint64_t>(x4[1]);
+        ii4[2] = static_cast<uint64_t>(x4[2]);
+        ii4[3] = static_cast<uint64_t>(x4[3]);
+
+        x1 = _mm256_castsi256_pd(ii1);
+        x2 = _mm256_castsi256_pd(ii2);
+        x3 = _mm256_castsi256_pd(ii3);
+        x4 = _mm256_castsi256_pd(ii4);
+
+        sumVec1 = _mm256_add_pd(sumVec1, x1);
+        sumVec2 = _mm256_add_pd(sumVec2, x2);
+        sumVec3 = _mm256_add_pd(sumVec3, x3);
+        sumVec4 = _mm256_add_pd(sumVec4, x4);
     }
 
     double sumExp[4];
@@ -325,13 +394,41 @@ double logsumexp_avx2_cpp(const double* x, size_t size) {
     _mm256_storeu_pd(sumExp, sumVec4);
     sum += sumExp[0] + sumExp[1] + sumExp[2] + sumExp[3];
 
-    return max_val + log(sum);
+    return max_val + std::log(sum);
+}
+
+double LogSumExpTrick(std::vector<double>& logValues) {
+    double max = *std::max_element(logValues.begin(), logValues.end());
+    double sum = 0;
+
+    for (double val : logValues) {
+        sum += std::exp(val - max);
+    }
+    return max + std::log(sum);
 }
 
 double sum_vectorization_log(std::vector<double>& logValues, int64_t& time) {
     double* ptr = logValues.data();
     floatingExp2Integer::Timer timer;
-    double logVectorizationSum = logsumexp_avx2_cpp(ptr, (size_t)logValues.size());
+
+    unsigned int small_size = 4 * 4 * 128;
+    unsigned int n_full = logValues.size() / small_size;
+    unsigned int n_rest = logValues.size() % small_size;
+    std::vector<double> temp(n_full + n_rest, 0.0);
+
+    static __m256d data1[128];
+    static __m256d data2[128];
+    static __m256d data3[128];
+    static __m256d data4[128];
+
+    for (unsigned int i = 0; i < n_full; i++) {
+        temp[i] = logsumexp_avx2_cpp(ptr + i * small_size, small_size, data1, data2, data3, data4);
+    }
+    for (unsigned int i = 0; i < n_rest; i++) {
+        temp[n_full + i] = logValues[n_full * small_size + i];
+    }
+
+    double logVectorizationSum = LogSumExpTrick(temp);
     timer.stop();
     time = timer.time();
 
