@@ -13,6 +13,7 @@
 #include "./Int64PosExp2Int64/Int64PosExp2Int64.h"
 #include "./Float64PosExp2Int64/Float64PosExp2Int64.h"
 #include "./Float64Exp2Int64/Float64Exp2Int64.h"
+#include "./Float64ExtendedExp/Float64ExtendedExp.h"
 
 // extern "C"{
 //     double logsumexp_avx2(const double* x, size_t size);
@@ -33,6 +34,8 @@ void DoubleToFloat64PosExp2Int64Values(std::vector<double>& doubleValues,
     std::vector<floatingExp2Integer::Float64PosExp2Int64>& float64PosExp2Int64Values);
 void DoubleToFloat64Exp2Int64Values(std::vector<double>& doubleValues, 
     std::vector<floatingExp2Integer::Float64Exp2Int64>& float64Exp2Int64Values);
+void DoubleToFloat64ExtendedExpValues(std::vector<double>& doubleValues, 
+    std::vector<floatingExp2Integer::Float64ExtendedExp>& float64ExtendedExpValues);
 double LogSumExp2Trick(std::vector<double>& log2Values, int64_t& time);
 double Log2Multiply(std::vector<double>& log2Values, int64_t& time);
 
@@ -167,6 +170,19 @@ double sum_Float64PosExp2Int64(std::vector<floatingExp2Integer::Float64PosExp2In
     timer.stop();
     time = timer.time();
     return float64PosExp2Int64Sum.asDouble();
+}
+
+double sum_Float64ExtendedExp(std::vector<floatingExp2Integer::Float64ExtendedExp>& float64ExtendedExpValues, int64_t& time) {
+    floatingExp2Integer::Timer timer;
+    floatingExp2Integer::Float64ExtendedExp float64ExtendedExpValuesSum = float64ExtendedExpValues[0];
+    for (unsigned int i = 1; i < float64ExtendedExpValues.size(); i++) {
+        //std::cout << float64ExtendedExpValuesSum.asDouble() << " + " << float64ExtendedExpValues[i].asDouble() << " = ";
+        float64ExtendedExpValuesSum += float64ExtendedExpValues[i];
+        //std::cout << float64ExtendedExpValuesSum.asDouble() << std::endl;
+    }
+    timer.stop();
+    time = timer.time();
+    return float64ExtendedExpValuesSum.asDouble();
 }
 
 double sum_Float64Exp2Int64(std::vector<floatingExp2Integer::Float64Exp2Int64>& float64Exp2Int64Values, int64_t& time) {
@@ -418,6 +434,7 @@ void loop(int n, double results[], std::int64_t time[]) {
     std::vector<floatingExp2Integer::Int64PosExp2Int64> int64PosExp2Int64Values(n);
     std::vector<floatingExp2Integer::Float64PosExp2Int64> float64PosExp2Int64Values(n);
     std::vector<floatingExp2Integer::Float64Exp2Int64> float64Exp2Int64Values(n);
+    std::vector<floatingExp2Integer::Float64ExtendedExp> float64ExtendedExpValues(n);
 
     InitializeRandomNumbers(doubleValues);
     DoubleToDblValues(doubleValues, dblValues);
@@ -428,6 +445,7 @@ void loop(int n, double results[], std::int64_t time[]) {
     DoubleToInt64PosExp2Int64Values(doubleValues, int64PosExp2Int64Values);
     DoubleToFloat64PosExp2Int64Values(doubleValues, float64PosExp2Int64Values);
     DoubleToFloat64Exp2Int64Values(doubleValues, float64Exp2Int64Values);
+    DoubleToFloat64ExtendedExpValues(doubleValues, float64ExtendedExpValues);
 
     int64_t timer_double;
     double doubleSum = sum_double(doubleValues, timer_double);
@@ -477,6 +495,9 @@ void loop(int n, double results[], std::int64_t time[]) {
     int64_t timer_log_vector;
     double logVectorizationSum = sum_vectorization_log(logValues, timer_log_vector);
 
+    int64_t timer_Float64ExtendedExp;
+    double float64ExtendedExpSum = sum_Float64ExtendedExp(float64ExtendedExpValues, timer_Float64ExtendedExp);
+
 
     std::cout << std::setprecision(std::numeric_limits<double>::max_digits10);
     std::cout << "Double sum:                             " << doubleSum << std::endl;
@@ -495,6 +516,7 @@ void loop(int n, double results[], std::int64_t time[]) {
     std::cout << "Dbl2 sum parallelization:               " << dbl2ParallelizationSum << std::endl;
     std::cout << "Dbl3 sum parallelization:               " << dbl3ParallelizationSum << std::endl;
     std::cout << "Double sum vectorization:               " << std::exp(logVectorizationSum) << std::endl;
+    std::cout << "Float64ExtendedExp sum:                 " << float64ExtendedExpSum << std::endl;
 
 
     results[0] = doubleSum;
@@ -513,6 +535,7 @@ void loop(int n, double results[], std::int64_t time[]) {
     results[13] = dbl2ParallelizationSum;
     results[14] = dbl3ParallelizationSum;
     results[15] = std::exp(logVectorizationSum);
+    //results[16] = float64ExtendedExpSum;
 
     time[0] = timer_double;
     time[1] = timer_Dbl;
@@ -530,6 +553,7 @@ void loop(int n, double results[], std::int64_t time[]) {
     time[13] = timer_Dbl2_paral;
     time[14] = timer_Dbl3_paral;
     time[15] = timer_log_vector;
+    //time[16] = timer_Float64ExtendedExp;
 
     std::cout << std::endl;
     std::cout << "Double time:                              " << timer_double << std::endl;
@@ -548,6 +572,7 @@ void loop(int n, double results[], std::int64_t time[]) {
     std::cout << "Dbl2 time parallelization:                " << timer_Dbl2_paral << std::endl;
     std::cout << "Dbl3 time parallelization:                " << timer_Dbl3_paral << std::endl;
     std::cout << "Double time vectorization:                " << timer_log_vector << std::endl;
+    std::cout << "Float64ExtendedExp time:                  " << timer_Float64ExtendedExp << std::endl;
     std::cout << std::endl;
 }
 
@@ -609,6 +634,14 @@ void DoubleToFloat64Exp2Int64Values(std::vector<double>& doubleValues,
     std::vector<floatingExp2Integer::Float64Exp2Int64>& float64Exp2Int64Values) {
     for (unsigned int i = 0; i < float64Exp2Int64Values.size(); i++) {
         float64Exp2Int64Values[i].doubleToFloat64Exp2Int64(doubleValues[i]);
+    }
+}
+
+
+void DoubleToFloat64ExtendedExpValues(std::vector<double>& doubleValues, 
+    std::vector<floatingExp2Integer::Float64ExtendedExp>& float64ExtendedExpValues) {
+    for (unsigned int i = 0; i < float64ExtendedExpValues.size(); i++) {
+        float64ExtendedExpValues[i].doubleToFloat64ExtendedExp(doubleValues[i]);
     }
 }
 

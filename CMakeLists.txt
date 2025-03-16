@@ -29,6 +29,7 @@ ADD_LIBRARY(floatingExp2IntegerModule
   ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Float32PosExp2Int32/Float32PosExp2Int32.cpp
   ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Float64Exp2Int64/Float64Exp2Int64.cpp
   ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Float64PosExp2Int64/Float64PosExp2Int64.cpp
+  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Float64ExtendedExp/Float64ExtendedExp.cpp
   ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Int32PosExp2Int32/Int32PosExp2Int32.cpp
   ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Int64PosExp2Int64/Int64PosExp2Int64.cpp
 )
