@@ -229,23 +229,24 @@ namespace floatingExp2Integer
         //print("exponent: ", exponent);
         if (exponent < 0) {
             exponent = -1 * exponent;
-            sign_of_exponent = 0x40ULL;
+            sign_of_exponent = 0x8000000000000000ULL;
         }
         //print("exponent: ", exponent);
 
+        std::uint32_t length_of_exponent = 70 - __builtin_clzll(exponent);
+
         uint64_t return_bits = 0x0ULL;
-        return_bits |= exponent << 7;
+        return_bits |= exponent << 6;
         //printBinary("", return_bits);
 
         return_bits |= sign_of_exponent;
         //printBinary("", return_bits);
         
-        std::uint32_t length_of_exponent = 64 - __builtin_clzll(exponent);
         //print("length_of_exponent: ", length_of_exponent);
         return_bits |= length_of_exponent;
         //printBinary("", return_bits);
         
-        sgnfcnd_bits &= 0xFFFFFFFFFFFFFF80ull << length_of_exponent;
+        sgnfcnd_bits &= 0xFFFFFFFFFFFFFFC0ull << length_of_exponent;
         //printBinary("", sgnfcnd_bits);
 
         return_bits |= sgnfcnd_bits;
@@ -256,15 +257,15 @@ namespace floatingExp2Integer
 
     inline void Float64ExtendedExp::decode(std::uint64_t& significand_bits, std::int64_t& exponent) const {
         //printBinary("decode", encoded);
-        uint64_t sign_of_exponent = encoded & 0x40ULL;
+        uint64_t sign_of_exponent = encoded & 0x8000000000000000ULL;
         uint32_t separator_location = encoded & 0x3FULL;
         //print("separator_location: ", separator_location);
-        exponent = (encoded >> 7) & (~(0xFFFFFFFFFFFFFFFFull << separator_location));
+        exponent = (encoded >> 6) & (~(0xFFFFFFFFFFFFFFFFull << separator_location));
         if (sign_of_exponent != 0) {
             exponent = -1 * exponent;
         }
         //print("exponent: ", exponent);
-        significand_bits = encoded & (0xFFFFFFFFFFFFFF80ull << separator_location);
+        significand_bits = (encoded & 0x7FFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFC0ull << separator_location);
         //printBinary("decoded_significand", significand_bits);
     }
 
