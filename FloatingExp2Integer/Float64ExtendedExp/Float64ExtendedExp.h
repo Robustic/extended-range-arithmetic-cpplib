@@ -8,6 +8,7 @@ namespace floatingExp2Integer
     class Float64ExtendedExp {
         private:
             std::int64_t encoded;
+            std::uint8_t cut_point;
             // Float64ExtendedExp(double sicnificand, std::int64_t exponent);
             // inline void checkRuleForScale();
             inline void encode_double(double sicnificand, std::int64_t exponent);

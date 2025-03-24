@@ -11,7 +11,7 @@ namespace floatingExp2Integer
         public:
             Dbl() { dbl = 0; }
             Dbl(double d) { dbl = d; }
-            Dbl(std::vector<floatingExp2Integer::Dbl>& dblValues) { 
+            Dbl(const std::vector<floatingExp2Integer::Dbl>& dblValues) { 
                 floatingExp2Integer::Dbl dblSum1 = 0.0;
                 floatingExp2Integer::Dbl dblSum2 = 0.0;
                 floatingExp2Integer::Dbl dblSum3 = 0.0;

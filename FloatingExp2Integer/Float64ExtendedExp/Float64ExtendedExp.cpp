@@ -2,7 +2,7 @@
 #include <cmath>
 #include <vector>
 #include <cstring>
-
+#include <immintrin.h>
 #include <iostream>
 #include <bitset>
 #include <cstdint>
@@ -257,15 +257,26 @@ namespace floatingExp2Integer
 
     inline void Float64ExtendedExp::decode(std::uint64_t& significand_bits, std::int64_t& exponent) const {
         //printBinary("decode", encoded);
+        // __m256i encoded_4 = _mm256_set1_epi64x(encoded);
+        // __m256i mask_4 = _mm256_set_epi64x(
+        //     0ULL,
+        //     0x7FFFFFFFFFFFFFFFull,
+        //     0x3FULL,
+        //     0x8000000000000000ULL
+        // );
+        // __m256i result = _mm256_and_si256(encoded_4, mask_4);
+
         uint64_t sign_of_exponent = encoded & 0x8000000000000000ULL;
         uint32_t separator_location = encoded & 0x3FULL;
+        uint64_t temp = encoded & 0x7FFFFFFFFFFFFFFFull;
+        uint64_t cut_mirror = 0xFFFFFFFFFFFFFFC0ull << separator_location;
         //print("separator_location: ", separator_location);
-        exponent = (encoded >> 6) & (~(0xFFFFFFFFFFFFFFFFull << separator_location));
+        exponent = (encoded & (~cut_mirror)) >> 6;
         if (sign_of_exponent != 0) {
             exponent = -1 * exponent;
         }
         //print("exponent: ", exponent);
-        significand_bits = (encoded & 0x7FFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFC0ull << separator_location);
+        significand_bits = temp & cut_mirror;
         //printBinary("decoded_significand", significand_bits);
     }
 

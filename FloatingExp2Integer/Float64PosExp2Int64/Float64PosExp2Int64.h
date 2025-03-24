@@ -15,7 +15,7 @@ namespace floatingExp2Integer
         public:
             Float64PosExp2Int64();
             Float64PosExp2Int64(double dbl);
-            Float64PosExp2Int64(std::vector<floatingExp2Integer::Float64PosExp2Int64>& vector);
+            Float64PosExp2Int64(const std::vector<floatingExp2Integer::Float64PosExp2Int64>& vector);
             void doubleToFloat64PosExp2Int64(double dbl);
             void log2ToFloat64PosExp2Int64(double log2);
             double float64PosExp2Int64ToLog2() const;

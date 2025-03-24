@@ -1,5 +1,4 @@
 #include <iostream>
-#include <functional>
 #include <vector>
 #include <immintrin.h>
 #include <random>
@@ -44,6 +43,36 @@ double LogSumExp2Trick(std::vector<double>& log2Values, int64_t& time);
 double Log2Multiply(std::vector<double>& log2Values, int64_t& time);
 
 void loop(int n, double results[], std::int64_t time[]);
+
+int main() {
+    const int number_of_types = 16;
+    const int n[] = { 1000, 3000, 10000, 30000, 100000, 300000, 1000000, 3000000, 10000000, 30000000, 100000000 };
+    const unsigned int number_of_cases = sizeof(n) / sizeof(n[0]);
+    double results[number_of_cases][number_of_types];
+    std::int64_t time[number_of_cases][number_of_types];
+
+    for (unsigned int i = 0; i < number_of_cases; i++) {
+        loop(n[i], results[i], time[i]);
+    }
+
+    std::cout << std::endl;
+    for (unsigned int i = 0; i < number_of_cases; i++) {
+        std::cout << n[i] << " ";
+        for (unsigned int k = 0; k < number_of_types; k++) {
+            std::cout << results[i][k] << " ";
+        }
+        std::cout << std::endl;
+    }
+
+    std::cout << std::endl;
+    for (unsigned int i = 0; i < number_of_cases; i++) {
+        std::cout << n[i] << " ";
+        for (unsigned int k = 0; k < number_of_types; k++) {
+            std::cout << time[i][k] << " ";
+        }
+        std::cout << std::endl;
+    }
+}
 
 double vectorizedSum(const std::vector<double>& doubleValues) {
     size_t size = doubleValues.size();
@@ -580,6 +609,18 @@ void InitializeRandomNumbers(std::vector<double>& vec) {
     }
 }
 
+void DoubleToDblValues(std::vector<double>& doubleValues, std::vector<floatingExp2Integer::Dbl>& dblValues) {
+    for (unsigned int i = 0; i < dblValues.size(); i++) {
+        dblValues[i] += doubleValues[i];
+    }
+}
+
+void DoubleToDbl2Values(std::vector<double>& doubleValues, std::vector<floatingExp2Integer::Dbl2>& dbl2Values) {
+    for (unsigned int i = 0; i < dbl2Values.size(); i++) {
+        dbl2Values[i] += doubleValues[i];
+    }
+}
+
 void DoubleToDbl3Values(std::vector<double>& doubleValues, std::vector<floatingExp2Integer::Dbl3>& dbl3Values) {
     for (unsigned int i = 0; i < dbl3Values.size(); i++) {
         dbl3Values[i] += doubleValues[i];
@@ -605,6 +646,13 @@ void DoubleToInt64PosExp2Int64Values(std::vector<double>& doubleValues,
     }
 }
 
+void DoubleToFloat64PosExp2Int64Values(std::vector<double>& doubleValues, 
+    std::vector<floatingExp2Integer::Float64PosExp2Int64>& float64PosExp2Int64Values) {
+    for (unsigned int i = 0; i < float64PosExp2Int64Values.size(); i++) {
+        float64PosExp2Int64Values[i].doubleToFloat64PosExp2Int64(doubleValues[i]);
+    }
+}
+
 void DoubleToFloat64Exp2Int64Values(std::vector<double>& doubleValues, 
     std::vector<floatingExp2Integer::Float64Exp2Int64>& float64Exp2Int64Values) {
     for (unsigned int i = 0; i < float64Exp2Int64Values.size(); i++) {
@@ -617,6 +665,13 @@ void DoubleToFloat64ExtendedExpValues(std::vector<double>& doubleValues,
     std::vector<floatingExp2Integer::Float64ExtendedExp>& float64ExtendedExpValues) {
     for (unsigned int i = 0; i < float64ExtendedExpValues.size(); i++) {
         float64ExtendedExpValues[i].doubleToFloat64ExtendedExp(doubleValues[i]);
+    }
+}
+
+void DoubleToFukushimaValues(std::vector<double>& doubleValues, 
+    std::vector<floatingExp2Integer::Fukushima>& fukushimaValues) {
+    for (unsigned int i = 0; i < fukushimaValues.size(); i++) {
+        fukushimaValues[i].doubleToFukushima(doubleValues[i]);
     }
 }
 
@@ -644,261 +699,4 @@ double Log2Multiply(std::vector<double>& log2Values, int64_t& time) {
     return sum;
 }
 
-/////////////////////////////////7
 
-std::int64_t calculate_sequential_sum_Dbl1(const std::vector<floatingExp2Integer::Dbl>& values, double& result) {
-    floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Dbl sum = 0.0;
-    for (unsigned int i = 0; i < values.size(); i++) {
-        sum += values[i];
-    }
-    timer.stop();
-    result = sum.asDouble();
-    return timer.time();
-}
-
-void DoubleToDblValues(const std::vector<double>& doubleValues, std::vector<floatingExp2Integer::Dbl>& dblValues) {
-    for (unsigned int i = 0; i < dblValues.size(); i++) {
-        dblValues[i] += doubleValues[i];
-    }
-}
-
-std::int64_t calculate_avg_sequential_sum_Dbl1(std::string& header, int n, int n_rounds, const std::vector<double>& values, double& result) 
-{
-    header = "Dbl1_sequential_sum:";
-
-    std::vector<floatingExp2Integer::Dbl> values_converted(n);
-    DoubleToDblValues(values, values_converted);
-
-    std::int64_t time_sum = 0.0;
-    for (unsigned int i = 0; i < n_rounds; i++) {
-        time_sum += calculate_sequential_sum_Dbl1(values_converted, result);
-    }
-    return time_sum / n_rounds;
-}
-
-std::int64_t calculate_sequential_sum_Dbl2(const std::vector<floatingExp2Integer::Dbl2>& values, double& result) {
-    floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Dbl2 sum = 0.0;
-    for (unsigned int i = 0; i < values.size(); i++) {
-        sum += values[i];
-    }
-    timer.stop();
-    result = sum.asDouble();
-    return timer.time();
-}
-
-void DoubleToDbl2Values(const std::vector<double>& doubleValues, std::vector<floatingExp2Integer::Dbl2>& dbl2Values) {
-    for (unsigned int i = 0; i < dbl2Values.size(); i++) {
-        dbl2Values[i] += doubleValues[i];
-    }
-}
-
-std::int64_t calculate_avg_sequential_sum_Dbl2(std::string& header, int n, int n_rounds, const std::vector<double>& values, double& result) 
-{
-    header = "Dbl2_sequential_sum:";
-
-    std::vector<floatingExp2Integer::Dbl2> values_converted(n);
-    DoubleToDbl2Values(values, values_converted);
-
-    std::int64_t time_sum = 0.0;
-    for (unsigned int i = 0; i < n_rounds; i++) {
-        time_sum += calculate_sequential_sum_Dbl2(values_converted, result);
-    }
-    return time_sum / n_rounds;
-}
-
-std::int64_t calculate_array_sum_Dbl1(const std::vector<floatingExp2Integer::Dbl>& values, double& result) {
-    floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Dbl sum(values);
-    timer.stop();
-    result = sum.asDouble();
-    return timer.time();
-}
-
-std::int64_t calculate_avg_array_sum_Dbl1(std::string& header, int n, int n_rounds, const std::vector<double>& values, double& result) 
-{
-    header = "Dbl1_array_sum:";
-
-    std::vector<floatingExp2Integer::Dbl> values_converted(n);
-    DoubleToDblValues(values, values_converted);
-
-    std::int64_t time_sum = 0.0;
-    for (unsigned int i = 0; i < n_rounds; i++) {
-        time_sum += calculate_array_sum_Dbl1(values_converted, result);
-    }
-    return time_sum / n_rounds;
-}
-
-std::int64_t calculate_array_sum_Dbl2(const std::vector<floatingExp2Integer::Dbl2>& values, double& result) {
-    floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Dbl2 sum(values);
-    timer.stop();
-    result = sum.asDouble();
-    return timer.time();
-}
-
-std::int64_t calculate_avg_array_sum_Dbl2(std::string& header, int n, int n_rounds, const std::vector<double>& values, double& result) 
-{
-    header = "Dbl2_array_sum:";
-
-    std::vector<floatingExp2Integer::Dbl2> values_converted(n);
-    DoubleToDbl2Values(values, values_converted);
-
-    std::int64_t time_sum = 0.0;
-    for (unsigned int i = 0; i < n_rounds; i++) {
-        time_sum += calculate_array_sum_Dbl2(values_converted, result);
-    }
-    return time_sum / n_rounds;
-}
-
-std::int64_t calculate_array_sum_Float64PosExp2Int64(const std::vector<floatingExp2Integer::Float64PosExp2Int64>& values, double& result) {
-    floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Float64PosExp2Int64 sum(values);
-    timer.stop();
-    result = sum.asDouble();
-    return timer.time();
-}
-
-void DoubleToFloat64PosExp2Int64Values(const std::vector<double>& doubleValues, 
-    std::vector<floatingExp2Integer::Float64PosExp2Int64>& float64PosExp2Int64Values) {
-    for (unsigned int i = 0; i < float64PosExp2Int64Values.size(); i++) {
-        float64PosExp2Int64Values[i].doubleToFloat64PosExp2Int64(doubleValues[i]);
-    }
-}
-
-std::int64_t calculate_avg_array_sum_Float64PosExp2Int64(std::string& header, int n, int n_rounds, const std::vector<double>& values, double& result) 
-{
-    header = "Float64PosExp2Int64_array_sum:";
-
-    std::vector<floatingExp2Integer::Float64PosExp2Int64> values_converted(n);
-    DoubleToFloat64PosExp2Int64Values(values, values_converted);
-
-    std::int64_t time_sum = 0.0;
-    for (unsigned int i = 0; i < n_rounds; i++) {
-        time_sum += calculate_array_sum_Float64PosExp2Int64(values_converted, result);
-    }
-    return time_sum / n_rounds;
-}
-
-std::int64_t calculate_array_sum_Fukushima(const std::vector<floatingExp2Integer::Fukushima>& values, double& result) {
-    floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Fukushima sum(values);
-    timer.stop();
-    result = sum.asDouble();
-    return timer.time();
-}
-
-void DoubleToFukushimaValues(const std::vector<double>& doubleValues, 
-    std::vector<floatingExp2Integer::Fukushima>& fukushimaValues) {
-    for (unsigned int i = 0; i < fukushimaValues.size(); i++) {
-        fukushimaValues[i].doubleToFukushima(doubleValues[i]);
-    }
-}
-
-std::int64_t calculate_avg_array_sum_Fukushima(std::string& header, int n, int n_rounds, const std::vector<double>& values, double& result) 
-{
-    header = "Fukushima_array_sum:";
-
-    std::vector<floatingExp2Integer::Fukushima> values_converted(n);
-    DoubleToFukushimaValues(values, values_converted);
-
-    std::int64_t time_sum = 0.0;
-    for (unsigned int i = 0; i < n_rounds; i++) {
-        time_sum += calculate_array_sum_Fukushima(values_converted, result);
-    }
-    return time_sum / n_rounds;
-}
-
-std::int64_t calculate_sequential_sum_Fukushima(const std::vector<floatingExp2Integer::Fukushima>& values, double& result) {
-    floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Fukushima sum = 0.0;
-    for (unsigned int i = 0; i < values.size(); i++) {
-        sum += values[i];
-    }
-    timer.stop();
-    result = sum.asDouble();
-    return timer.time();
-}
-
-std::int64_t calculate_avg_sequential_sum_Fukushima(std::string& header, int n, int n_rounds, const std::vector<double>& values, double& result) 
-{
-    header = "Fukushima_sequential_sum:";
-
-    std::vector<floatingExp2Integer::Fukushima> values_converted(n);
-    DoubleToFukushimaValues(values, values_converted);
-
-    std::int64_t time_sum = 0.0;
-    for (unsigned int i = 0; i < n_rounds; i++) {
-        time_sum += calculate_sequential_sum_Fukushima(values_converted, result);
-    }
-    return time_sum / n_rounds;
-}
-
-int main() {
-    constexpr int n[] = { 1000, 3000, 10000, 30000, 100000, 300000, 1000000, 3000000, 10000000, 30000000, 100000000 };
-    constexpr int n_rounds[] = { 100000, 30000, 10000, 3000, 1000, 300, 100, 30, 10, 3, 1 };
-    constexpr unsigned int n_count = sizeof(n) / sizeof(n[0]);
-
-    std::vector<std::function<std::int64_t(std::string&, int, int, const std::vector<double>&, double&)>> functions;
-    // functions.push_back(calculate_avg_sequential_sum_Dbl1);
-    // functions.push_back(calculate_avg_sequential_sum_Dbl2);
-    // functions.push_back(calculate_avg_sequential_sum_Fukushima);
-    // functions.push_back(calculate_avg_array_sum_Dbl1);
-    // functions.push_back(calculate_avg_array_sum_Dbl2);
-    // functions.push_back(calculate_avg_array_sum_Float64PosExp2Int64);
-    functions.push_back(calculate_avg_array_sum_Fukushima);
-
-    int functions_count = functions.size();
-
-    std::vector<std::string> all_headers(functions_count);
-    std::vector<std::array<double, n_count>> all_results(functions_count);
-    std::vector<std::array<std::int64_t, n_count>> all_times(functions_count);
-
-    for (unsigned int i = 0; i < n_count; i++) {
-        int n_current = n[i];
-        int n_rounds_current = n_rounds[i];
-
-        std::vector<double> double_values(n_current);
-        InitializeRandomNumbers(double_values);
-
-        for (unsigned int f = 0; f < functions.size(); f++) {
-            std::function<std::int64_t(std::string&, int, int, const std::vector<double>&, double&)> function = functions[f];
-            std::string header;
-            double result;
-            std::int64_t time = function(header, n_current, n_rounds_current, double_values, result);
-            all_headers[f] = header;
-            all_results[f][i] = result;
-            all_times[f][i] = time;
-        }
-
-    }
-
-    std::cout << std::endl << "Result" << std::endl << "n ";
-    for (unsigned int i = 0; i < n_count; i++) {
-        std::cout << n[i] << " ";
-    }
-
-    std::cout << std::endl;
-    for (unsigned int f = 0; f < functions.size(); f++) {
-        std::cout << all_headers[f] << " ";
-        for (unsigned int i = 0; i < n_count; i++) {
-            std::cout << all_results[f][i] << " ";
-        }
-        std::cout << std::endl;
-    }
-
-    std::cout << std::endl << "Time" << std::endl << "n ";
-    for (unsigned int i = 0; i < n_count; i++) {
-        std::cout << n[i] << " ";
-    }
-
-    std::cout << std::endl;
-    for (unsigned int f = 0; f < functions.size(); f++) {
-        std::cout << all_headers[f] << " ";
-        for (unsigned int i = 0; i < n_count; i++) {
-            std::cout << all_times[f][i] << " ";
-        }
-        std::cout << std::endl;
-    }
-}
