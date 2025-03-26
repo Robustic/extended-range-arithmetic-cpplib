@@ -17,6 +17,7 @@ namespace floatingExp2Integer
             void printBinary(std::string message, uint64_t value) const;
             void print(std::string message, int64_t value) const;
             void print(std::string message, double value) const;
+            inline void convert_double_to_uint64(__m128d encoded, uint64_t* exponent, uint64_t* significand);
         public:
             Float64ExtendedExp();
             Float64ExtendedExp(double dbl);
