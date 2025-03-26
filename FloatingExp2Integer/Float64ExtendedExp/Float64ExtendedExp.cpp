@@ -27,100 +27,103 @@ namespace floatingExp2Integer
         encode_double(dbl, 0LL);
     }
 
-    // Float64ExtendedExp::Float64ExtendedExp(double sicnificand, std::int64_t exponent) {
-    //     this->scale(sicnificand, exponent);
-    // }
+    Float64ExtendedExp::Float64ExtendedExp(double sicnificand, std::int64_t exponent) {
+        encode_double(sicnificand, exponent);
+    }
 
-    Float64ExtendedExp::Float64ExtendedExp(const std::vector<floatingExp2Integer::Float64ExtendedExp>& vector) {
-    //     // if (vector.size() < 4 * 2) {
-    //     //     Float64ExtendedExp a(vector[0].encoded);
-    //     //     for (unsigned int i = 0; i < vector.size(); i++) {
-    //     //         a += vector[i];
-    //     //     }    
-    //     //     encoded = a.encoded;
-    //     // }
+    double Float64ExtendedExp::decodeFloat64ExtendedExp(double data) {
+        std::int64_t exponent = (std::int64_t)std::floor(data);
+        double sicnificand = data - exponent + 1.0;
+        return sicnificand * std::pow(2.0, (int)exponent);
+    }
 
-    //     // double4_t sa1;
-    //     // int64_4_t ea1;
-    //     // double4_t sa2;
-    //     // int64_4_t ea2;
+    double Float64ExtendedExp::sumFloat64ExtendedExp(unsigned int n, double* vector_in) {
+        __m512d encoded_values = _mm512_loadu_pd(&vector_in[0]);
 
-    //     // double4_t sb1;
-    //     // int64_4_t eb1;
-    //     // double4_t sb2;
-    //     // int64_4_t eb2;
-    
-    //     // for (int k = 0; k < 4; k++) {
-    //     //     sa1[k] = vector[k].encoded;
-    //     //     sa2[k] = vector[k + 4].encoded;
-    //     //     ea1[k] = vector[k].exp;
-    //     //     ea2[k] = vector[k + 4].exp;
-    //     // }
+        __m512d integer_decimals = _mm512_floor_pd(encoded_values);
+        __m512i exponent_sum = _mm512_cvtpd_epi64(integer_decimals);
+        __m512d one_d = _mm512_set1_pd(1.0);
+        __m512d sicnificand_sum = encoded_values - integer_decimals + one_d;
 
-    //     // const auto* vec_ptr = vector.data();
-    
-    //     // int counter = 0;
-    //     // unsigned int i;
-    //     // for (i = 8; i + 7 < vector.size(); i += 8) {
-    
-    //     //     for (int k = 0; k < 4; k++) {
-    //     //         int ik = i + k;
-    //     //         int ik4 = ik + 4;
-    //     //         sb1[k] = vector[ik].encoded;
-    //     //         sb2[k] = vector[ik4].encoded;
-    //     //         eb1[k] = vector[ik].exp;
-    //     //         eb2[k] = vector[ik4].exp;
-    //     //     }
-    
-    //     //     int64_4_t exp_diff1 = ea1 - eb1;
-    //     //     int64_4_t exp_diff2 = ea2 - eb2;
+        //convert_double_to_uint64(encoded_values, exponent, sicnificand);
 
-    //     //     uint64_4_t& ib1 = reinterpret_cast<uint64_4_t&>(sb1); 
-    //     //     uint64_4_t& ib2 = reinterpret_cast<uint64_4_t&>(sb2);
-    //     //     ib1 = ((((ib1 & 0x7FF0000000000000ull) >> 52) - exp_diff1) << 52) | (ib1 & 0x800FFFFFFFFFFFFFull);
-    //     //     ib2 = ((((ib2 & 0x7FF0000000000000ull) >> 52) - exp_diff2) << 52) | (ib2 & 0x800FFFFFFFFFFFFFull);
-    
-    //     //     sa1 = exp_diff1 <= -64LL ? double4_0 : sa1;
-    //     //     sb1 = exp_diff1 >= 64LL ? double4_0 : sb1;
-    //     //     sa2 = exp_diff2 <= -64LL ? double4_0 : sa2;
-    //     //     sb2 = exp_diff2 >= 64LL ? double4_0 : sb2;
-    
-    //     //     sa1 += sb1;
-    //     //     sa2 += sb2;
+        for (int i = 8; i + 7 < n; i += 8) {
+            encoded_values = _mm512_loadu_pd(&vector_in[i]);
 
-    //     //     counter++;
-    //     //     if (counter > 30) {
-    //     //         counter = 0;
-    //     //         uint64_4_t& ia1 = reinterpret_cast<uint64_4_t&>(sa1); 
-    //     //         uint64_4_t& ia2 = reinterpret_cast<uint64_4_t&>(sa2);
-    //     //         ea1 = (ea1 - int64_4_1023) + (int64_4_t)((ia1 & 0x7FF0000000000000ull) >> 52);
-    //     //         ea2 = (ea2 - int64_4_1023) + (int64_4_t)((ia2 & 0x7FF0000000000000ull) >> 52);
-    //     //         ia1 &= 0x800FFFFFFFFFFFFFull;
-    //     //         ia1 |= 0x3FF0000000000000ull;
-    //     //         ia2 &= 0x800FFFFFFFFFFFFFull;
-    //     //         ia2 |= 0x3FF0000000000000ull;
-    //     //     }
-    //     // }        
-        
-    //     // Float64ExtendedExp a1(sa1[0], ea1[0]);
-    //     // Float64ExtendedExp a2(sa2[0], ea2[0]);
-    //     // for (int k = 1; k < 4; k++) {
-    //     //     Float64ExtendedExp z1(sa1[k], ea1[k]);
-    //     //     Float64ExtendedExp z2(sa2[k], ea2[k]);
-    //     //     a1 += z1;
-    //     //     a2 += z2;
-    //     // }
-    //     // a1 += a2;
+            integer_decimals = _mm512_floor_pd(encoded_values);
+            __m512i exponent = _mm512_cvtpd_epi64(integer_decimals);
+            __m512d sicnificand = encoded_values - integer_decimals + one_d;
 
-    //     // for (i = i; i < vector.size(); i++) {
-    //     //     a1 += vector[i];
-    //     // }
+            __m512i exp_diff = exponent_sum - exponent;
 
-    //     // encoded = a1.encoded;
+            __m512i zero_i = _mm512_setzero_si512();
+
+            __m512i sicnificand_bits = _mm512_castpd_si512(sicnificand);
+            sicnificand_bits = exp_diff < zero_i ? sicnificand_bits : sicnificand_bits - (exp_diff << 52);
+            sicnificand = _mm512_castsi512_pd(sicnificand_bits);
+
+            __m512i m1_i = _mm512_set1_epi64(-1);
+            __m512i sicnificand_sum_bits = _mm512_castpd_si512(sicnificand_sum);
+            sicnificand_sum_bits = exp_diff >= zero_i ? sicnificand_sum_bits : sicnificand_sum_bits - ((m1_i * exp_diff) << 52);
+            sicnificand_sum = _mm512_castsi512_pd(sicnificand_sum_bits);
+
+            __m512i p63_i = _mm512_set1_epi64(63);
+            __m512i m63_i = _mm512_set1_epi64(-63);
+            __m512d zero_d = _mm512_setzero_pd();
+            sicnificand_sum = exp_diff < m63_i ? zero_d : sicnificand_sum;
+            sicnificand = exp_diff > p63_i ? zero_d : sicnificand;
+
+            exponent_sum = exp_diff < zero_i ? exponent : exponent_sum;
+
+            //print("double 0 ", vector_in[0]);
+            //print("exponent ", exponent_sum[0]);
+            //print("sicnificand ", sicnificand_sum[0]);
+            //print("double 8 ", vector_in[0]);
+            //print("exponent ", exponent[0]);
+            //print("sicnificand ", sicnificand[0]);
+
+            sicnificand_sum = sicnificand_sum + sicnificand;
+
+            __m512i one_i = _mm512_set1_epi64(1);
+            __m512d half_d = _mm512_set1_pd(0.5);
+            __m512d two_d = _mm512_set1_pd(2.0);
+            exponent_sum = sicnificand_sum >= two_d ? exponent_sum + one_i : exponent_sum;
+            sicnificand_sum = sicnificand_sum >= two_d ? sicnificand_sum * half_d : sicnificand_sum;
+        }
+
+        //for (int i = 0; i < 8; i++) {
+        //    print("double ", vector_in[i]);
+        //    print("exponent ", exponent_sum[i]);
+        //    print("sicnificand ", sicnificand_sum[i]);
+        //}
+
+        floatingExp2Integer::Float64ExtendedExp collector(sicnificand_sum[0], exponent_sum[0]);
+
+        for (int i = 1; i < 8; i++) {
+            floatingExp2Integer::Float64ExtendedExp item(sicnificand_sum[i], exponent_sum[i]);
+            collector += item;
+        }
+
+        //print("exponent ", collector.exponent());
+        //print("sicnificand ", collector.sicnificand());
+        //print("collector.asDouble ", collector.asDouble());
+
+        return collector.encoded;
     }
 
     void Float64ExtendedExp::doubleToFloat64ExtendedExp(double dbl) {
         encode_double(dbl, 0LL);
+    }
+
+    void Float64ExtendedExp::doubleToFloat64ExtendedExp(unsigned int n, const double* vector_in, double* vector_out) {
+        for (unsigned int i = 0; i < n; i++) {
+            uint64_t dbl_bits = std::bit_cast<std::uint64_t>(vector_in[i]);
+            int64_t exponent = ((((dbl_bits & 0x7FF0000000000000ull)) >> 52) - 1023LL);
+            dbl_bits &= 0x800FFFFFFFFFFFFFull;
+            dbl_bits |= 0x3FF0000000000000ull;
+            double sicnificand = std::bit_cast<double>(dbl_bits);
+            vector_out[i] = (double)exponent + (sicnificand - 1.0);
+        }
     }
 
     // void Float64ExtendedExp::log2ToFloat64ExtendedExp(double log2) {
@@ -166,15 +169,34 @@ namespace floatingExp2Integer
         std::int64_t exponent_z;
         z.decode(sicnificand_z, exponent_z);
 
-        // __m128d encoded_2 = { encoded, z.encoded };
-        // uint64_t exponent_2[2];
-        // uint64_t sicnificand_2[2];
+        //****************
 
-        // convert_double_to_uint64(encoded_2, exponent_2, sicnificand_2);
-        // uint64_t exponent = exponent_2[0];
-        // uint64_t exponent_z = exponent_2[1];
-        // uint64_t sicnificand = sicnificand_2[0];
-        // uint64_t sicnificand_z = sicnificand_2[1];
+         //__m128d encoded_2 = { encoded, z.encoded };
+         //uint64_t exponent_2[2];
+         //uint64_t sicnificand_2[2];
+
+         //convert_double_to_uint64(encoded_2, exponent_2, sicnificand_2);
+         //uint64_t exponent = exponent_2[0];
+         //uint64_t exponent_z = exponent_2[1];
+         //uint64_t sicnificand = sicnificand_2[0];
+         //uint64_t sicnificand_z = sicnificand_2[1];
+
+        //****************
+
+        //double sicnificand_d;
+        //std::int64_t exponent;
+        //exponent = (std::int64_t)std::floor(encoded);
+        //sicnificand_d = encoded - exponent + 1.0;
+
+        //double sicnificandZ_d;
+        //std::int64_t exponent_z;
+        //exponent_z = (std::int64_t)std::floor(z.encoded);
+        //sicnificandZ_d = z.encoded - exponent_z + 1.0;
+
+        //std::int64_t sicnificand = std::bit_cast<std::int64_t>(sicnificand_d);
+        //std::int64_t sicnificand_z = std::bit_cast<std::int64_t>(sicnificandZ_d);
+
+        //****************
 
         std::int64_t exp_diff = (std::int64_t)(exponent - exponent_z);
 
@@ -195,6 +217,9 @@ namespace floatingExp2Integer
         
         double sicnificand_d = std::bit_cast<double>(sicnificand);
         double sicnificandZ_d = std::bit_cast<double>(sicnificand_z);
+        
+        //sicnificand_d = std::bit_cast<double>(sicnificand);
+        //sicnificandZ_d = std::bit_cast<double>(sicnificand_z);
 
         sicnificand_d += sicnificandZ_d;
 
@@ -248,6 +273,55 @@ namespace floatingExp2Integer
         encoded = (double)exponent + (sicnificand - 1.0);
     }
 
+    inline void Float64ExtendedExp::convert_double_to_uint64(__m512d encoded_values, __m512i exponent, __m512i sicnificand) {
+        //__m512i dbl_bits = _mm512_castpd_si512(encoded_values);  // Bit-cast double to integer representation
+
+        //__m512i exp_mask = _mm512_set1_epi64(0x7FF0000000000000ull);  // Extract exponent mask
+        //__m512i mant_mask = _mm512_set1_epi64(0x000FFFFFFFFFFFFFull);  // Extract mantissa mask
+        //__m512i bias = _mm512_set1_epi64(1023);
+
+        //__m512i exp_bits = _mm512_and_si512(dbl_bits, exp_mask);
+        //exp_bits = _mm512_srli_epi64(exp_bits, 52);  // Shift exponent into position
+        //__m512i cutter = _mm512_sub_epi64(exp_bits, bias);  // Subtract bias to get true exponent
+
+        //// Extract sign bit to determine negative numbers
+        //__m512i sign_mask = _mm512_set1_epi64(0x8000000000000000ull);
+        //__m512i sign = _mm512_and_si512(dbl_bits, sign_mask);
+
+        //__m512i mantissa = _mm512_and_si512(dbl_bits, mant_mask);
+        //__m512i implicit_bit = _mm512_set1_epi64(0x0010000000000000ull);
+        //__m512i full_mantissa = _mm512_or_si512(mantissa, implicit_bit);  // Restore implicit bit
+
+        //// Compute exponent and sicnificand based on cutter value
+        //__m512i zero = _mm512_setzero_si512();
+        //__m512i i52 = _mm512_set1_epi64(52);
+        //__m512i im1 = _mm512_set1_epi64(-1);
+        //__m512i ip1 = _mm512_set1_epi64(1);
+        //__m512i sign_multiplier = _mm512_mask_blend_epi64(_mm512_cmpeq_epu64_mask(sign, sign_mask), im1, ip1);
+
+        //__m512i shifted_mantissa_left = _mm512_sllv_epi64(full_mantissa, cutter);
+        //__m512i shifted_mantissa_right = _mm512_srlv_epi64(full_mantissa, zero - cutter);
+        //__m512i shifted_mantissa = cutter < zero ? shifted_mantissa_right : shifted_mantissa_left;
+        //shifted_mantissa = _mm512_and_si512(shifted_mantissa, mant_mask);
+
+        //__m512i shifted_exponent = _mm512_srlv_epi64(full_mantissa, i52 - cutter);
+        //shifted_exponent = _mm512_max_epi64(shifted_exponent, zero); // !!! change to _mm_max_epi64
+        //shifted_exponent = shifted_exponent * sign_multiplier;
+
+        //__m512i condition = _mm512_and_si512(_mm512_cmpgt_epi64_mask(shifted_mantissa, _mm512_setzero_si512()), _mm512_cmpeq_epu64_mask(sign, sign_mask));
+        //shifted_exponent = _mm_sub_epi64(shifted_exponent, _mm_and_si128(condition, ip1));
+
+        //__m512i negative_offset = _mm_set1_epi64x(0x0020000000000000ull);
+
+        //shifted_mantissa = _mm512_mask_blend_epi64(_mm512_cmpeq_epu64_mask(sign, sign_mask), negative_offset - shifted_mantissa, shifted_mantissa);
+        //__m512i zero_exp_mask = _mm512_set1_epi64(0x3FF0000000000000ull);
+        //shifted_mantissa = _mm512_or_si512(shifted_mantissa, zero_exp_mask);
+
+        //// Store results
+        //_mm512_storeu_si512(sicnificand, shifted_mantissa);
+        //_mm512_storeu_si512(exponent, shifted_exponent);
+    }
+
     inline void Float64ExtendedExp::convert_double_to_uint64(__m128d encoded_values, uint64_t* exponent, uint64_t* sicnificand) {
         __m128i dbl_bits = _mm_castpd_si128(encoded_values);  // Bit-cast double to integer representation
     
@@ -280,7 +354,7 @@ namespace floatingExp2Integer
         shifted_mantissa = _mm_and_si128(shifted_mantissa, mant_mask);
 
         __m128i shifted_exponent = _mm_srlv_epi64(full_mantissa, i52 - cutter);
-        shifted_exponent = _mm_max_epi32(shifted_exponent, zero); // !!! change to _mm_max_epi64
+        shifted_exponent = _mm_max_epi64(shifted_exponent, zero); // !!! change to _mm_max_epi64
         shifted_exponent = shifted_exponent * sign_multiplier;
     
         __m128i condition = _mm_and_si128(_mm_cmpgt_epi64(shifted_mantissa, _mm_setzero_si128()), _mm_cmpeq_epi64(sign, sign_mask));
@@ -288,19 +362,19 @@ namespace floatingExp2Integer
 
         __m128i negative_offset = _mm_set1_epi64x(0x0020000000000000ull);
 
-        shifted_mantissa = _mm_blendv_epi8(negative_offset - shifted_mantissa, shifted_mantissa, _mm_cmpeq_epi64(sign, sign_mask));
+        shifted_mantissa = _mm_blendv_epi8(shifted_mantissa, negative_offset - shifted_mantissa, _mm_cmpeq_epi64(sign, sign_mask));
         __m128i zero_exp_mask = _mm_set1_epi64x(0x3FF0000000000000ull);
         shifted_mantissa = _mm_or_si128(shifted_mantissa, zero_exp_mask);
     
         // Store results
-        _mm_storeu_si128(reinterpret_cast<__m128i*>(exponent), shifted_exponent);
         _mm_storeu_si128(reinterpret_cast<__m128i*>(sicnificand), shifted_mantissa);
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(exponent), shifted_exponent);
     }
     
 
     inline void Float64ExtendedExp::decode(std::uint64_t& sicnificand, std::int64_t& exponent) {
-        // exponent = (std::int64_t)std::floor(encoded);
-        // sicnificand = encoded - exponent + 1.0;
+        //exponent = (std::int64_t)std::floor(encoded);
+        //sicnificand = encoded - exponent + 1.0;
 
         uint64_t dbl_bits = std::bit_cast<uint64_t>(encoded);
         std::int32_t cutter = ((dbl_bits >> 52) & 0x7FF) - 1023;
@@ -338,6 +412,9 @@ namespace floatingExp2Integer
 
         sicnificand = std::bit_cast<double>(scnfcnd);
         exponent = exp;
+
+        //exponent = (std::int64_t)std::floor(encoded);
+        //sicnificand = encoded - exponent + 1.0;
     }
 
     // Float64ExtendedExp operator+(Float64ExtendedExp a, const Float64ExtendedExp b) { return a+=b; }

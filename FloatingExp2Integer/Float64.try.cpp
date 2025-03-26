@@ -686,7 +686,7 @@ void DoubleToDbl2Values(const std::vector<double>& doubleValues, std::vector<flo
     }
 }
 
-std::int64_t calculate_avg_sequential_sum_Dbl2(std::string& header, int n, int n_rounds, const std::vector<double>& values, double& result) 
+std::int64_t calculate_avg_sequential_sum_Dbl2(std::string& header, unsigned int n, unsigned int n_rounds, const std::vector<double>& values, double& result)
 {
     header = "Dbl2_sequential_sum:";
 
@@ -708,7 +708,7 @@ std::int64_t calculate_array_sum_Dbl1(const std::vector<floatingExp2Integer::Dbl
     return timer.time();
 }
 
-std::int64_t calculate_avg_array_sum_Dbl1(std::string& header, int n, int n_rounds, const std::vector<double>& values, double& result) 
+std::int64_t calculate_avg_array_sum_Dbl1(std::string& header, unsigned int n, unsigned int n_rounds, const std::vector<double>& values, double& result)
 {
     header = "Dbl1_array_sum:";
 
@@ -730,7 +730,7 @@ std::int64_t calculate_array_sum_Dbl2(const std::vector<floatingExp2Integer::Dbl
     return timer.time();
 }
 
-std::int64_t calculate_avg_array_sum_Dbl2(std::string& header, int n, int n_rounds, const std::vector<double>& values, double& result) 
+std::int64_t calculate_avg_array_sum_Dbl2(std::string& header, unsigned int n, unsigned int n_rounds, const std::vector<double>& values, double& result)
 {
     header = "Dbl2_array_sum:";
 
@@ -759,7 +759,7 @@ void DoubleToFloat64PosExp2Int64Values(const std::vector<double>& doubleValues,
     }
 }
 
-std::int64_t calculate_avg_array_sum_Float64PosExp2Int64(std::string& header, int n, int n_rounds, const std::vector<double>& values, double& result) 
+std::int64_t calculate_avg_array_sum_Float64PosExp2Int64(std::string& header, unsigned int n, unsigned int n_rounds, const std::vector<double>& values, double& result)
 {
     header = "Float64PosExp2Int64_array_sum:";
 
@@ -788,7 +788,7 @@ void DoubleToFukushimaValues(const std::vector<double>& doubleValues,
     }
 }
 
-std::int64_t calculate_avg_array_sum_Fukushima(std::string& header, int n, int n_rounds, const std::vector<double>& values, double& result) 
+std::int64_t calculate_avg_array_sum_Fukushima(std::string& header, unsigned int n, unsigned int n_rounds, const std::vector<double>& values, double& result)
 {
     header = "Fukushima_array_sum:";
 
@@ -813,7 +813,7 @@ std::int64_t calculate_sequential_sum_Fukushima(const std::vector<floatingExp2In
     return timer.time();
 }
 
-std::int64_t calculate_avg_sequential_sum_Fukushima(std::string& header, int n, int n_rounds, const std::vector<double>& values, double& result) 
+std::int64_t calculate_avg_sequential_sum_Fukushima(std::string& header, unsigned int n, unsigned int n_rounds, const std::vector<double>& values, double& result)
 {
     header = "Fukushima_sequential_sum:";
 
@@ -827,15 +827,17 @@ std::int64_t calculate_avg_sequential_sum_Fukushima(std::string& header, int n, 
     return time_sum / n_rounds;
 }
 
-std::int64_t calculate_array_sum_Float64ExtendedExp(std::vector<floatingExp2Integer::Float64ExtendedExp>& values, double& result) {
+std::int64_t calculate_array_sum_Float64ExtendedExp(unsigned int n, double* values, double& result) {
     floatingExp2Integer::Timer timer;
     //floatingExp2Integer::Float64ExtendedExp sum(values);
-    floatingExp2Integer::Float64ExtendedExp sum(values[0].asDouble());
-    for (unsigned int i = 1; i < values.size(); i++) {
-        sum += values[i];
-    }
+    floatingExp2Integer::Float64ExtendedExp collector(1.0);
+    double encoded = collector.sumFloat64ExtendedExp(n, values);
+    double sum = collector.decodeFloat64ExtendedExp(encoded);
+    //for (unsigned int i = 1; i < values.size(); i++) {
+    //    sum += values[i];
+    //}
     timer.stop();
-    result = sum.asDouble();
+    result = sum;
     return timer.time();
 }
 
@@ -846,32 +848,36 @@ void DoubleToFloat64ExtendedExpValues(const std::vector<double>& doubleValues,
     }
 }
 
-std::int64_t calculate_avg_array_sum_Float64ExtendedExp(std::string& header, int n, int n_rounds, const std::vector<double>& values, double& result) 
+std::int64_t calculate_avg_array_sum_Float64ExtendedExp(std::string& header, unsigned int n, unsigned int n_rounds, const std::vector<double>& values, double& result)
 {
     header = "Float64ExtendedExp_array_sum:";
 
-    std::vector<floatingExp2Integer::Float64ExtendedExp> values_converted(n);
-    DoubleToFloat64ExtendedExpValues(values, values_converted);
+    floatingExp2Integer::Float64ExtendedExp extendedExp(1.0);
+
+    double* values_converted = new double[n];
+    extendedExp.doubleToFloat64ExtendedExp(n, values.data(), values_converted);
 
     std::int64_t time_sum = 0.0;
     for (unsigned int i = 0; i < n_rounds; i++) {
-        time_sum += calculate_array_sum_Float64ExtendedExp(values_converted, result);
+        time_sum += calculate_array_sum_Float64ExtendedExp(n, values_converted, result);
     }
+
+    delete[] values_converted;
     return time_sum / n_rounds;
 }
 
 int main() {
-    constexpr int n[] = { 1000, 3000, 10000, 30000, 100000, 300000, 1000000, 3000000, 10000000, 30000000, 100000000 };
-    constexpr int n_rounds[] = { 100000, 30000, 10000, 3000, 1000, 300, 100, 30, 10, 3, 1 };
+    constexpr unsigned int n[] = { 1000, 3000, 10000, 30000, 100000, 300000, 1000000, 3000000, 10000000, 30000000, 100000000 };
+    constexpr unsigned int n_rounds[] = { 100000, 30000, 10000, 3000, 1000, 300, 100, 30, 10, 3, 1 };
     constexpr unsigned int n_count = sizeof(n) / sizeof(n[0]);
 
     std::vector<std::function<std::int64_t(std::string&, int, int, const std::vector<double>&, double&)>> functions;
-    // functions.push_back(calculate_avg_sequential_sum_Dbl1);
-    // functions.push_back(calculate_avg_sequential_sum_Dbl2);
-    // functions.push_back(calculate_avg_sequential_sum_Fukushima);
-    // functions.push_back(calculate_avg_array_sum_Dbl1);
-    // functions.push_back(calculate_avg_array_sum_Dbl2);
-    // functions.push_back(calculate_avg_array_sum_Float64PosExp2Int64);
+    //functions.push_back(calculate_avg_sequential_sum_Dbl1);
+    //functions.push_back(calculate_avg_sequential_sum_Dbl2);
+    //functions.push_back(calculate_avg_sequential_sum_Fukushima);
+    //functions.push_back(calculate_avg_array_sum_Dbl1);
+    //functions.push_back(calculate_avg_array_sum_Dbl2);
+    //functions.push_back(calculate_avg_array_sum_Float64PosExp2Int64);
     //functions.push_back(calculate_avg_array_sum_Fukushima);
     functions.push_back(calculate_avg_array_sum_Float64ExtendedExp);
 

@@ -60,59 +60,59 @@ namespace floatingExp2Integer
         for (i = 8; i + 7 < vector.size(); i+=8) {
             for (int k = 0; k < 4; k++) {
                 bs1[k] = vector[i + k].scnfcnd;
-                // be1[k] = vector[i + k].exp;
+                be1[k] = vector[i + k].exp;
                 bs2[k] = vector[i + k + 4].scnfcnd;
-                // be2[k] = vector[i + k + 4].exp;
+                be2[k] = vector[i + k + 4].exp;
             }
 
-            // __m256i exp_diff1 = ae1 - be1;
-            // __m256i exp_diff2 = ae2 - be2;
+             __m256i exp_diff1 = ae1 - be1;
+             __m256i exp_diff2 = ae2 - be2;
 
-            // ae1 = exp_diff1 < zerosi_4 ? be1 : ae1;
-            // ae2 = exp_diff2 < zerosi_4 ? be2 : ae2;
+             ae1 = exp_diff1 < zerosi_4 ? be1 : ae1;
+             ae2 = exp_diff2 < zerosi_4 ? be2 : ae2;
 
-            // bs1 = exp_diff1 == plus1i_4 ? bs1 * BIGI_4 : bs1;
-            // as1 = exp_diff1 == minus1i_4 ? as1 * BIGI_4 : as1;
-            // bs1 = exp_diff1 > plus1i_4 ? zerosd_4 : bs1;
-            // as1 = exp_diff1 < minus1i_4 ? zerosd_4 : as1;
+             bs1 = exp_diff1 == plus1i_4 ? bs1 * BIGI_4 : bs1;
+             as1 = exp_diff1 == minus1i_4 ? as1 * BIGI_4 : as1;
+             bs1 = exp_diff1 > plus1i_4 ? zerosd_4 : bs1;
+             as1 = exp_diff1 < minus1i_4 ? zerosd_4 : as1;
 
-            // bs2 = exp_diff2 == plus1i_4 ? bs2 * BIGI_4 : bs2;
-            // as2 = exp_diff2 == minus1i_4 ? as2 * BIGI_4 : as2;
-            // bs2 = exp_diff2 > plus1i_4 ? zerosd_4 : bs2;
-            // as2 = exp_diff2 < minus1i_4 ? zerosd_4 : as2;
+             bs2 = exp_diff2 == plus1i_4 ? bs2 * BIGI_4 : bs2;
+             as2 = exp_diff2 == minus1i_4 ? as2 * BIGI_4 : as2;
+             bs2 = exp_diff2 > plus1i_4 ? zerosd_4 : bs2;
+             as2 = exp_diff2 < minus1i_4 ? zerosd_4 : as2;
 
-    // // Integer comparisons (producing masks for blending)
-    // __m256i mask_eq_plus1i_1 = _mm256_cmpeq_epi64(exp_diff1, plus1i_4);
-    // __m256i mask_eq_minus1i_1 = _mm256_cmpeq_epi64(exp_diff1, minus1i_4);
-    // __m256i mask_gt_plus1i_1 = _mm256_cmpgt_epi64(exp_diff1, plus1i_4);
-    // __m256i mask_lt_minus1i_1 = _mm256_cmpgt_epi64(minus1i_4, exp_diff1); // (A < B) == (B > A)
+     // Integer comparisons (producing masks for blending)
+     __m256i mask_eq_plus1i_1 = _mm256_cmpeq_epi64(exp_diff1, plus1i_4);
+     __m256i mask_eq_minus1i_1 = _mm256_cmpeq_epi64(exp_diff1, minus1i_4);
+     __m256i mask_gt_plus1i_1 = _mm256_cmpgt_epi64(exp_diff1, plus1i_4);
+     __m256i mask_lt_minus1i_1 = _mm256_cmpgt_epi64(minus1i_4, exp_diff1); // (A < B) == (B > A)
 
-    // __m256i mask_eq_plus1i_2 = _mm256_cmpeq_epi64(exp_diff2, plus1i_4);
-    // __m256i mask_eq_minus1i_2 = _mm256_cmpeq_epi64(exp_diff2, minus1i_4);
-    // __m256i mask_gt_plus1i_2 = _mm256_cmpgt_epi64(exp_diff2, plus1i_4);
-    // __m256i mask_lt_minus1i_2 = _mm256_cmpgt_epi64(minus1i_4, exp_diff2); // (A < B) == (B > A)
+     __m256i mask_eq_plus1i_2 = _mm256_cmpeq_epi64(exp_diff2, plus1i_4);
+     __m256i mask_eq_minus1i_2 = _mm256_cmpeq_epi64(exp_diff2, minus1i_4);
+     __m256i mask_gt_plus1i_2 = _mm256_cmpgt_epi64(exp_diff2, plus1i_4);
+     __m256i mask_lt_minus1i_2 = _mm256_cmpgt_epi64(minus1i_4, exp_diff2); // (A < B) == (B > A)
 
-    // // Convert integer masks to double masks for blending
-    // __m256d mask_eq_plus1i_1_d = _mm256_castsi256_pd(mask_eq_plus1i_1);
-    // __m256d mask_eq_minus1i_1_d = _mm256_castsi256_pd(mask_eq_minus1i_1);
-    // __m256d mask_gt_plus1i_1_d = _mm256_castsi256_pd(mask_gt_plus1i_1);
-    // __m256d mask_lt_minus1i_1_d = _mm256_castsi256_pd(mask_lt_minus1i_1);
+     // Convert integer masks to double masks for blending
+     __m256d mask_eq_plus1i_1_d = _mm256_castsi256_pd(mask_eq_plus1i_1);
+     __m256d mask_eq_minus1i_1_d = _mm256_castsi256_pd(mask_eq_minus1i_1);
+     __m256d mask_gt_plus1i_1_d = _mm256_castsi256_pd(mask_gt_plus1i_1);
+     __m256d mask_lt_minus1i_1_d = _mm256_castsi256_pd(mask_lt_minus1i_1);
 
-    // __m256d mask_eq_plus1i_2_d = _mm256_castsi256_pd(mask_eq_plus1i_2);
-    // __m256d mask_eq_minus1i_2_d = _mm256_castsi256_pd(mask_eq_minus1i_2);
-    // __m256d mask_gt_plus1i_2_d = _mm256_castsi256_pd(mask_gt_plus1i_2);
-    // __m256d mask_lt_minus1i_2_d = _mm256_castsi256_pd(mask_lt_minus1i_2);
+     __m256d mask_eq_plus1i_2_d = _mm256_castsi256_pd(mask_eq_plus1i_2);
+     __m256d mask_eq_minus1i_2_d = _mm256_castsi256_pd(mask_eq_minus1i_2);
+     __m256d mask_gt_plus1i_2_d = _mm256_castsi256_pd(mask_gt_plus1i_2);
+     __m256d mask_lt_minus1i_2_d = _mm256_castsi256_pd(mask_lt_minus1i_2);
 
-    // // Use masked blend to avoid branches
-    // bs1 = _mm256_blendv_pd(bs1, _mm256_mul_pd(bs1, BIGI_4), mask_eq_plus1i_1_d);
-    // as1 = _mm256_blendv_pd(as1, _mm256_mul_pd(as1, BIGI_4), mask_eq_minus1i_1_d);
-    // bs1 = _mm256_blendv_pd(bs1, zerosd_4, mask_gt_plus1i_1_d);
-    // as1 = _mm256_blendv_pd(as1, zerosd_4, mask_lt_minus1i_1_d);
+     // Use masked blend to avoid branches
+     bs1 = _mm256_blendv_pd(bs1, _mm256_mul_pd(bs1, BIGI_4), mask_eq_plus1i_1_d);
+     as1 = _mm256_blendv_pd(as1, _mm256_mul_pd(as1, BIGI_4), mask_eq_minus1i_1_d);
+     bs1 = _mm256_blendv_pd(bs1, zerosd_4, mask_gt_plus1i_1_d);
+     as1 = _mm256_blendv_pd(as1, zerosd_4, mask_lt_minus1i_1_d);
 
-    // bs2 = _mm256_blendv_pd(bs2, _mm256_mul_pd(bs2, BIGI_4), mask_eq_plus1i_2_d);
-    // as2 = _mm256_blendv_pd(as2, _mm256_mul_pd(as2, BIGI_4), mask_eq_minus1i_2_d);
-    // bs2 = _mm256_blendv_pd(bs2, zerosd_4, mask_gt_plus1i_2_d);
-    // as2 = _mm256_blendv_pd(as2, zerosd_4, mask_lt_minus1i_2_d);
+     bs2 = _mm256_blendv_pd(bs2, _mm256_mul_pd(bs2, BIGI_4), mask_eq_plus1i_2_d);
+     as2 = _mm256_blendv_pd(as2, _mm256_mul_pd(as2, BIGI_4), mask_eq_minus1i_2_d);
+     bs2 = _mm256_blendv_pd(bs2, zerosd_4, mask_gt_plus1i_2_d);
+     as2 = _mm256_blendv_pd(as2, zerosd_4, mask_lt_minus1i_2_d);
 
             as1 += bs1;
             as2 += bs2;
