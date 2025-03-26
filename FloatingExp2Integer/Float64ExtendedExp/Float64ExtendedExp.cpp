@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <cmath>
+#include <bit>
 #include <vector>
 #include <cstring>
 #include <immintrin.h>
@@ -19,18 +20,18 @@ constexpr double4_t double4_0 { 0.0, 0.0, 0.0, 0.0 };
 namespace floatingExp2Integer
 {
     Float64ExtendedExp::Float64ExtendedExp() {
-        this->encode_double(1.0, 0LL);
+        encode_double(1.0, 0LL);
     }
 
     Float64ExtendedExp::Float64ExtendedExp(double dbl) {
-        this->encode_double(dbl, 0LL);
+        encode_double(dbl, 0LL);
     }
 
     // Float64ExtendedExp::Float64ExtendedExp(double sicnificand, std::int64_t exponent) {
     //     this->scale(sicnificand, exponent);
     // }
 
-    // Float64ExtendedExp::Float64ExtendedExp(std::vector<floatingExp2Integer::Float64ExtendedExp>& vector) {
+    Float64ExtendedExp::Float64ExtendedExp(const std::vector<floatingExp2Integer::Float64ExtendedExp>& vector) {
     //     // if (vector.size() < 4 * 2) {
     //     //     Float64ExtendedExp a(vector[0].encoded);
     //     //     for (unsigned int i = 0; i < vector.size(); i++) {
@@ -116,10 +117,10 @@ namespace floatingExp2Integer
     //     // }
 
     //     // encoded = a1.encoded;
-    // }
+    }
 
     void Float64ExtendedExp::doubleToFloat64ExtendedExp(double dbl) {
-        this->encode_double(dbl, 0LL);
+        encode_double(dbl, 0LL);
     }
 
     // void Float64ExtendedExp::log2ToFloat64ExtendedExp(double log2) {
@@ -137,21 +138,22 @@ namespace floatingExp2Integer
     double Float64ExtendedExp::sicnificand() {
         std::int64_t exponent;
         double sicnificand;
-        this->decode_double(sicnificand, exponent);        
-        return sicnificand; 
+        decode_double(sicnificand, exponent); 
+        double sicnificand_return = sicnificand;
+        return sicnificand_return; 
     }
 
     std::int64_t Float64ExtendedExp::exponent() {
         std::int64_t exponent;
         double sicnificand;
-        this->decode_double(sicnificand, exponent);
+        decode_double(sicnificand, exponent);
         return exponent;
     }
 
-    double Float64ExtendedExp::asDouble() const {
+    double Float64ExtendedExp::asDouble() {
         std::int64_t exponent;
         double sicnificand;
-        this->decode_double(sicnificand, exponent);
+        decode_double(sicnificand, exponent);
         return sicnificand * std::pow(2.0, (int)exponent);
     }
 
@@ -160,9 +162,15 @@ namespace floatingExp2Integer
         std::int64_t exponent;
         decode(sicnificand, exponent);
 
+        // print("***", 0.0);
+        // print("sicnificand_d ", sicnificand_d);
+        // print("exponent ", exponent);
+
         std::uint64_t sicnificandZ;
         std::int64_t exponentZ;
         z.decode(sicnificandZ, exponentZ);
+        // print("sicnificandZ_d ", sicnificandZ_d);
+        // print("exponentZ ", exponentZ);
 
         std::int64_t exp_diff = (std::int64_t)(exponent - exponentZ);
 
@@ -170,24 +178,32 @@ namespace floatingExp2Integer
             if (exp_diff > 63) {
                 return *this;
             }
-            sicnificandZ = sicnificandZ >> exp_diff;
+            sicnificandZ -= exp_diff << 52;
         }
         else if (exp_diff < 0){
             if (exp_diff < -63) {
                 encoded = z.encoded;
                 return *this;
             }
-            sicnificand = sicnificand >> (-exp_diff);
+            sicnificand += exp_diff << 52;
             exponent = exponentZ;
         }
+        
+        double sicnificand_d = std::bit_cast<double>(sicnificand);
+        double sicnificandZ_d = std::bit_cast<double>(sicnificandZ);
+        // print("sicnificand_d ", sicnificand_d);
+        // print("exponent ", exponent);
+        // print("sicnificandZ_d ", sicnificandZ_d);
+        // print("exponentZ ", exponentZ);
 
-        sicnificand += sicnificandZ;
-        if (sicnificand >= 0x8000000000000000) {
-            sicnificand = sicnificand >> 1;
+        sicnificand_d += sicnificandZ_d;
+
+        if (sicnificand_d >= 2.0) {
+            sicnificand_d *= 0.5;
             exponent++;
         }
 
-        encode(sicnificand, exponent);
+        encode(sicnificand_d, exponent);
         return *this;
     }
 
@@ -224,88 +240,73 @@ namespace floatingExp2Integer
         std::cout << message << value << std::endl;
     }
 
-    inline void Float64ExtendedExp::encode(std::uint64_t sgnfcnd_bits, std::int64_t exponent) {
-        uint64_t sign_of_exponent = 0x0ULL;
-        //print("exponent: ", exponent);
-        if (exponent < 0) {
-            exponent = -1 * exponent;
-            sign_of_exponent = 0x8000000000000000ULL;
+    void Float64ExtendedExp::print(std::string message, double value) const {        
+        std::cout << message << value << std::endl;
+    }
+
+    inline void Float64ExtendedExp::encode(double sicnificand, std::int64_t exponent) {
+        encoded = (double)exponent + (sicnificand - 1.0);
+    }
+
+    inline void Float64ExtendedExp::decode(std::uint64_t& sicnificand, std::int64_t& exponent) {
+        // exponent = (std::int64_t)std::floor(encoded);
+        // sicnificand = encoded - exponent + 1.0;
+
+        uint64_t dbl_bits = std::bit_cast<uint64_t>(encoded);
+
+        std::int32_t cutter = ((dbl_bits >> 52) & 0x7FF) - 1023;
+
+        if (cutter >= 0) {
+            exponent = ((std::int64_t)((dbl_bits & 0x000FFFFFFFFFFFFFull) | 0x0010000000000000ull) >> (52-cutter)) * ((dbl_bits & 0x8000000000000000ull) > 0 ? -1LL :1LL);
+            sicnificand = (dbl_bits << cutter) & 0x000FFFFFFFFFFFFFull;
         }
-        //print("exponent: ", exponent);
-
-        std::uint32_t length_of_exponent = 70 - __builtin_clzll(exponent);
-
-        uint64_t return_bits = 0x0ULL;
-        return_bits |= exponent << 6;
-        //printBinary("", return_bits);
-
-        return_bits |= sign_of_exponent;
-        //printBinary("", return_bits);
-        
-        //print("length_of_exponent: ", length_of_exponent);
-        return_bits |= length_of_exponent;
-        //printBinary("", return_bits);
-        
-        sgnfcnd_bits &= 0xFFFFFFFFFFFFFFC0ull << length_of_exponent;
-        //printBinary("", sgnfcnd_bits);
-
-        return_bits |= sgnfcnd_bits;
-        //printBinary("return_bits: ", return_bits);
-
-        encoded = return_bits;
-    }
-
-    inline void Float64ExtendedExp::decode(std::uint64_t& significand_bits, std::int64_t& exponent) const {
-        //printBinary("decode", encoded);
-        // __m256i encoded_4 = _mm256_set1_epi64x(encoded);
-        // __m256i mask_4 = _mm256_set_epi64x(
-        //     0ULL,
-        //     0x7FFFFFFFFFFFFFFFull,
-        //     0x3FULL,
-        //     0x8000000000000000ULL
-        // );
-        // __m256i result = _mm256_and_si256(encoded_4, mask_4);
-
-        uint64_t sign_of_exponent = encoded & 0x8000000000000000ULL;
-        uint32_t separator_location = encoded & 0x3FULL;
-        uint64_t temp = encoded & 0x7FFFFFFFFFFFFFFFull;
-        uint64_t cut_mirror = 0xFFFFFFFFFFFFFFC0ull << separator_location;
-        //print("separator_location: ", separator_location);
-        exponent = (encoded & (~cut_mirror)) >> 6;
-        if (sign_of_exponent != 0) {
-            exponent = -1 * exponent;
+        else {
+            exponent = 0;
+            sicnificand = ((dbl_bits & 0x000FFFFFFFFFFFFFull) | 0x0010000000000000ull) >> (-1*cutter);
         }
-        //print("exponent: ", exponent);
-        significand_bits = temp & cut_mirror;
-        //printBinary("decoded_significand", significand_bits);
+        if (encoded < 0.0 && sicnificand > 0ULL) {
+            exponent -= 1;
+        }
+
+        sicnificand = (encoded < 0 ? (0x0020000000000000ull - sicnificand) : sicnificand) | 0x3FF0000000000000ull;
+
+        // sicnificand = encoded - exponent + 1.0;
+
+
+        // print("Float64ExtendedExp::decode ", encoded);
+        // printBinary("dbl_bits ", dbl_bits);
+        // print("cutter ", (std::int64_t)cutter);
+        // printBinary("sicnificand : ", sicnificand);
+        // double dbl = std::bit_cast<double>(sicnificand);
+        // print("sicnificand as dbl : ", dbl);
+        // print("exponent : ", exponent);
     }
 
-    inline void Float64ExtendedExp::encode_double(double sicnificand, std::int64_t exponent) {
-        //std::cout << "Double: " << sicnificand << std::endl;
-        uint64_t sgnfcnd_bits = *reinterpret_cast<std::uint64_t*>(&sicnificand);
-        exponent += ((((sgnfcnd_bits & 0x7FF0000000000000ull)) >> 52) - 1023LL);
-        //print("Double: exponent: ", exponent);
-        //printBinary("original_significand", sgnfcnd_bits);
-        sgnfcnd_bits &= 0x000FFFFFFFFFFFFFull; // significand sign is forced to zero
-        sgnfcnd_bits = sgnfcnd_bits << 10;
-        sgnfcnd_bits |= 0x4000000000000000ull;
-        //printBinary("sgnfcnd_bits_to_encode:", sgnfcnd_bits);
+    inline void Float64ExtendedExp::encode_double(double dbl, std::int64_t exponent) {
+        uint64_t* dbl_bits = reinterpret_cast<std::uint64_t*>(&dbl);
+        exponent += ((((*dbl_bits & 0x7FF0000000000000ull)) >> 52) - 1023LL);
+        *dbl_bits &= 0x800FFFFFFFFFFFFFull;
+        *dbl_bits |= 0x3FF0000000000000ull;
 
-        encode(sgnfcnd_bits, exponent);
-        //printBinary("encoded_bits:", encoded);
+        encode(dbl, exponent);
+
+
+        // double sicnificand;
+        // decode_double(sicnificand, exponent);        
     }
 
-    inline void Float64ExtendedExp::decode_double(double& sicnificand, std::int64_t& exponent) const {
-        uint64_t sgnfcnd_bits;
-        //printBinary("bits to Decode: ", encoded);
-        decode(sgnfcnd_bits, exponent);
-        sgnfcnd_bits &= 0x3FFFFFFFFFFFFFFFull;
-        sgnfcnd_bits = sgnfcnd_bits >> 10;
-        sgnfcnd_bits |= 0x3FF0000000000000ull;
-        uint64_t print2 = sgnfcnd_bits;
-        //printBinary("sgnfcnd_bits_before_return: ", print2);
-        sicnificand = *reinterpret_cast<double*>(&sgnfcnd_bits);
-        //std::cout << "Double (decode_double): " << sicnificand << std::endl;
+    inline void Float64ExtendedExp::decode_double(double& sicnificand, std::int64_t& exponent) {
+        std::uint64_t scnfcnd;
+        std::int64_t exp;
+        decode(scnfcnd, exp);
+
+        sicnificand = std::bit_cast<double>(scnfcnd);
+        exponent = exp;
+
+
+        // print("sicnificand : ", sicnificand);
+        // print("exponent : ", exponent);
+        // print("result: ", sicnificand * std::pow(2.0, (int)exponent));
     }
 
     // Float64ExtendedExp operator+(Float64ExtendedExp a, const Float64ExtendedExp b) { return a+=b; }
