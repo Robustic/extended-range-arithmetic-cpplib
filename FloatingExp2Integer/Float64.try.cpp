@@ -1,4 +1,5 @@
 #include <iostream>
+#include <limits>
 #include <functional>
 #include <vector>
 #include <immintrin.h>
@@ -905,6 +906,8 @@ int main() {
         }
 
     }
+
+    std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 1);
 
     std::cout << std::endl << "Result" << std::endl << "n ";
     for (unsigned int i = 0; i < n_count; i++) {
