@@ -573,10 +573,10 @@ void loop(int n, double results[], std::int64_t time[]) {
 void InitializeRandomNumbers(std::vector<double>& vec) {
     std::mt19937 rng;
     rng.seed(seed_val);
-    std::uniform_real_distribution<float> unif(std::log2(1e-11), std::log2(1e-10));
+    std::uniform_real_distribution<double> unif(std::log2(1e-11), std::log2(1e-10));
     for (unsigned int i = 0; i < vec.size(); i++) {
-        float a_random_float = unif(rng);
-        vec[i] = (double)std::exp2f(a_random_float);
+        float a_random_doable = unif(rng);
+        vec[i] = std::exp2f(a_random_doable);
     }
 }
 
