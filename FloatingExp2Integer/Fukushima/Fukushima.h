@@ -8,11 +8,11 @@ namespace floatingExp2Integer
     class Fukushima {
         private:
             double scnfcnd;
-            std::int64_t exp;
             inline void xnorm();
             // Float64ExtendedExp(double sicnificand, std::int64_t exponent);
             // inline void checkRuleForScale();
         public:
+            std::int64_t exp;
             Fukushima();
             Fukushima(double dbl);
             Fukushima(double dbl, std::int64_t exponent);

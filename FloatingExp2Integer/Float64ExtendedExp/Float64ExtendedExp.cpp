@@ -43,16 +43,26 @@ namespace floatingExp2Integer
         __m512d integer_decimals = _mm512_floor_pd(encoded_values);
         __m512i exponent_sum = _mm512_cvtpd_epi64(integer_decimals);
         __m512d one_d = _mm512_set1_pd(1.0);
+        __m512d two_d = _mm512_set1_pd(2.0);
+        __m512i one_i = _mm512_set1_epi64(1);
+        __m512d half_d = _mm512_set1_pd(0.5);
+        __m512d zero_d = _mm512_setzero_pd();
         __m512d sicnificand_sum = encoded_values - integer_decimals + one_d;
 
         //convert_double_to_uint64(encoded_values, exponent, sicnificand);
 
-        for (int i = 8; i + 7 < n; i += 8) {
+        for (unsigned int i = 8; i + 7 < n; i += 8) {
+            //unsigned int k = sicnificand_sum[0] > 1000000000.0 ? i - 1 : i;
             encoded_values = _mm512_loadu_pd(&vector_in[i]);
 
             integer_decimals = _mm512_floor_pd(encoded_values);
-            __m512i exponent = _mm512_cvtpd_epi64(integer_decimals);
+            __m512i exponent = _mm512_cvttpd_epi64(integer_decimals);
             __m512d sicnificand = encoded_values - integer_decimals + one_d;
+
+            //__m512i exponent = _mm512_cvttpd_epi64(encoded_values); // function truncatei: round towards zero
+            //__m512d sicnificand = encoded_values - _mm512_cvtepi64_pd(exponent);
+            //exponent = sicnificand < zero_d ? exponent - one_i : exponent;
+            //sicnificand = sicnificand < zero_d ? sicnificand + two_d : sicnificand + one_d;
 
             __m512i exp_diff = exponent_sum - exponent;
 
@@ -69,7 +79,6 @@ namespace floatingExp2Integer
 
             __m512i p63_i = _mm512_set1_epi64(63);
             __m512i m63_i = _mm512_set1_epi64(-63);
-            __m512d zero_d = _mm512_setzero_pd();
             sicnificand_sum = exp_diff < m63_i ? zero_d : sicnificand_sum;
             sicnificand = exp_diff > p63_i ? zero_d : sicnificand;
 
@@ -84,9 +93,6 @@ namespace floatingExp2Integer
 
             sicnificand_sum = sicnificand_sum + sicnificand;
 
-            __m512i one_i = _mm512_set1_epi64(1);
-            __m512d half_d = _mm512_set1_pd(0.5);
-            __m512d two_d = _mm512_set1_pd(2.0);
             exponent_sum = sicnificand_sum >= two_d ? exponent_sum + one_i : exponent_sum;
             sicnificand_sum = sicnificand_sum >= two_d ? sicnificand_sum * half_d : sicnificand_sum;
         }
@@ -113,6 +119,13 @@ namespace floatingExp2Integer
 
     void Float64ExtendedExp::doubleToFloat64ExtendedExp(double dbl) {
         encode_double(dbl, 0LL);
+    }
+
+    void Float64ExtendedExp::encodedToFloat64ExtendedExp(double dbl) {
+        encoded = dbl;
+        double floored = std::floor(dbl);
+        exp = (std::int64_t)floored;
+        scnfcnd = dbl - floored + 1.0;
     }
 
     void Float64ExtendedExp::doubleToFloat64ExtendedExp(unsigned int n, const double* vector_in, double* vector_out) {
@@ -160,14 +173,127 @@ namespace floatingExp2Integer
         return sicnificand * std::pow(2.0, (int)exponent);
     }
 
+    Float64ExtendedExp& Float64ExtendedExp::operator+=(double z_encoded) {
+        //std::uint64_t sicnificand;
+        //std::int64_t exponent;
+        //decode(sicnificand, exponent);
+
+        //std::uint64_t sicnificand_z;
+        //std::int64_t exponent_z;
+        //decode(sicnificand_z, exponent_z, z_encoded);
+
+        //****************
+
+        //std::int64_t exponent_z = (std::int64_t)std::floor(z_encoded);
+        //double sicnificandZ_d = z_encoded - exponent_z + 1.0;
+
+        //std::int64_t exponent_z = (std::int64_t)z_encoded;
+        //double sicnificandZ_d = z_encoded - exponent_z;
+
+        //if (sicnificandZ_d < 0.0) {
+        //    exponent_z -= 1LL;
+        //    sicnificandZ_d += 2.0;
+        //}
+        //else
+        //{
+        //    sicnificandZ_d += 1.0;
+        //}
+
+        std::int64_t exponent_z = (std::int64_t)z_encoded - 1;
+        double sicnificandZ_d = z_encoded - exponent_z;
+
+        if (sicnificandZ_d >= 1.0) {
+            exponent_z += 1LL;
+            sicnificandZ_d -= 1.0;
+        }
+
+        //****************
+
+         //__m128d encoded_2 = { encoded, z.encoded };
+         //uint64_t exponent_2[2];
+         //uint64_t sicnificand_2[2];
+
+         //convert_double_to_uint64(encoded_2, exponent_2, sicnificand_2);
+         //uint64_t exponent = exponent_2[0];
+         //uint64_t exponent_z = exponent_2[1];
+         //uint64_t sicnificand = sicnificand_2[0];
+         //uint64_t sicnificand_z = sicnificand_2[1];
+
+        //****************
+
+        double sicnificand_d = scnfcnd;
+        std::int64_t exponent = exp;
+
+        //if (encoded + z_encoded >= 1.79769e+100) {
+        //    sicnificand_d = 1000000;
+        //    exponent = 10000000;
+        //    z_encoded = 23453253;
+        //}
+
+        //double sicnificand_d;
+        //std::int64_t exponent;
+        //double floored_1 = std::floor(encoded);
+        //exponent = (std::int64_t)floored_1;
+        //sicnificand_d = encoded - floored_1 + 1.0;
+
+        //double sicnificandZ_d;
+        //std::int64_t exponent_z;
+        //double floored_2 = std::floor(z_encoded);
+        //exponent_z = (std::int64_t)floored_2;
+        //sicnificandZ_d = z_encoded - floored_2 + 1.0;
+
+        std::int64_t sicnificand = std::bit_cast<std::int64_t>(sicnificand_d);
+        std::int64_t sicnificand_z = std::bit_cast<std::int64_t>(sicnificandZ_d);
+
+        //****************
+
+        std::int64_t exp_diff = (std::int64_t)(exponent - exponent_z);
+
+        if (exp_diff > 0) {
+            if (exp_diff > 63) {
+                return *this;
+            }
+            sicnificand_z -= exp_diff << 52;
+        }
+        else if (exp_diff < 0) {
+            if (exp_diff < -63) {
+                encoded = z_encoded;
+                double sicnificandZ_d = std::bit_cast<double>(sicnificand_z);
+                scnfcnd = sicnificandZ_d;
+                exp = exponent_z;
+                return *this;
+            }
+            sicnificand += exp_diff << 52;
+            exponent = exponent_z;
+        }
+
+        sicnificand_d = std::bit_cast<double>(sicnificand);
+        sicnificandZ_d = std::bit_cast<double>(sicnificand_z);
+
+        //sicnificand_d = std::bit_cast<double>(sicnificand);
+        //sicnificandZ_d = std::bit_cast<double>(sicnificand_z);
+
+        sicnificand_d += sicnificandZ_d;
+
+        if (sicnificand_d >= 2.0) {
+            sicnificand_d *= 0.5;
+            exponent++;
+        }
+
+        encode(sicnificand_d, exponent);
+        scnfcnd = sicnificand_d;
+        exp = exponent;
+        return *this;
+    }
+
     Float64ExtendedExp& Float64ExtendedExp::operator+=(Float64ExtendedExp z) {
         std::uint64_t sicnificand;
         std::int64_t exponent;
-        decode(sicnificand, exponent);
+        decode(sicnificand, exponent, 0.0);
 
         std::uint64_t sicnificand_z;
         std::int64_t exponent_z;
-        z.decode(sicnificand_z, exponent_z);
+        z.decode(sicnificand_z, exponent_z, 0.0);
 
         //****************
 
@@ -273,110 +399,13 @@ namespace floatingExp2Integer
         encoded = (double)exponent + (sicnificand - 1.0);
     }
 
-    inline void Float64ExtendedExp::convert_double_to_uint64(__m512d encoded_values, __m512i exponent, __m512i sicnificand) {
-        //__m512i dbl_bits = _mm512_castpd_si512(encoded_values);  // Bit-cast double to integer representation
-
-        //__m512i exp_mask = _mm512_set1_epi64(0x7FF0000000000000ull);  // Extract exponent mask
-        //__m512i mant_mask = _mm512_set1_epi64(0x000FFFFFFFFFFFFFull);  // Extract mantissa mask
-        //__m512i bias = _mm512_set1_epi64(1023);
-
-        //__m512i exp_bits = _mm512_and_si512(dbl_bits, exp_mask);
-        //exp_bits = _mm512_srli_epi64(exp_bits, 52);  // Shift exponent into position
-        //__m512i cutter = _mm512_sub_epi64(exp_bits, bias);  // Subtract bias to get true exponent
-
-        //// Extract sign bit to determine negative numbers
-        //__m512i sign_mask = _mm512_set1_epi64(0x8000000000000000ull);
-        //__m512i sign = _mm512_and_si512(dbl_bits, sign_mask);
-
-        //__m512i mantissa = _mm512_and_si512(dbl_bits, mant_mask);
-        //__m512i implicit_bit = _mm512_set1_epi64(0x0010000000000000ull);
-        //__m512i full_mantissa = _mm512_or_si512(mantissa, implicit_bit);  // Restore implicit bit
-
-        //// Compute exponent and sicnificand based on cutter value
-        //__m512i zero = _mm512_setzero_si512();
-        //__m512i i52 = _mm512_set1_epi64(52);
-        //__m512i im1 = _mm512_set1_epi64(-1);
-        //__m512i ip1 = _mm512_set1_epi64(1);
-        //__m512i sign_multiplier = _mm512_mask_blend_epi64(_mm512_cmpeq_epu64_mask(sign, sign_mask), im1, ip1);
-
-        //__m512i shifted_mantissa_left = _mm512_sllv_epi64(full_mantissa, cutter);
-        //__m512i shifted_mantissa_right = _mm512_srlv_epi64(full_mantissa, zero - cutter);
-        //__m512i shifted_mantissa = cutter < zero ? shifted_mantissa_right : shifted_mantissa_left;
-        //shifted_mantissa = _mm512_and_si512(shifted_mantissa, mant_mask);
-
-        //__m512i shifted_exponent = _mm512_srlv_epi64(full_mantissa, i52 - cutter);
-        //shifted_exponent = _mm512_max_epi64(shifted_exponent, zero); // !!! change to _mm_max_epi64
-        //shifted_exponent = shifted_exponent * sign_multiplier;
-
-        //__m512i condition = _mm512_and_si512(_mm512_cmpgt_epi64_mask(shifted_mantissa, _mm512_setzero_si512()), _mm512_cmpeq_epu64_mask(sign, sign_mask));
-        //shifted_exponent = _mm_sub_epi64(shifted_exponent, _mm_and_si128(condition, ip1));
-
-        //__m512i negative_offset = _mm_set1_epi64x(0x0020000000000000ull);
-
-        //shifted_mantissa = _mm512_mask_blend_epi64(_mm512_cmpeq_epu64_mask(sign, sign_mask), negative_offset - shifted_mantissa, shifted_mantissa);
-        //__m512i zero_exp_mask = _mm512_set1_epi64(0x3FF0000000000000ull);
-        //shifted_mantissa = _mm512_or_si512(shifted_mantissa, zero_exp_mask);
-
-        //// Store results
-        //_mm512_storeu_si512(sicnificand, shifted_mantissa);
-        //_mm512_storeu_si512(exponent, shifted_exponent);
-    }
-
-    inline void Float64ExtendedExp::convert_double_to_uint64(__m128d encoded_values, uint64_t* exponent, uint64_t* sicnificand) {
-        __m128i dbl_bits = _mm_castpd_si128(encoded_values);  // Bit-cast double to integer representation
-    
-        __m128i exp_mask = _mm_set1_epi64x(0x7FF0000000000000ull);  // Extract exponent mask
-        __m128i mant_mask = _mm_set1_epi64x(0x000FFFFFFFFFFFFFull);  // Extract mantissa mask
-        __m128i bias = _mm_set1_epi64x(1023);
-    
-        __m128i exp_bits = _mm_and_si128(dbl_bits, exp_mask);
-        exp_bits = _mm_srli_epi64(exp_bits, 52);  // Shift exponent into position
-        __m128i cutter = _mm_sub_epi64(exp_bits, bias);  // Subtract bias to get true exponent
-    
-        // Extract sign bit to determine negative numbers
-        __m128i sign_mask = _mm_set1_epi64x(0x8000000000000000ull);
-        __m128i sign = _mm_and_si128(dbl_bits, sign_mask);
-    
-        __m128i mantissa = _mm_and_si128(dbl_bits, mant_mask);
-        __m128i implicit_bit = _mm_set1_epi64x(0x0010000000000000ull);  
-        __m128i full_mantissa = _mm_or_si128(mantissa, implicit_bit);  // Restore implicit bit
-    
-        // Compute exponent and sicnificand based on cutter value
-        __m128i zero = _mm_setzero_si128();
-        __m128i i52 = _mm_set1_epi64x(52);
-        __m128i im1 = _mm_set1_epi64x(-1);
-        __m128i ip1 = _mm_set1_epi64x(1);
-        __m128i sign_multiplier = _mm_blendv_epi8(ip1, im1, _mm_cmpeq_epi64(sign, sign_mask));
-
-        __m128i shifted_mantissa_left = _mm_sllv_epi64(full_mantissa, cutter);
-        __m128i shifted_mantissa_right = _mm_srlv_epi64(full_mantissa, zero - cutter);
-        __m128i shifted_mantissa = cutter < zero ? shifted_mantissa_right : shifted_mantissa_left;
-        shifted_mantissa = _mm_and_si128(shifted_mantissa, mant_mask);
-
-        __m128i shifted_exponent = _mm_srlv_epi64(full_mantissa, i52 - cutter);
-        shifted_exponent = _mm_max_epi64(shifted_exponent, zero); // !!! change to _mm_max_epi64
-        shifted_exponent = shifted_exponent * sign_multiplier;
-    
-        __m128i condition = _mm_and_si128(_mm_cmpgt_epi64(shifted_mantissa, _mm_setzero_si128()), _mm_cmpeq_epi64(sign, sign_mask));
-        shifted_exponent = _mm_sub_epi64(shifted_exponent, _mm_and_si128(condition, ip1));
-
-        __m128i negative_offset = _mm_set1_epi64x(0x0020000000000000ull);
-
-        shifted_mantissa = _mm_blendv_epi8(shifted_mantissa, negative_offset - shifted_mantissa, _mm_cmpeq_epi64(sign, sign_mask));
-        __m128i zero_exp_mask = _mm_set1_epi64x(0x3FF0000000000000ull);
-        shifted_mantissa = _mm_or_si128(shifted_mantissa, zero_exp_mask);
-    
-        // Store results
-        _mm_storeu_si128(reinterpret_cast<__m128i*>(sicnificand), shifted_mantissa);
-        _mm_storeu_si128(reinterpret_cast<__m128i*>(exponent), shifted_exponent);
-    }
-    
-
-    inline void Float64ExtendedExp::decode(std::uint64_t& sicnificand, std::int64_t& exponent) {
+    inline void Float64ExtendedExp::decode(std::uint64_t& sicnificand, std::int64_t& exponent, double enco) {
         //exponent = (std::int64_t)std::floor(encoded);
         //sicnificand = encoded - exponent + 1.0;
 
-        uint64_t dbl_bits = std::bit_cast<uint64_t>(encoded);
+        double encoded_value = enco == 0.0 ? encoded : enco;
+
+        uint64_t dbl_bits = std::bit_cast<uint64_t>(encoded_value);
         std::int32_t cutter = ((dbl_bits >> 52) & 0x7FF) - 1023;
         std::int64_t full_mantissa = (dbl_bits & 0x000FFFFFFFFFFFFFull) | 0x0010000000000000ull;
 
@@ -389,10 +418,10 @@ namespace floatingExp2Integer
             sicnificand = full_mantissa >> (-1 * cutter);
         }
 
-        exponent = exponent * (encoded < 0.0 ? -1LL : 1LL);
-        exponent = (encoded < 0.0 && sicnificand > 0ULL) ? exponent - 1 : exponent;
+        exponent = exponent * (encoded_value < 0.0 ? -1LL : 1LL);
+        exponent = (encoded_value < 0.0 && sicnificand > 0ULL) ? exponent - 1 : exponent;
 
-        sicnificand = encoded < 0.0 ? (0x0020000000000000ull - sicnificand) : sicnificand;
+        sicnificand = encoded_value < 0.0 ? (0x0020000000000000ull - sicnificand) : sicnificand;
         sicnificand = sicnificand | 0x3FF0000000000000ull;
     }
 
@@ -408,7 +437,7 @@ namespace floatingExp2Integer
     inline void Float64ExtendedExp::decode_double(double& sicnificand, std::int64_t& exponent) {
         std::uint64_t scnfcnd;
         std::int64_t exp;
-        decode(scnfcnd, exp);
+        decode(scnfcnd, exp, 0.0);
 
         sicnificand = std::bit_cast<double>(scnfcnd);
         exponent = exp;
