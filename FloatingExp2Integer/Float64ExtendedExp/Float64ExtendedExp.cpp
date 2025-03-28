@@ -178,9 +178,9 @@ namespace floatingExp2Integer
         //std::int64_t exponent;
         //decode(sicnificand, exponent);
 
-        //std::uint64_t sicnificand_z;
-        //std::int64_t exponent_z;
-        //decode(sicnificand_z, exponent_z, z_encoded);
+        std::uint64_t sicnificand_z;
+        std::int64_t exponent_z;
+        decode(sicnificand_z, exponent_z, z_encoded);
 
         //****************
 
@@ -198,14 +198,6 @@ namespace floatingExp2Integer
         //{
         //    sicnificandZ_d += 1.0;
         //}
-
-        std::int64_t exponent_z = (std::int64_t)z_encoded - 1;
-        double sicnificandZ_d = z_encoded - exponent_z;
-
-        if (sicnificandZ_d >= 1.0) {
-            exponent_z += 1LL;
-            sicnificandZ_d -= 1.0;
-        }
 
         //****************
 
@@ -243,7 +235,7 @@ namespace floatingExp2Integer
         //sicnificandZ_d = z_encoded - floored_2 + 1.0;
 
         std::int64_t sicnificand = std::bit_cast<std::int64_t>(sicnificand_d);
-        std::int64_t sicnificand_z = std::bit_cast<std::int64_t>(sicnificandZ_d);
+        //std::int64_t sicnificand_z = std::bit_cast<std::int64_t>(sicnificandZ_d);
 
         //****************
 
@@ -268,7 +260,7 @@ namespace floatingExp2Integer
         }
 
         sicnificand_d = std::bit_cast<double>(sicnificand);
-        sicnificandZ_d = std::bit_cast<double>(sicnificand_z);
+        double sicnificandZ_d = std::bit_cast<double>(sicnificand_z);
 
         //sicnificand_d = std::bit_cast<double>(sicnificand);
         //sicnificandZ_d = std::bit_cast<double>(sicnificand_z);
