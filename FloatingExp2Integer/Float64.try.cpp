@@ -733,8 +733,12 @@ std::int64_t calculate_sequential_sum_log2(const std::vector<double>& values, do
     double sum = values[0];
     for (unsigned int i = 1; i < values.size(); i++) {
         double value = values[i];
-        double max = std::max(sum, value);
-        sum = max + std::log2(std::exp2(sum - max) + std::exp2(value - max));
+        if (sum > value) {
+            sum = sum + std::log2(1 + std::exp2(value - sum));
+        }
+        else {
+            sum = value + std::log2(std::exp2(sum - value) + 1);
+        }
     }
     timer.stop();
     result = std::exp2(sum);
@@ -745,16 +749,8 @@ std::int64_t calculate_avg_sequential_sum_log2(std::string& header, int n, int n
 {
     header = "log2_sequential_sum:";
 
-    if (n == 1000) {
-        std::cout << "ennen loggia: " << values[0] << std::endl;
-    }
     std::vector<double> values_converted(values.size());
     DoubleToLogValues(values, values_converted);
-
-    if (n == 1000) {
-        std::cout << "jalkeen loggia: " << values[0] << std::endl;
-        std::cout << "jalkeen loggia: " << values_converted[0] << std::endl;
-    }
 
     std::int64_t time_sum = 0.0;
     for (unsigned int i = 0; i < n_rounds; i++) {
