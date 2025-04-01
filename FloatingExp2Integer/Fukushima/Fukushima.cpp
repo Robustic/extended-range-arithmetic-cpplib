@@ -94,7 +94,7 @@ namespace floatingExp2Integer
     }
 
     void Fukushima::multiply(const std::vector<floatingExp2Integer::Fukushima>& vector) {
-        const unsigned int parallel_count = 4;
+        const unsigned int parallel_count = 6;
 
         double scnfcndSum[parallel_count];
         std::int64_t expSum[parallel_count];
