@@ -9,23 +9,28 @@ namespace floatingExp2Integer
         private:
             double scnfcnd;
             inline void xnorm();
-            // Float64ExtendedExp(double sicnificand, std::int64_t exponent);
-            // inline void checkRuleForScale();
+
+            static constexpr int EXP_MULTIPLIER = 960;
+            static constexpr double BIG = 0x1p960;
+            static constexpr double BIGI = 0x1p-960;
+            static constexpr double BIGS = 0x1p480;
+            static constexpr double BIGSI = 0x1p-480;
         public:
             std::int64_t exp;
             Fukushima();
             Fukushima(double dbl);
             Fukushima(double dbl, std::int64_t exponent);
-            Fukushima(const std::vector<floatingExp2Integer::Fukushima>& vector);
+            void sum(const std::vector<floatingExp2Integer::Fukushima>& vector);
+            void multiply(const std::vector<floatingExp2Integer::Fukushima>& vector);
             void doubleToFukushima(double dbl);
-            // void log2ToFloat64ExtendedExp(double log2);
-            // double float64ExtendedExpToLog2() const;
+            // void log2ToFukushima(double log2);
+            double fukushimaToLog2() const;
             double sicnificand() { return scnfcnd; };
             std::int64_t exponent() { return exp; };
             double asDouble() const;
 
             Fukushima& operator+=(Fukushima z);
-            // Float64ExtendedExp& operator*=(Float64ExtendedExp z);
+            Fukushima& operator*=(Fukushima z);
     };
 
     // Float64ExtendedExp operator+(Float64ExtendedExp a, const Float64ExtendedExp b);

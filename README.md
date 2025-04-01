@@ -34,3 +34,10 @@ Running main() from /home/juhamali/Documents/Gradu/FloatingExp2Integer/build_rel
 [==========] 5 tests from 1 test suite ran. (0 ms total)
 [  PASSED  ] 5 tests.
 ```
+
+In Windows 11 you can give high priority with:
+
+```
+start "build_release/Float64.try.exe" /high
+ ```
+
