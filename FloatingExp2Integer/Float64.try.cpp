@@ -445,8 +445,11 @@ std::int64_t calculate_sequential_sum_Fukushima(const std::vector<floatingExp2In
     floatingExp2Integer::Timer timer;
     floatingExp2Integer::Fukushima sum = 0.0;
     for (unsigned int i = 0; i < values.size(); i++) {
-        unsigned k = sum.exp > 1LL ? (i == 0 ? i : i - 1) : i;
-        sum += values[k];
+        sum += values[i];
+
+        if (sum.scnfcnd > 0.1) {
+            i++;
+        }
     }
     timer.stop();
     result = sum.asDouble();
@@ -494,8 +497,11 @@ std::int64_t calculate_sequential_multiply_Fukushima(const std::vector<floatingE
     floatingExp2Integer::Timer timer;
     floatingExp2Integer::Fukushima res = 1.0;
     for (unsigned int i = 0; i < values.size(); i++) {
-        unsigned k = res.exp > 1LL ? (i == 0 ? i : i - 1) : i;
-        res *= values[k];
+        res *= values[i];
+
+        if (res.scnfcnd > 0x1.999p479) {
+            i++;
+        }
     }
     timer.stop();
     result = res.fukushimaToLog2();
@@ -579,9 +585,11 @@ std::int64_t calculate_sequential_sum_Float64ExtendedExp(unsigned int n, double*
     floatingExp2Integer::Float64ExtendedExp collector(1.0);
     collector.encodedToFloat64ExtendedExp(values[0]);
     for (unsigned int i = 1; i < n; i++) {
-        unsigned k = collector.encoded > 100.001 ? i - 1 : i;
-        volatile double value = values[k];
+        double value = values[i];
         collector += value;
+        if (collector.encoded > 1.0) {
+            i++;
+        }
     }
     double sum = collector.asDouble();
     timer.stop();
@@ -625,14 +633,14 @@ int main() {
     //functions.push_back(calculate_avg_array_multiply_Dbl2);
     //functions.push_back(calculate_avg_sequential_sum_log2);
     //functions.push_back(calculate_avg_array_sum_log2);
-    functions.push_back(calculate_avg_array_multiply_log2);
+    //functions.push_back(calculate_avg_array_multiply_log2);
     functions.push_back(calculate_avg_sequential_sum_Fukushima);
-    functions.push_back(calculate_avg_array_sum_Fukushima);
-    functions.push_back(calculate_avg_sequential_multiply_Fukushima);
-    functions.push_back(calculate_avg_array_multiply_Fukushima);
+    //functions.push_back(calculate_avg_array_sum_Fukushima);
+    //functions.push_back(calculate_avg_sequential_multiply_Fukushima);
+    //functions.push_back(calculate_avg_array_multiply_Fukushima);
     //functions.push_back(calculate_avg_array_sum_Float64PosExp2Int64);
     //functions.push_back(calculate_avg_array_sum_Float64ExtendedExp);
-    //functions.push_back(calculate_avg_sequential_sum_Float64ExtendedExp);
+    functions.push_back(calculate_avg_sequential_sum_Float64ExtendedExp);
 
     int functions_count = functions.size();
 

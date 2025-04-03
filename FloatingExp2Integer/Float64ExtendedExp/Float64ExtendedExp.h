@@ -7,8 +7,6 @@ namespace floatingExp2Integer
 {
     class Float64ExtendedExp {
         private:
-            double scnfcnd;
-            std::int64_t exp;
             Float64ExtendedExp(double sicnificand, std::int64_t exponent);
             // inline void checkRuleForScale();
             inline void encode_double(double sicnificand, std::int64_t exponent);
@@ -19,6 +17,8 @@ namespace floatingExp2Integer
             void print(std::string message, int64_t value) const;
             void print(std::string message, double value) const;
         public:
+            double scnfcnd;
+            std::int64_t exp;
             double encoded;
             Float64ExtendedExp();
             Float64ExtendedExp(double dbl);

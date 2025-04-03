@@ -7,7 +7,6 @@ namespace floatingExp2Integer
 {
     class Fukushima {
         private:
-            double scnfcnd;
             inline void xnorm();
 
             static constexpr int EXP_MULTIPLIER = 960;
@@ -16,6 +15,7 @@ namespace floatingExp2Integer
             static constexpr double BIGS = 0x1p480;
             static constexpr double BIGSI = 0x1p-480;
         public:
+            double scnfcnd;
             std::int64_t exp;
             Fukushima();
             Fukushima(double dbl);
