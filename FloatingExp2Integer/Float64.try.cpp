@@ -14,7 +14,7 @@
 #include "./Int64PosExp2Int64/Int64PosExp2Int64.h"
 #include "./Float64PosExp2Int64/Float64PosExp2Int64.h"
 #include "./Float64Exp2Int64/Float64Exp2Int64.h"
-#include "./Float64ExtendedExp/Float64ExtendedExp.h"
+#include "./Float64LargeRangeNumber/Float64LargeRangeNumber.h"
 #include "./Fukushima/Fukushima.h"
 
 const uint32_t seed_val = 1337;
@@ -545,73 +545,56 @@ std::int64_t calculate_avg_array_multiply_Fukushima(std::string& header, unsigne
     return time_sum / n_rounds;
 }
 
-std::int64_t calculate_array_sum_Float64ExtendedExp(unsigned int n, double* values, double& result) {
+std::int64_t calculate_array_sum_Float64LargeRangeNumber(std::vector<double> values, double& result) {
     floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Float64ExtendedExp collector(1.0);
-    double encoded = collector.sumFloat64ExtendedExp(n, values);
-    double sum = collector.decodeFloat64ExtendedExp(encoded);
+    double sum = floatingExp2Integer::Float64LargeRangeNumber::sum_largeRangeNumbers(values);
+    result = floatingExp2Integer::Float64LargeRangeNumber::largeRangeNumber_to_double(sum);
     timer.stop();
-    result = sum;
     return timer.time();
 }
 
-void DoubleToFloat64ExtendedExpValues(const std::vector<double>& doubleValues, 
-    std::vector<floatingExp2Integer::Float64ExtendedExp>& fukushimaValues) {
-    for (unsigned int i = 0; i < fukushimaValues.size(); i++) {
-        fukushimaValues[i].doubleToFloat64ExtendedExp(doubleValues[i]);
-    }
-}
-
-std::int64_t calculate_avg_array_sum_Float64ExtendedExp(std::string& header, unsigned int n_rounds, const std::vector<double>& values, double& result)
+std::int64_t calculate_avg_array_sum_Float64LargeRangeNumber(std::string& header, unsigned int n_rounds, const std::vector<double>& values, double& result)
 {
-    header = "Float64ExtendedExp_array_sum:";
+    header = "Float64LargeRangeNumber_array_sum:";
 
-    floatingExp2Integer::Float64ExtendedExp extendedExp(1.0);
-
-    double* values_converted = new double[values.size()];
-    extendedExp.doubleToFloat64ExtendedExp(values.size(), values.data(), values_converted);
+    std::vector<double> values_converted(values.size());
+    floatingExp2Integer::Float64LargeRangeNumber::doubles_to_largeRangeNumbers(values, values_converted);
 
     std::int64_t time_sum = 0.0;
     for (unsigned int i = 0; i < n_rounds; i++) {
-        time_sum += calculate_array_sum_Float64ExtendedExp(values.size(), values_converted, result);
+        time_sum += calculate_array_sum_Float64LargeRangeNumber(values_converted, result);
     }
 
-    delete[] values_converted;
     return time_sum / n_rounds;
 }
 
-std::int64_t calculate_sequential_sum_Float64ExtendedExp(unsigned int n, double* values, double& result) {
+std::int64_t calculate_sequential_sum_Float64LargeRangeNumber(std::vector<double> values, double& result) {
     floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Float64ExtendedExp collector(1.0);
-    collector.encodedToFloat64ExtendedExp(values[0]);
-    for (unsigned int i = 1; i < n; i++) {
+    double sum = values[0];
+    for (size_t i = 1; i < values.size(); i++) {
         double value = values[i];
-        collector += value;
-        if (collector.encoded > 1.0) {
+        sum = floatingExp2Integer::Float64LargeRangeNumber::sum_largeRangeNumbers(sum, value);
+        if (sum > 1.0) {
             i++;
         }
     }
-    double sum = collector.asDouble();
+    result = floatingExp2Integer::Float64LargeRangeNumber::largeRangeNumber_to_double(sum);
     timer.stop();
-    result = sum;
     return timer.time();
 }
 
-std::int64_t calculate_avg_sequential_sum_Float64ExtendedExp(std::string& header, unsigned int n_rounds, const std::vector<double>& values, double& result)
+std::int64_t calculate_avg_sequential_sum_Float64LargeRangeNumber(std::string& header, unsigned int n_rounds, const std::vector<double>& values, double& result)
 {
-    header = "Float64ExtendedExp_sequential_sum:";
+    header = "Float64LargeRangeNumber_sequential_sum:";
 
-    floatingExp2Integer::Float64ExtendedExp extendedExp(1.0);
-
-    double* values_converted = new double[values.size()];
-    extendedExp.doubleToFloat64ExtendedExp(values.size(), values.data(), values_converted);
+    std::vector<double> values_converted(values.size());
+    floatingExp2Integer::Float64LargeRangeNumber::doubles_to_largeRangeNumbers(values, values_converted);
 
     std::int64_t time_sum = 0.0;
     for (unsigned int i = 0; i < n_rounds; i++) {
-        time_sum += calculate_sequential_sum_Float64ExtendedExp(values.size(), values_converted, result);
+        time_sum += calculate_sequential_sum_Float64LargeRangeNumber(values_converted, result);
     }
 
-    delete[] values_converted;
     return time_sum / n_rounds;
 }
 
@@ -634,13 +617,13 @@ int main() {
     //functions.push_back(calculate_avg_sequential_sum_log2);
     //functions.push_back(calculate_avg_array_sum_log2);
     //functions.push_back(calculate_avg_array_multiply_log2);
-    functions.push_back(calculate_avg_sequential_sum_Fukushima);
+    //functions.push_back(calculate_avg_sequential_sum_Fukushima);
     //functions.push_back(calculate_avg_array_sum_Fukushima);
     //functions.push_back(calculate_avg_sequential_multiply_Fukushima);
     //functions.push_back(calculate_avg_array_multiply_Fukushima);
     //functions.push_back(calculate_avg_array_sum_Float64PosExp2Int64);
-    //functions.push_back(calculate_avg_array_sum_Float64ExtendedExp);
-    functions.push_back(calculate_avg_sequential_sum_Float64ExtendedExp);
+    functions.push_back(calculate_avg_array_sum_Float64LargeRangeNumber);
+    functions.push_back(calculate_avg_sequential_sum_Float64LargeRangeNumber);
 
     int functions_count = functions.size();
 

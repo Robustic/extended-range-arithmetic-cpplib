@@ -13,17 +13,17 @@
 // #include "./Int64PosExp2Int64/Int64PosExp2Int64.h"
 // #include "./Float64PosExp2Int64/Float64PosExp2Int64.h"
 // #include "./Float64Exp2Int64/Float64Exp2Int64.h"
-#include "./Float64ExtendedExp/Float64ExtendedExp.h"
+#include "./Float64LargeRangeNumber/Float64LargeRangeNumber.h"
 #include "./Fukushima/Fukushima.h"
 
-void print_Float64ExtendedExp(double number) {
-    std::cout << "Test: " << number << std::endl;
-    floatingExp2Integer::Float64ExtendedExp nmbr(number);
-    // std::cout << "nmbr.sicnificand(): " << std::to_string(nmbr.sicnificand()) << std::endl;
-    // std::cout << "nmbr.exponent(): " << std::to_string(nmbr.exponent()) << std::endl;
-    // std::cout << "nmbr.asDouble(): " << std::to_string(nmbr.asDouble()) << std::endl;
-    std::cout << std::endl;
-}
+//void print_Float64ExtendedExp(double number) {
+//    std::cout << "Test: " << number << std::endl;
+//    floatingExp2Integer::Float64ExtendedExp nmbr(number);
+//    // std::cout << "nmbr.sicnificand(): " << std::to_string(nmbr.sicnificand()) << std::endl;
+//    // std::cout << "nmbr.exponent(): " << std::to_string(nmbr.exponent()) << std::endl;
+//    // std::cout << "nmbr.asDouble(): " << std::to_string(nmbr.asDouble()) << std::endl;
+//    std::cout << std::endl;
+//}
 
 void print_Fukushima(double number) {
     std::cout << "Test: " << number << std::endl;
@@ -35,17 +35,17 @@ void print_Fukushima(double number) {
 }
 
 int main() {
-    const unsigned int n = 16;
-    double input[n] = { 0.25, 0.375, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 3.0, 2.0, 1.5, 1.0, 0.75, 0.5, 0.375, 0.25 };
-    double encoded[n];
-    floatingExp2Integer::Float64ExtendedExp extendedExp(0.2625);
-    extendedExp.doubleToFloat64ExtendedExp(n, input, encoded);
+    //const unsigned int n = 16;
+    //double input[n] = { 0.25, 0.375, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 3.0, 2.0, 1.5, 1.0, 0.75, 0.5, 0.375, 0.25 };
+    //double encoded[n];
+    //floatingExp2Integer::Float64ExtendedExp extendedExp(0.2625);
+    //extendedExp.doubleToFloat64ExtendedExp(n, input, encoded);
 
-    std::cout << "input[0] " << input[0] << std::endl;
-    std::cout << "encoded[0] " << encoded[0] << std::endl;
+    //std::cout << "input[0] " << input[0] << std::endl;
+    //std::cout << "encoded[0] " << encoded[0] << std::endl;
 
-    double sum = extendedExp.sumFloat64ExtendedExp(n, encoded);
-    std::cout << "sum " << extendedExp.decodeFloat64ExtendedExp(sum) << std::endl;
+    //double sum = extendedExp.sumFloat64ExtendedExp(n, encoded);
+    //std::cout << "sum " << extendedExp.decodeFloat64ExtendedExp(sum) << std::endl;
 
 
     //print_Float64ExtendedExp(0.25);
