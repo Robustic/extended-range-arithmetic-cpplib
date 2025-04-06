@@ -173,16 +173,81 @@ namespace floatingExp2Integer
         return sicnificand * std::pow(2.0, (int)exponent);
     }
 
-    Float64ExtendedExp& Float64ExtendedExp::operator+=(double z_encoded) {
-        double valueA = encoded;
-        double flooredA = std::floor(valueA);
-        std::int64_t exponent = (std::int64_t)flooredA;
-        double sicnificand_d = valueA - flooredA + 1;
+    inline void decode2(double encoded_value, double& floored_exponent, std::int64_t& int64_exponent, double& sicnificand) {
+        uint64_t dbl_bits = std::bit_cast<uint64_t>(encoded_value);
+        std::int32_t cutter = ((dbl_bits >> 52) & 0x7FF) - 1023;
+        if (cutter < 0) {
+            sicnificand = encoded_value < 0.0 ? encoded_value + 2.0 : encoded_value + 1.0;
+            floored_exponent = 0.0;
+            int64_exponent = 0LL;
+            return;
+        }
+        floored_exponent = std::bit_cast<double>(dbl_bits & (~(0x000FFFFFFFFFFFFFull >> cutter)));
+        //std::int64_t rest = dbl_bits ^ floored_exponent;
+        std::int64_t full_mantissa = (dbl_bits & 0x000FFFFFFFFFFFFFull) | 0x0010000000000000ull;
+        int64_exponent = (std::int64_t)full_mantissa >> (52 - cutter);
+        int64_exponent = int64_exponent * (encoded_value < 0.0 ? -1LL : 1LL);
 
-        double valueZ = z_encoded;
-        double flooredZ = std::floor(valueZ);
-        std::int64_t exponent_z = (std::int64_t)flooredZ;
-        double sicnificandZ_d = valueZ - flooredZ + 1;
+        sicnificand = encoded_value - floored_exponent;
+
+        if (sicnificand < 0) {
+            floored_exponent -= 1.0;
+            int64_exponent -= 1;
+            sicnificand += 2.0;
+        }
+        else {
+            sicnificand += 1.0;
+        }
+    }
+
+    inline void decode3(double& encoded_value, std::int64_t& exponent, double& sicnificand_d) {
+        uint64_t dbl_bits = std::bit_cast<uint64_t>(encoded_value);
+        std::int32_t cutter = ((dbl_bits >> 52) & 0x7FF) - 1023;
+        std::int64_t full_mantissa = (dbl_bits & 0x000FFFFFFFFFFFFFull) | 0x0010000000000000ull;
+        std::uint64_t sicnificand;
+
+        if (cutter >= 0) {
+            exponent = ((std::int64_t)full_mantissa >> (52 - cutter));
+            sicnificand = (dbl_bits << cutter) & 0x000FFFFFFFFFFFFFull;
+        }
+        else {
+            exponent = 0;
+            sicnificand = full_mantissa >> (-1 * cutter);
+        }
+
+        exponent = exponent * (encoded_value < 0.0 ? -1LL : 1LL);
+        exponent = (encoded_value < 0.0 && sicnificand > 0ULL) ? exponent - 1 : exponent;
+
+        sicnificand = encoded_value < 0.0 ? (0x0020000000000000ull - sicnificand) : sicnificand;
+        sicnificand = sicnificand | 0x3FF0000000000000ull;
+        sicnificand_d = std::bit_cast<double>(sicnificand);
+    }
+
+    Float64ExtendedExp& Float64ExtendedExp::operator+=(double z_encoded) {
+        //double valueA = encoded;
+        //double flooredA = std::floor(valueA);
+        //std::int64_t exponent = (std::int64_t)flooredA;
+        //double sicnificand_d = valueA - flooredA + 1;
+
+        //double valueZ = z_encoded;
+        //double flooredZ = std::floor(valueZ);
+        //std::int64_t exponent_z = (std::int64_t)flooredZ;
+        //double sicnificandZ_d = valueZ - flooredZ + 1;
+
+        ///////////////////////////////////
+
+        //double flooredA;
+        std::int64_t exponent;
+        double sicnificand_d;
+
+        //double flooredZ;
+        std::int64_t exponent_z;
+        double sicnificandZ_d;
+
+        decode3(encoded, exponent, sicnificand_d);
+        decode3(z_encoded, exponent_z, sicnificandZ_d);
+
+        //////////////////////////////////
         
         std::int64_t exp_diff = (std::int64_t)(exponent - exponent_z);
 
@@ -201,7 +266,7 @@ namespace floatingExp2Integer
                 return *this;
             }
             sicnificand -= (-exp_diff) << 52;
-            flooredA = flooredZ;
+            exponent = exponent_z;
         }
 
         sicnificand_d = std::bit_cast<double>(sicnificand);
@@ -211,10 +276,10 @@ namespace floatingExp2Integer
 
         if (sicnificand_d >= 2.0) {
             sicnificand_d *= 0.5;
-            encoded = flooredA + sicnificand_d;
+            encoded = (double)exponent + sicnificand_d;
         }
         else {
-            encoded = flooredA + sicnificand_d - 1.0;
+            encoded = (double)exponent + sicnificand_d - 1.0;
         }
         
         return *this;
