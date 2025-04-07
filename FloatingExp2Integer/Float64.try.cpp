@@ -598,6 +598,59 @@ std::int64_t calculate_avg_sequential_sum_Float64LargeRangeNumber(std::string& h
     return time_sum / n_rounds;
 }
 
+std::int64_t calculate_array_multiply_Float64LargeRangeNumber(std::vector<double> values, double& result) {
+    floatingExp2Integer::Timer timer;
+    double res = floatingExp2Integer::Float64LargeRangeNumber::multiply_largeRangeNumbers(values);
+    result = res;
+    timer.stop();
+    return timer.time();
+}
+
+std::int64_t calculate_avg_array_multiply_Float64LargeRangeNumber(std::string& header, unsigned int n_rounds, const std::vector<double>& values, double& result)
+{
+    header = "Float64LargeRangeNumber_array_multiply:";
+
+    std::vector<double> values_converted(values.size());
+    floatingExp2Integer::Float64LargeRangeNumber::doubles_to_largeRangeNumbers(values, values_converted);
+
+    std::int64_t time_sum = 0.0;
+    for (unsigned int i = 0; i < n_rounds; i++) {
+        time_sum += calculate_array_multiply_Float64LargeRangeNumber(values_converted, result);
+    }
+
+    return time_sum / n_rounds;
+}
+
+std::int64_t calculate_sequential_multiply_Float64LargeRangeNumber(std::vector<double> values, double& result) {
+    floatingExp2Integer::Timer timer;
+    double res = values[0];
+    for (size_t i = 1; i < values.size(); i++) {
+        double value = values[i];
+        res = floatingExp2Integer::Float64LargeRangeNumber::multiply_largeRangeNumbers(res, value);
+        if (res > 1.0) {
+            i++;
+        }
+    }
+    result = floatingExp2Integer::Float64LargeRangeNumber::largeRangeNumber_to_log2(res);
+    timer.stop();
+    return timer.time();
+}
+
+std::int64_t calculate_avg_sequential_multiply_Float64LargeRangeNumber(std::string& header, unsigned int n_rounds, const std::vector<double>& values, double& result)
+{
+    header = "Float64LargeRangeNumber_sequential_multiply:";
+
+    std::vector<double> values_converted(values.size());
+    floatingExp2Integer::Float64LargeRangeNumber::doubles_to_largeRangeNumbers(values, values_converted);
+
+    std::int64_t time_sum = 0.0;
+    for (unsigned int i = 0; i < n_rounds; i++) {
+        time_sum += calculate_sequential_multiply_Float64LargeRangeNumber(values_converted, result);
+    }
+
+    return time_sum / n_rounds;
+}
+
 int main() {
     constexpr unsigned int n[] = { 1000, 3000, 10000, 30000, 100000, 300000, 1000000, 3000000, 10000000, 30000000, 100000000 };
     constexpr unsigned int n_rounds[] = { 100000, 30000, 10000, 3000, 1000, 300, 100, 30, 10, 3, 1 };
@@ -616,14 +669,16 @@ int main() {
     //functions.push_back(calculate_avg_array_multiply_Dbl2);
     //functions.push_back(calculate_avg_sequential_sum_log2);
     //functions.push_back(calculate_avg_array_sum_log2);
-    //functions.push_back(calculate_avg_array_multiply_log2);
+    functions.push_back(calculate_avg_array_multiply_log2);
     //functions.push_back(calculate_avg_sequential_sum_Fukushima);
     //functions.push_back(calculate_avg_array_sum_Fukushima);
     //functions.push_back(calculate_avg_sequential_multiply_Fukushima);
     //functions.push_back(calculate_avg_array_multiply_Fukushima);
     //functions.push_back(calculate_avg_array_sum_Float64PosExp2Int64);
-    functions.push_back(calculate_avg_array_sum_Float64LargeRangeNumber);
-    functions.push_back(calculate_avg_sequential_sum_Float64LargeRangeNumber);
+    //functions.push_back(calculate_avg_array_sum_Float64LargeRangeNumber);
+    //functions.push_back(calculate_avg_sequential_sum_Float64LargeRangeNumber);
+    functions.push_back(calculate_avg_sequential_multiply_Float64LargeRangeNumber);
+    functions.push_back(calculate_avg_array_multiply_Float64LargeRangeNumber);
 
     int functions_count = functions.size();
 

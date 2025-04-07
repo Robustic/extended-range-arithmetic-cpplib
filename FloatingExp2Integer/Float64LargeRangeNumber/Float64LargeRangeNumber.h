@@ -16,10 +16,10 @@ namespace floatingExp2Integer
             static double largeRangeNumber_to_log2(double dbl);
 
             static double sum_largeRangeNumbers(double lrn1, double lrn2);
-            //inline static double multiply_largeRangeNumbers(double lrn1, double lrn2);
+            static double multiply_largeRangeNumbers(double lrn1, double lrn2);
 
             static double sum_largeRangeNumbers(std::vector<double>& lrns);
-            //inline static double multiply_largeRangeNumbers(std::vector<double>& lrns);
+            static double multiply_largeRangeNumbers(std::vector<double>& lrns);
     };
 }
 

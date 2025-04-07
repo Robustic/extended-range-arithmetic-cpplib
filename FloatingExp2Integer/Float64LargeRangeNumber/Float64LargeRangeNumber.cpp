@@ -53,7 +53,7 @@ namespace floatingExp2Integer
         return std::log2(sicnificand) + floored_exponent;
     }
 
-    inline void decode_fast(double& encoded_value, std::int64_t& exponent, double& sicnificand_d) {
+    inline void decode_fast_int(double& encoded_value, std::int64_t& exponent, double& sicnificand_d) {
         uint64_t dbl_bits = std::bit_cast<uint64_t>(encoded_value);
         std::int32_t cutter = ((dbl_bits >> 52) & 0x7FF) - 1023;
         std::int64_t full_mantissa = (dbl_bits & 0x000FFFFFFFFFFFFFull) | 0x0010000000000000ull;
@@ -83,8 +83,8 @@ namespace floatingExp2Integer
         std::int64_t exponent_2;
         double sicnificand_2;
 
-        decode_fast(lrn1, exponent_1, sicnificand_1);
-        decode_fast(lrn2, exponent_2, sicnificand_2);
+        decode_fast_int(lrn1, exponent_1, sicnificand_1);
+        decode_fast_int(lrn2, exponent_2, sicnificand_2);
         
         std::int64_t exp_diff = (std::int64_t)(exponent_1 - exponent_2);
 
@@ -119,6 +119,61 @@ namespace floatingExp2Integer
         }
     }
 
+    //inline void decode_fast_double(double& encoded_value, double& exponent, double& sicnificand_d) {
+    //    uint64_t dbl_bits = std::bit_cast<uint64_t>(encoded_value);
+    //    std::int32_t cutter = ((dbl_bits >> 52) & 0x7FF) - 1023;
+    //    std::uint64_t exponent_int64;
+
+    //    if (cutter >= 0) {
+    //        exponent_int64 = dbl_bits & (~(0x000FFFFFFFFFFFFFull >> cutter));
+    //    }
+    //    else {
+    //        exponent_int64 = 0ULL;
+    //    }
+
+    //    exponent = std::bit_cast<double>(exponent_int64);
+    //    sicnificand_d = encoded_value - exponent;
+
+    //    if (sicnificand_d < 0.0) {
+    //        exponent -= 1.0;
+    //        sicnificand_d += 2.0;
+    //    }
+    //    else {
+    //        sicnificand_d += 1.0;
+    //    }
+    //}
+
+    double Float64LargeRangeNumber::multiply_largeRangeNumbers(double lrn1, double lrn2) {
+        double exponent_1 = std::floor(lrn1);
+        double sicnificand_1 = lrn1 - exponent_1 + 1;
+
+        double exponent_2 = std::floor(lrn2);
+        double sicnificand_2 = lrn2 - exponent_2 + 1;
+
+        //double exponent_1;
+        //double sicnificand_1;
+
+        //double exponent_2;
+        //double sicnificand_2;
+
+        //decode_fast_double(lrn1, exponent_1, sicnificand_1);
+        //decode_fast_double(lrn2, exponent_2, sicnificand_2);
+
+        sicnificand_1 *= sicnificand_2;
+        exponent_1 += exponent_2;
+
+        if (sicnificand_1 >= 2.0) {
+            //std::int64_t sicnificand_int64_1 = std::bit_cast<std::int64_t>(sicnificand_1);
+            //sicnificand_int64_1 -= 1ULL << 52;
+            //sicnificand_1 = std::bit_cast<double>(sicnificand_int64_1);
+            sicnificand_1 *= 0.5;
+            return (double)exponent_1 + sicnificand_1;
+        }
+        else {
+            return (double)exponent_1 + sicnificand_1 - 1.0;
+        }
+    }
+
     double Float64LargeRangeNumber::sum_largeRangeNumbers(std::vector<double>& large_range_numbers) {
         if (large_range_numbers.size() < 16) {
             double sum_small = large_range_numbers[0] + (double)large_range_numbers[0];
@@ -128,59 +183,136 @@ namespace floatingExp2Integer
             return sum_small;
         }
 
-        __m512d encoded_values = _mm512_loadu_pd(&large_range_numbers[0]);
-
-        __m512d integer_decimals = _mm512_floor_pd(encoded_values);
-        __m512i exponent_sum = _mm512_cvtpd_epi64(integer_decimals);
+        __m512d zero_d = _mm512_setzero_pd();
+        __m512d half_d = _mm512_set1_pd(0.5);
         __m512d one_d = _mm512_set1_pd(1.0);
         __m512d two_d = _mm512_set1_pd(2.0);
+        __m512i m1_i = _mm512_set1_epi64(-1);
+        __m512i zero_i = _mm512_setzero_si512();
         __m512i one_i = _mm512_set1_epi64(1);
-        __m512d half_d = _mm512_set1_pd(0.5);
-        __m512d zero_d = _mm512_setzero_pd();
-        __m512d sicnificand_sum = encoded_values - integer_decimals + one_d;
+        __m512i p63_i = _mm512_set1_epi64(63);
+        __m512i m63_i = _mm512_set1_epi64(-63);
 
-        size_t i = 8;
-        for (i = 8; i + 7 < large_range_numbers.size(); i += 8) {
-            encoded_values = _mm512_loadu_pd(&large_range_numbers[i]);
+        constexpr size_t n_parallel = 5;
 
-            integer_decimals = _mm512_floor_pd(encoded_values);
-            __m512i exponent = _mm512_cvttpd_epi64(integer_decimals);
-            __m512d sicnificand = encoded_values - integer_decimals + one_d;
+        __m512d encoded_values[n_parallel];
+        __m512d integer_decimals[n_parallel];
+        __m512i exponent_sum[n_parallel];
+        __m512d sicnificand_sum[n_parallel];
 
-            __m512i exp_diff = exponent_sum - exponent;
-
-            __m512i zero_i = _mm512_setzero_si512();
-
-            __m512i sicnificand_bits = _mm512_castpd_si512(sicnificand);
-            sicnificand_bits = exp_diff < zero_i ? sicnificand_bits : sicnificand_bits - (exp_diff << 52);
-            sicnificand = _mm512_castsi512_pd(sicnificand_bits);
-
-            __m512i m1_i = _mm512_set1_epi64(-1);
-            __m512i sicnificand_sum_bits = _mm512_castpd_si512(sicnificand_sum);
-            sicnificand_sum_bits = exp_diff >= zero_i ? sicnificand_sum_bits : sicnificand_sum_bits - ((m1_i * exp_diff) << 52);
-            sicnificand_sum = _mm512_castsi512_pd(sicnificand_sum_bits);
-
-            __m512i p63_i = _mm512_set1_epi64(63);
-            __m512i m63_i = _mm512_set1_epi64(-63);
-            sicnificand_sum = exp_diff < m63_i ? zero_d : sicnificand_sum;
-            sicnificand = exp_diff > p63_i ? zero_d : sicnificand;
-
-            exponent_sum = exp_diff < zero_i ? exponent : exponent_sum;
-
-            sicnificand_sum = sicnificand_sum + sicnificand;
-
-            exponent_sum = sicnificand_sum >= two_d ? exponent_sum + one_i : exponent_sum;
-            sicnificand_sum = sicnificand_sum >= two_d ? sicnificand_sum * half_d : sicnificand_sum;
+        for (size_t m = 0; m < n_parallel; m++) {
+            encoded_values[m] = _mm512_loadu_pd(&large_range_numbers[8 * m]);
+            integer_decimals[m] = _mm512_floor_pd(encoded_values[m]);
+            exponent_sum[m] = _mm512_cvtpd_epi64(integer_decimals[m]);
+            sicnificand_sum[m] = encoded_values[m] - integer_decimals[m] + one_d;
         }
 
-        double sum = sicnificand_sum[0] + (double)exponent_sum[0] - 1;
+        __m512i exponent[n_parallel];
+        __m512d sicnificand[n_parallel];
+        __m512i exp_diff[n_parallel];
+        __m512i sicnificand_bits[n_parallel];
+        __m512i sicnificand_sum_bits[n_parallel];
 
-        for (int k = 1; k < 8; k++) {
-            sum = sum_largeRangeNumbers(sum, sicnificand_sum[k] + (double)exponent_sum[k] - 1);
+        size_t i = 8;
+        for (i = 8 * n_parallel; i + (8 * n_parallel - 1) < large_range_numbers.size(); i += 8 * n_parallel) {
+            for (size_t m = 0; m < n_parallel; m++) {
+                encoded_values[m] = _mm512_loadu_pd(&large_range_numbers[i + 8 * m]);
+
+                integer_decimals[m] = _mm512_floor_pd(encoded_values[m]);
+                exponent[m] = _mm512_cvttpd_epi64(integer_decimals[m]);
+                sicnificand[m] = encoded_values[m] - integer_decimals[m] + one_d;
+
+                exp_diff[m] = exponent_sum[m] - exponent[m];
+
+                sicnificand_bits[m] = _mm512_castpd_si512(sicnificand[m]);
+                sicnificand_bits[m] = exp_diff[m] < zero_i ? sicnificand_bits[m] : sicnificand_bits[m] - (exp_diff[m] << 52);
+                sicnificand[m] = _mm512_castsi512_pd(sicnificand_bits[m]);
+
+                sicnificand_sum_bits[m] = _mm512_castpd_si512(sicnificand_sum[m]);
+                sicnificand_sum_bits[m] = exp_diff[m] >= zero_i ? sicnificand_sum_bits[m] : sicnificand_sum_bits[m] - ((m1_i[m] * exp_diff[m]) << 52);
+                sicnificand_sum[m] = _mm512_castsi512_pd(sicnificand_sum_bits[m]);
+
+                sicnificand_sum[m] = exp_diff[m] < m63_i ? zero_d : sicnificand_sum[m];
+                sicnificand[m] = exp_diff[m] > p63_i ? zero_d : sicnificand[m];
+
+                exponent_sum[m] = exp_diff[m] < zero_i ? exponent[m] : exponent_sum[m];
+
+                sicnificand_sum[m] = sicnificand_sum[m] + sicnificand[m];
+
+                exponent_sum[m] = sicnificand_sum[m] >= two_d ? exponent_sum[m] + one_i : exponent_sum[m];
+                sicnificand_sum[m] = sicnificand_sum[m] >= two_d ? sicnificand_sum[m] * half_d : sicnificand_sum[m];
+            }
+        }
+
+        double sum = -0x1p52;
+
+        for (size_t m = 0; m < n_parallel; m++) {
+            for (size_t k = 0; k < 8; k++) {
+                sum = sum_largeRangeNumbers(sum, sicnificand_sum[m][k] + (double)exponent_sum[m][k] - 1);
+            }
         }
 
         for (i = i; i < large_range_numbers.size(); i++) {
             sum = sum_largeRangeNumbers(sum, large_range_numbers[i]);
+        }
+
+        return sum;
+    }
+
+    double Float64LargeRangeNumber::multiply_largeRangeNumbers(std::vector<double>& large_range_numbers) {
+        if (large_range_numbers.size() < 16) {
+            double sum_small = large_range_numbers[0] + (double)large_range_numbers[0];
+            for (size_t k = 1; k < large_range_numbers.size(); k++) {
+                sum_small = sum_largeRangeNumbers(sum_small, large_range_numbers[k]);
+            }
+            return sum_small;
+        }
+
+        __m512d half_d = _mm512_set1_pd(0.5);
+        __m512d one_d = _mm512_set1_pd(1.0);
+        __m512d two_d = _mm512_set1_pd(2.0);
+
+        constexpr size_t n_parallel = 5;
+
+        __m512d encoded_values[n_parallel];
+        __m512d exponent_floored_sum[n_parallel];
+        __m512d sicnificand_sum[n_parallel];
+
+        for (size_t m = 0; m < n_parallel; m++) {
+            encoded_values[m] = _mm512_loadu_pd(&large_range_numbers[8 * m]);
+            exponent_floored_sum[m] = _mm512_floor_pd(encoded_values[m]);
+            sicnificand_sum[m] = encoded_values[m] - exponent_floored_sum[m] + one_d;
+        }
+
+        __m512d exponent_floored[n_parallel];
+        __m512d sicnificand[n_parallel];
+
+        size_t i = 8;
+        for (i = 8 * n_parallel; i + (8 * n_parallel - 1) < large_range_numbers.size(); i += 8 * n_parallel) {
+            for (size_t m = 0; m < n_parallel; m++) {
+                encoded_values[m] = _mm512_loadu_pd(&large_range_numbers[i + 8 * m]);
+
+                exponent_floored[m] = _mm512_floor_pd(encoded_values[m]);
+                sicnificand[m] = encoded_values[m] - exponent_floored[m] + one_d;
+
+                sicnificand_sum[m] = sicnificand_sum[m] * sicnificand[m];
+                exponent_floored_sum[m] = exponent_floored_sum[m] + exponent_floored[m];
+
+                exponent_floored_sum[m] = sicnificand_sum[m] >= two_d ? exponent_floored_sum[m] + one_d : exponent_floored_sum[m];
+                sicnificand_sum[m] = sicnificand_sum[m] >= two_d ? sicnificand_sum[m] * half_d : sicnificand_sum[m];
+            }
+        }
+
+        double sum = 1.0;
+
+        for (size_t m = 0; m < n_parallel; m++) {
+            for (size_t k = 0; k < 8; k++) {
+                sum = multiply_largeRangeNumbers(sum, sicnificand_sum[m][k] + exponent_floored_sum[m][k] - 1);
+            }
+        }
+
+        for (i = i; i < large_range_numbers.size(); i++) {
+            sum = multiply_largeRangeNumbers(sum, large_range_numbers[i]);
         }
 
         return sum;
