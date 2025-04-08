@@ -41,7 +41,7 @@ void DoubleToFloat64ExtendedExpValues(const std::vector<double>& doubleValues,
 
 /// Log2 sum trick and (sequential and array)
 
-std::int64_t calculate_sequential_sum_log2(const std::vector<double>& values, double& result) {
+int64_t calculate_sequential_sum_log2(const std::vector<double>& values, double& result) {
     floatingExp2Integer::Timer timer;
     double sum = values[0];
     for (unsigned int i = 1; i < values.size(); i++) {
@@ -109,7 +109,7 @@ inline double calculate_array_sum_log2_rest(const std::vector<double>& values, u
     return result;
 }
 
-std::int64_t calculate_array_sum_log2_smart(const std::vector<double>& values, double& result) {
+int64_t calculate_array_sum_log2_smart(const std::vector<double>& values, double& result) {
     floatingExp2Integer::Timer timer;
 
     unsigned int n_count = ((values.size() - 1) / SIZE) + 1;
@@ -126,7 +126,7 @@ std::int64_t calculate_array_sum_log2_smart(const std::vector<double>& values, d
     return timer.time();
 }
 
-std::int64_t calculate_array_sum_log2(const std::vector<double>& values, double& result) {
+int64_t calculate_array_sum_log2(const std::vector<double>& values, double& result) {
     floatingExp2Integer::Timer timer;
     unsigned int i = 0;
     double sum = 0.0;
@@ -158,7 +158,7 @@ std::int64_t calculate_array_sum_log2(const std::vector<double>& values, double&
 
 ////////////
 
-std::int64_t calculate_array_sum_Float64ExtendedExp(unsigned int n, double* values, double& result) {
+int64_t calculate_array_sum_Float64ExtendedExp(unsigned int n, double* values, double& result) {
     floatingExp2Integer::Timer timer;
     floatingExp2Integer::Float64ExtendedExp collector(1.0);
     double encoded = collector.sumFloat64ExtendedExp(n, values);
@@ -168,7 +168,7 @@ std::int64_t calculate_array_sum_Float64ExtendedExp(unsigned int n, double* valu
     return timer.time();
 }
 
-std::int64_t calculate_sequential_sum_Float64ExtendedExp(unsigned int n, double* values, double& result) {
+int64_t calculate_sequential_sum_Float64ExtendedExp(unsigned int n, double* values, double& result) {
     floatingExp2Integer::Timer timer;
     floatingExp2Integer::Float64ExtendedExp collector(1.0);
     collector.encodedToFloat64ExtendedExp(values[0]);
@@ -199,19 +199,19 @@ int main() {
     std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 1);
 
     double result = 0.0;
-    std::int64_t time1 = calculate_sequential_sum_log2(values_converted, result);
+    int64_t time1 = calculate_sequential_sum_log2(values_converted, result);
     std::cout << "calculate_sequential_sum_log2:                 " << time1 << "  " << result << std::endl;
 
-    std::int64_t time2 = calculate_array_sum_log2(values_converted, result);
+    int64_t time2 = calculate_array_sum_log2(values_converted, result);
     std::cout << "calculate_avg_array_sum_log2:                   " << time2 << "  " << result << std::endl;
 
-    std::int64_t time3 = calculate_array_sum_log2_smart(values_converted, result);
+    int64_t time3 = calculate_array_sum_log2_smart(values_converted, result);
     std::cout << "calculate_array_sum_log2_smart:                 " << time3 << "  " << result << std::endl;
 
-    std::int64_t time4 = calculate_sequential_sum_Float64ExtendedExp(values_extended_exp.size(), values_extended_exp.data(), result);
+    int64_t time4 = calculate_sequential_sum_Float64ExtendedExp(values_extended_exp.size(), values_extended_exp.data(), result);
     std::cout << "calculate_sequential_sum_Float64ExtendedExp:   " << time4 << "  " << result << std::endl;
 
-    std::int64_t time5 = calculate_array_sum_Float64ExtendedExp(values_extended_exp.size(), values_extended_exp.data(), result);
+    int64_t time5 = calculate_array_sum_Float64ExtendedExp(values_extended_exp.size(), values_extended_exp.data(), result);
     std::cout << "calculate_array_sum_Float64ExtendedExp:          " << time5 << "  " << result << std::endl;
 
     return 0;

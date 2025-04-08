@@ -23,7 +23,7 @@ namespace floatingExp2Integer
     }
 
     void Float64Exp2Int64::log2ToFloat64Exp2Int64(double log2) {
-        exp = (std::int64_t)log2;
+        exp = (int64_t)log2;
         scnfcnd = std::exp2(log2 - exp);
         this->scaleIfNotZero();
     }
@@ -37,7 +37,7 @@ namespace floatingExp2Integer
         return scnfcnd; 
     }
 
-    std::int64_t Float64Exp2Int64::exponent() {
+    int64_t Float64Exp2Int64::exponent() {
         this->scaleIfNotZero();
         return exp;
     }
@@ -50,8 +50,8 @@ namespace floatingExp2Integer
     }
 
     Float64Exp2Int64& Float64Exp2Int64::operator+=(Float64Exp2Int64 z) {
-        std::int64_t exp_diff = exp - z.exp;
-        std::uint64_t* sgnfcnd_bits_z = reinterpret_cast<std::uint64_t*>(&z.scnfcnd);
+        int64_t exp_diff = exp - z.exp;
+        uint64_t* sgnfcnd_bits_z = reinterpret_cast<uint64_t*>(&z.scnfcnd);
 
         if (exp_diff >= 0) {
             if (exp_diff > 64) {
@@ -111,7 +111,7 @@ namespace floatingExp2Integer
         }
         else {
             scnfcnd = 0.0;
-            std::int64_t exp_for_zero = 0x8000000000000000ll;
+            int64_t exp_for_zero = 0x8000000000000000ll;
             exp = exp_for_zero;
         }
     }

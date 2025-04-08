@@ -25,14 +25,14 @@ void FloatToFloat32Exp2Int32Values(std::vector<float>& floatValues,
 float LogSumExp2Trick(std::vector<float>& log2Values, int64_t& time);
 float Log2Multiply(std::vector<float>& log2Values, int64_t& time);
 
-void loop(int n, double results[], std::int64_t time[]);
+void loop(int n, double results[], int64_t time[]);
 
 int main() {
     const int number_of_types = 11;
     const int n[] = { 1000, 3000, 10000, 30000, 100000, 300000, 1000000, 3000000, 10000000, 30000000, 100000000 };
     const unsigned int number_of_cases = sizeof(n) / sizeof(n[0]);
     double results[number_of_cases][number_of_types];
-    std::int64_t time[number_of_cases][number_of_types];
+    int64_t time[number_of_cases][number_of_types];
 
     for (unsigned int i = 0; i < number_of_cases; i++) {
         loop(n[i], results[i], time[i]);
@@ -156,7 +156,7 @@ float multiply_Float32Exp2Int32(std::vector<floatingExp2Integer::Float32Exp2Int3
     return float32Exp2Int32Multiply.float32Exp2Int32ToLog2();
 }
 
-void loop(int n, double results[], std::int64_t time[]) {
+void loop(int n, double results[], int64_t time[]) {
 
     std::vector<float> floatValues(n);
     std::vector<floatingExp2Integer::Flt> fltValues(n);

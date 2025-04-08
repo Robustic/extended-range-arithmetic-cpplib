@@ -20,7 +20,7 @@ namespace floatingExp2Integer
     }
 
     void Int32PosExp2Int32::log2ToInt32PosExp2Int32(float log2) {
-        std::int32_t exponent = (std::int32_t)log2;
+        int32_t exponent = (int32_t)log2;
         float flt = std::exp2f(log2 - exponent);
         this->fromFloat(flt);
         exp += exponent;
@@ -31,12 +31,12 @@ namespace floatingExp2Integer
         return std::log2(scnfcnd) + exp;
     }
 
-    std::uint32_t Int32PosExp2Int32::sicnificand() { 
+    uint32_t Int32PosExp2Int32::sicnificand() { 
         this->scale();
         return scnfcnd; 
     }
 
-    std::int32_t Int32PosExp2Int32::exponent() { 
+    int32_t Int32PosExp2Int32::exponent() { 
         this->scale();
         return exp;
     }
@@ -46,7 +46,7 @@ namespace floatingExp2Integer
     }
 
     Int32PosExp2Int32& Int32PosExp2Int32::operator+=(Int32PosExp2Int32 z) {
-        std::int32_t exp_diff = exp - z.exp;
+        int32_t exp_diff = exp - z.exp;
 
         if (exp_diff >= 0) {
             if (exp_diff > 31) {
@@ -70,8 +70,8 @@ namespace floatingExp2Integer
     }
 
     Int32PosExp2Int32& Int32PosExp2Int32::operator*=(Int32PosExp2Int32 z) {
-        std::uint32_t offset = 16 - __builtin_clz(scnfcnd);
-        std::uint32_t offset_z = 16 - __builtin_clz(z.scnfcnd);
+        uint32_t offset = 16 - __builtin_clz(scnfcnd);
+        uint32_t offset_z = 16 - __builtin_clz(z.scnfcnd);
         scnfcnd = (scnfcnd >> offset) * (z.scnfcnd >> offset_z);
         exp += z.exp + offset + offset_z;
         this->checkRuleForScale();
@@ -79,7 +79,7 @@ namespace floatingExp2Integer
     }
 
     inline void Int32PosExp2Int32::fromFloat(float flt) {
-        std::uint32_t* sgnfcnd_bits = reinterpret_cast<std::uint32_t*>(&flt);
+        uint32_t* sgnfcnd_bits = reinterpret_cast<uint32_t*>(&flt);
         scnfcnd = *sgnfcnd_bits & 0x007FFFFFu;
         scnfcnd |= 0x00800000u;
         exp = ((*sgnfcnd_bits & 0x7F800000u) >> 23) - (127 + 23);
@@ -92,7 +92,7 @@ namespace floatingExp2Integer
     }
 
     inline void Int32PosExp2Int32::scale() {
-        std::uint32_t offset = 8 - __builtin_clz(scnfcnd);
+        uint32_t offset = 8 - __builtin_clz(scnfcnd);
         exp += offset;
         scnfcnd = scnfcnd >> offset;
     }

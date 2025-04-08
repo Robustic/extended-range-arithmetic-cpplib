@@ -15,7 +15,7 @@ namespace floatingExp2Integer
         this->doubleToFukushima(dbl);
     }
 
-    Fukushima::Fukushima(double dbl, std::int64_t exponent) {
+    Fukushima::Fukushima(double dbl, int64_t exponent) {
         scnfcnd = dbl;
         exp = exponent;
     }
@@ -37,7 +37,7 @@ namespace floatingExp2Integer
         const unsigned int parallel_count = 4;
 
         double scnfcndSum[parallel_count];
-        std::int64_t expSum[parallel_count];
+        int64_t expSum[parallel_count];
 
         for (unsigned int k = 0; k < parallel_count; k++) {
             scnfcndSum[k] = vector[k].scnfcnd;
@@ -45,7 +45,7 @@ namespace floatingExp2Integer
         }
 
         double scnfcndCurrent[parallel_count];
-        std::int64_t expCurrent[parallel_count];
+        int64_t expCurrent[parallel_count];
 
         for (unsigned int i = parallel_count; i + (parallel_count - 1) < vector.size(); i += parallel_count) {
             for (unsigned int k = 0; k < parallel_count; k++) {
@@ -97,7 +97,7 @@ namespace floatingExp2Integer
         const unsigned int parallel_count = 6;
 
         double scnfcndSum[parallel_count];
-        std::int64_t expSum[parallel_count];
+        int64_t expSum[parallel_count];
 
         for (unsigned int k = 0; k < parallel_count; k++) {
             scnfcndSum[k] = vector[k].scnfcnd;
@@ -105,7 +105,7 @@ namespace floatingExp2Integer
         }
 
         double scnfcndCurrent[parallel_count];
-        std::int64_t expCurrent[parallel_count];
+        int64_t expCurrent[parallel_count];
 
         for (unsigned int i = parallel_count; i + (parallel_count - 1) < vector.size(); i += parallel_count) {
             for (unsigned int k = 0; k < parallel_count; k++) {

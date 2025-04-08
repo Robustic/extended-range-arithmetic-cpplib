@@ -13,7 +13,7 @@
 namespace floatingExp2Integer
 {
     double Float64LargeRangeNumber::double_to_largeRangeNumber(double dbl) {
-        uint64_t dbl_bits = std::bit_cast<std::uint64_t>(dbl);
+        uint64_t dbl_bits = std::bit_cast<uint64_t>(dbl);
         int64_t exponent = (((dbl_bits & 0x7FF0000000000000ull) >> 52) - 1023LL);
         dbl_bits &= 0x800FFFFFFFFFFFFFull;
         dbl_bits |= 0x3FF0000000000000ull;
@@ -30,7 +30,7 @@ namespace floatingExp2Integer
 
     double Float64LargeRangeNumber::largeRangeNumber_to_double(double large_range_number) {
         double floored_exponent = std::floor(large_range_number);
-        std::int64_t exponent = (std::int64_t)floored_exponent;
+        int64_t exponent = (int64_t)floored_exponent;
         double sicnificand = large_range_number - floored_exponent + 1.0;
         return sicnificand * std::pow(2.0, (int)exponent);
     }
@@ -53,14 +53,14 @@ namespace floatingExp2Integer
         return std::log2(sicnificand) + floored_exponent;
     }
 
-    inline void decode_fast_int(double& encoded_value, std::int64_t& exponent, double& sicnificand_d) {
+    inline void decode_fast_int(double& encoded_value, int64_t& exponent, double& sicnificand_d) {
         uint64_t dbl_bits = std::bit_cast<uint64_t>(encoded_value);
-        std::int32_t cutter = ((dbl_bits >> 52) & 0x7FF) - 1023;
-        std::int64_t full_mantissa = (dbl_bits & 0x000FFFFFFFFFFFFFull) | 0x0010000000000000ull;
-        std::uint64_t sicnificand_int64;
+        int32_t cutter = ((dbl_bits >> 52) & 0x7FF) - 1023;
+        int64_t full_mantissa = (dbl_bits & 0x000FFFFFFFFFFFFFull) | 0x0010000000000000ull;
+        uint64_t sicnificand_int64;
 
         if (cutter >= 0) {
-            exponent = ((std::int64_t)full_mantissa >> (52 - cutter));
+            exponent = ((int64_t)full_mantissa >> (52 - cutter));
             sicnificand_int64 = (dbl_bits << cutter) & 0x000FFFFFFFFFFFFFull;
         }
         else {
@@ -77,19 +77,19 @@ namespace floatingExp2Integer
     }
 
     double Float64LargeRangeNumber::sum_largeRangeNumbers(double lrn1, double lrn2) {
-        std::int64_t exponent_1;
+        int64_t exponent_1;
         double sicnificand_1;
 
-        std::int64_t exponent_2;
+        int64_t exponent_2;
         double sicnificand_2;
 
         decode_fast_int(lrn1, exponent_1, sicnificand_1);
         decode_fast_int(lrn2, exponent_2, sicnificand_2);
         
-        std::int64_t exp_diff = (std::int64_t)(exponent_1 - exponent_2);
+        int64_t exp_diff = (int64_t)(exponent_1 - exponent_2);
 
-        std::int64_t sicnificand_int64_1 = std::bit_cast<std::int64_t>(sicnificand_1);
-        std::int64_t sicnificand_int64_2 = std::bit_cast<std::int64_t>(sicnificand_2);
+        int64_t sicnificand_int64_1 = std::bit_cast<int64_t>(sicnificand_1);
+        int64_t sicnificand_int64_2 = std::bit_cast<int64_t>(sicnificand_2);
 
         if (exp_diff > 0) {
             if (exp_diff > 63) {
@@ -121,8 +121,8 @@ namespace floatingExp2Integer
 
     //inline void decode_fast_double(double& encoded_value, double& exponent, double& sicnificand_d) {
     //    uint64_t dbl_bits = std::bit_cast<uint64_t>(encoded_value);
-    //    std::int32_t cutter = ((dbl_bits >> 52) & 0x7FF) - 1023;
-    //    std::uint64_t exponent_int64;
+    //    int32_t cutter = ((dbl_bits >> 52) & 0x7FF) - 1023;
+    //    uint64_t exponent_int64;
 
     //    if (cutter >= 0) {
     //        exponent_int64 = dbl_bits & (~(0x000FFFFFFFFFFFFFull >> cutter));
@@ -163,7 +163,7 @@ namespace floatingExp2Integer
         exponent_1 += exponent_2;
 
         if (sicnificand_1 >= 2.0) {
-            //std::int64_t sicnificand_int64_1 = std::bit_cast<std::int64_t>(sicnificand_1);
+            //int64_t sicnificand_int64_1 = std::bit_cast<int64_t>(sicnificand_1);
             //sicnificand_int64_1 -= 1ULL << 52;
             //sicnificand_1 = std::bit_cast<double>(sicnificand_int64_1);
             sicnificand_1 *= 0.5;

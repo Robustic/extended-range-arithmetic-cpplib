@@ -23,7 +23,7 @@ namespace floatingExp2Integer
     }
 
     void Float32Exp2Int32::log2ToFloat32Exp2Int32(float log2) {
-        exp = (std::int32_t)log2;
+        exp = (int32_t)log2;
         scnfcnd = std::exp2f(log2 - exp);
         this->scaleIfNotZero();
     }
@@ -37,7 +37,7 @@ namespace floatingExp2Integer
         return scnfcnd; 
     }
 
-    std::int32_t Float32Exp2Int32::exponent() {
+    int32_t Float32Exp2Int32::exponent() {
         this->scaleIfNotZero();
         return exp;
     }
@@ -50,8 +50,8 @@ namespace floatingExp2Integer
     }
 
     Float32Exp2Int32& Float32Exp2Int32::operator+=(Float32Exp2Int32 z) {
-        std::int32_t exp_diff = exp - z.exp;
-        std::uint32_t* sgnfcnd_bits_z = reinterpret_cast<std::uint32_t*>(&z.scnfcnd);
+        int32_t exp_diff = exp - z.exp;
+        uint32_t* sgnfcnd_bits_z = reinterpret_cast<uint32_t*>(&z.scnfcnd);
 
         if (exp_diff >= 0) {
             if (exp_diff > 35) {
@@ -111,7 +111,7 @@ namespace floatingExp2Integer
         }
         else {
             scnfcnd = 0.0f;
-            std::int32_t exp_for_zero = 0x80000000;
+            int32_t exp_for_zero = 0x80000000;
             exp = exp_for_zero;
         }
     }

@@ -42,14 +42,14 @@ void DoubleToFukushimaValues(std::vector<double>& doubleValues,
 double LogSumExp2Trick(std::vector<double>& log2Values, int64_t& time);
 double Log2Multiply(std::vector<double>& log2Values, int64_t& time);
 
-void loop(int n, double results[], std::int64_t time[]);
+void loop(int n, double results[], int64_t time[]);
 
 int main() {
     const int number_of_types = 16;
     const int n[] = { 1000, 3000, 10000, 30000, 100000, 300000, 1000000, 3000000, 10000000, 30000000, 100000000 };
     const unsigned int number_of_cases = sizeof(n) / sizeof(n[0]);
     double results[number_of_cases][number_of_types];
-    std::int64_t time[number_of_cases][number_of_types];
+    int64_t time[number_of_cases][number_of_types];
 
     for (unsigned int i = 0; i < number_of_cases; i++) {
         loop(n[i], results[i], time[i]);
@@ -439,7 +439,7 @@ double sum_vectorization_log(std::vector<double>& logValues, int64_t& time) {
     return logVectorizationSum;
 }
 
-void loop(int n, double results[], std::int64_t time[]) {
+void loop(int n, double results[], int64_t time[]) {
 
     std::vector<double> doubleValues(n);
     std::vector<floatingExp2Integer::Dbl> dblValues(n);
