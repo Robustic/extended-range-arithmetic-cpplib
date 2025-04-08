@@ -54,6 +54,13 @@ void DoubleToFukushimaValues(const std::vector<double>& doubleValues,
     }
 }
 
+void DoubleToInt64PosExp2Int64Values(const std::vector<double>& doubleValues,
+    std::vector<floatingExp2Integer::Int64PosExp2Int64>& int64PosExp2Int64Values) {
+    for (unsigned int i = 0; i < int64PosExp2Int64Values.size(); i++) {
+        int64PosExp2Int64Values[i].doubleToInt64PosExp2Int64(doubleValues[i]);
+    }
+}
+
 /////////////////////////////////
 
 /// double sum and multiply
@@ -651,13 +658,117 @@ std::int64_t calculate_avg_sequential_multiply_Float64LargeRangeNumber(std::stri
     return time_sum / n_rounds;
 }
 
+std::int64_t calculate_sequential_sum_Int64PosExp2Int64(const std::vector<floatingExp2Integer::Int64PosExp2Int64>& values, double& result) {
+    floatingExp2Integer::Timer timer;
+    floatingExp2Integer::Int64PosExp2Int64 res = values[0];
+    for (unsigned int i = 1; i < values.size(); i++) {
+        res += values[i];
+
+        if (res.scnfcnd < 1000ull) {
+            i++;
+        }
+    }
+    timer.stop();
+    result = res.asDouble();
+    return timer.time();
+}
+
+std::int64_t calculate_avg_sequential_sum_Int64PosExp2Int64(std::string& header, unsigned int n_rounds, const std::vector<double>& values, double& result)
+{
+    header = "Int64PosExp2Int64_sequential_sum:";
+
+    std::vector<floatingExp2Integer::Int64PosExp2Int64> values_converted(values.size());
+    DoubleToInt64PosExp2Int64Values(values, values_converted);
+
+    std::int64_t time_sum = 0.0;
+    for (unsigned int i = 0; i < n_rounds; i++) {
+        time_sum += calculate_sequential_sum_Int64PosExp2Int64(values_converted, result);
+    }
+    return time_sum / n_rounds;
+}
+
+std::int64_t calculate_array_sum_Int64PosExp2Int64(const std::vector<floatingExp2Integer::Int64PosExp2Int64>& values, double& result) {
+    floatingExp2Integer::Timer timer;
+    floatingExp2Integer::Int64PosExp2Int64 res;
+    res.sum(values);
+    timer.stop();
+    result = res.asDouble();
+    return timer.time();
+}
+
+std::int64_t calculate_avg_array_sum_Int64PosExp2Int64(std::string& header, unsigned int n_rounds, const std::vector<double>& values, double& result)
+{
+    header = "Int64PosExp2Int64_array_sum:";
+
+    std::vector<floatingExp2Integer::Int64PosExp2Int64> values_converted(values.size());
+    DoubleToInt64PosExp2Int64Values(values, values_converted);
+
+    std::int64_t time_sum = 0.0;
+    for (unsigned int i = 0; i < n_rounds; i++) {
+        time_sum += calculate_array_sum_Int64PosExp2Int64(values_converted, result);
+    }
+    return time_sum / n_rounds;
+}
+
+std::int64_t calculate_sequential_multiply_Int64PosExp2Int64(const std::vector<floatingExp2Integer::Int64PosExp2Int64>& values, double& result) {
+    floatingExp2Integer::Timer timer;
+    floatingExp2Integer::Int64PosExp2Int64 res = 1.0;
+    for (unsigned int i = 0; i < values.size(); i++) {
+        res *= values[i];
+
+        if (res.exp > -3ll) {
+            i++;
+        }
+    }
+    timer.stop();
+    result = res.int64PosExp2Int64ToLog2();
+    return timer.time();
+}
+
+std::int64_t calculate_avg_sequential_multiply_Int64PosExp2Int64(std::string& header, unsigned int n_rounds, const std::vector<double>& values, double& result)
+{
+    header = "Int64PosExp2Int64_sequential_multiply:";
+
+    std::vector<floatingExp2Integer::Int64PosExp2Int64> values_converted(values.size());
+    DoubleToInt64PosExp2Int64Values(values, values_converted);
+
+    std::int64_t time_sum = 0.0;
+    for (unsigned int i = 0; i < n_rounds; i++) {
+        time_sum += calculate_sequential_multiply_Int64PosExp2Int64(values_converted, result);
+    }
+    return time_sum / n_rounds;
+}
+
+std::int64_t calculate_array_multiply_Int64PosExp2Int64(const std::vector<floatingExp2Integer::Int64PosExp2Int64>& values, double& result) {
+    floatingExp2Integer::Timer timer;
+    floatingExp2Integer::Int64PosExp2Int64 res;
+    res.multiply(values);
+    timer.stop();
+    result = res.int64PosExp2Int64ToLog2();
+    return timer.time();
+}
+
+std::int64_t calculate_avg_array_multiply_Int64PosExp2Int64(std::string& header, unsigned int n_rounds, const std::vector<double>& values, double& result)
+{
+    header = "Int64PosExp2Int64_array_multiply:";
+
+    std::vector<floatingExp2Integer::Int64PosExp2Int64> values_converted(values.size());
+    DoubleToInt64PosExp2Int64Values(values, values_converted);
+
+    std::int64_t time_sum = 0.0;
+    for (unsigned int i = 0; i < n_rounds; i++) {
+        time_sum += calculate_array_multiply_Int64PosExp2Int64(values_converted, result);
+    }
+    return time_sum / n_rounds;
+}
+
 int main() {
     constexpr unsigned int n[] = { 1000, 3000, 10000, 30000, 100000, 300000, 1000000, 3000000, 10000000, 30000000, 100000000 };
     constexpr unsigned int n_rounds[] = { 100000, 30000, 10000, 3000, 1000, 300, 100, 30, 10, 3, 1 };
     constexpr unsigned int n_count = sizeof(n) / sizeof(n[0]);
 
     std::vector<std::function<std::int64_t(std::string&, int, const std::vector<double>&, double&)>> functions;
-    //functions.push_back(calculate_avg_array_sum_dbl);
+    functions.push_back(calculate_avg_array_sum_dbl);
     //functions.push_back(calculate_avg_array_multiply_dbl);
     //functions.push_back(calculate_avg_sequential_sum_Dbl1);
     //functions.push_back(calculate_avg_sequential_sum_Dbl2);
@@ -677,8 +788,12 @@ int main() {
     //functions.push_back(calculate_avg_array_sum_Float64PosExp2Int64);
     //functions.push_back(calculate_avg_array_sum_Float64LargeRangeNumber);
     //functions.push_back(calculate_avg_sequential_sum_Float64LargeRangeNumber);
-    functions.push_back(calculate_avg_sequential_multiply_Float64LargeRangeNumber);
-    functions.push_back(calculate_avg_array_multiply_Float64LargeRangeNumber);
+    //functions.push_back(calculate_avg_sequential_multiply_Float64LargeRangeNumber);
+    //functions.push_back(calculate_avg_array_multiply_Float64LargeRangeNumber);
+    functions.push_back(calculate_avg_sequential_sum_Int64PosExp2Int64);
+    functions.push_back(calculate_avg_array_sum_Int64PosExp2Int64);
+    functions.push_back(calculate_avg_sequential_multiply_Int64PosExp2Int64);
+    functions.push_back(calculate_avg_array_multiply_Int64PosExp2Int64);
 
     int functions_count = functions.size();
 
