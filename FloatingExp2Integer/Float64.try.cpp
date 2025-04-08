@@ -18,12 +18,12 @@
 
 const uint32_t seed_val = 1337;
 
-void InitializeRandomNumbers(std::vector<double>& vec) {
+void InitializeRandomNumbers(std::vector<double>& vec, double min_log2, double max_log2) {
     std::mt19937 rng;
     rng.seed(seed_val);
-    std::uniform_real_distribution<double> unif(std::log2(1e-11), std::log2(1e-10));
+    std::uniform_real_distribution<double> unif(min_log2, max_log2);
     for (unsigned int i = 0; i < vec.size(); i++) {
-        float a_random_doable = unif(rng);
+        double a_random_doable = unif(rng);
         vec[i] = std::exp2(a_random_doable);
     }
 }
@@ -846,41 +846,45 @@ std::int64_t calculate_avg_array_multiply_Float64PosExp2Int64(std::string& heade
 }
 
 int main() {
-    constexpr unsigned int n[] = { 1000, 3000, 10000, 30000, 100000, 300000, 1000000, 3000000, 10000000, 30000000, 100000000 };
-    constexpr unsigned int n_rounds[] = { 100000, 30000, 10000, 3000, 1000, 300, 100, 30, 10, 3, 1 };
+    constexpr double min_log2 = -33;
+    constexpr double max_log2 = -30;
+
+    //constexpr unsigned int n[] = { 1000, 3000, 10000, 30000, 100000, 300000, 1000000, 3000000, 10000000, 30000000, 100000000 };
+    //constexpr unsigned int n_rounds[] = { 100000, 30000, 10000, 3000, 1000, 300, 100, 30, 10, 3, 1 };
+    constexpr unsigned int n[] = { 100000 };
+    constexpr unsigned int n_rounds[] = { 10 };
     constexpr unsigned int n_count = sizeof(n) / sizeof(n[0]);
 
     std::vector<std::function<std::int64_t(std::string&, int, const std::vector<double>&, double&)>> functions;
-    functions.push_back(calculate_avg_array_sum_dbl);
-    //functions.push_back(calculate_avg_array_multiply_dbl);
-    //functions.push_back(calculate_avg_sequential_sum_Dbl1);
-    //functions.push_back(calculate_avg_sequential_sum_Dbl2);
-    //functions.push_back(calculate_avg_array_sum_Dbl1);
-    //functions.push_back(calculate_avg_array_sum_Dbl2);
-    //functions.push_back(calculate_avg_sequential_multiply_Dbl1);
-    //functions.push_back(calculate_avg_sequential_multiply_Dbl2);
-    //functions.push_back(calculate_avg_array_multiply_Dbl1);
-    //functions.push_back(calculate_avg_array_multiply_Dbl2);
-    //functions.push_back(calculate_avg_sequential_sum_log2);
-    //functions.push_back(calculate_avg_array_sum_log2);
-    functions.push_back(calculate_avg_array_multiply_log2);
-    //functions.push_back(calculate_avg_sequential_sum_Fukushima);
-    //functions.push_back(calculate_avg_array_sum_Fukushima);
-    //functions.push_back(calculate_avg_sequential_multiply_Fukushima);
-    //functions.push_back(calculate_avg_array_multiply_Fukushima);
-    //functions.push_back(calculate_avg_array_sum_Float64PosExp2Int64);
-    //functions.push_back(calculate_avg_array_sum_Float64LargeRangeNumber);
-    //functions.push_back(calculate_avg_sequential_sum_Float64LargeRangeNumber);
-    //functions.push_back(calculate_avg_sequential_multiply_Float64LargeRangeNumber);
-    //functions.push_back(calculate_avg_array_multiply_Float64LargeRangeNumber);
-    //functions.push_back(calculate_avg_sequential_sum_Int64PosExp2Int64);
-    //functions.push_back(calculate_avg_array_sum_Int64PosExp2Int64);
-    //functions.push_back(calculate_avg_sequential_multiply_Int64PosExp2Int64);
-    //functions.push_back(calculate_avg_array_multiply_Int64PosExp2Int64);
+    functions.push_back(calculate_avg_sequential_sum_Dbl1);
+    functions.push_back(calculate_avg_sequential_sum_Dbl2);
+    functions.push_back(calculate_avg_sequential_sum_log2);
+    functions.push_back(calculate_avg_sequential_sum_Fukushima);
+    functions.push_back(calculate_avg_sequential_sum_Float64LargeRangeNumber);
+    functions.push_back(calculate_avg_sequential_sum_Int64PosExp2Int64);
     functions.push_back(calculate_avg_sequential_sum_Float64PosExp2Int64);
+    functions.push_back(calculate_avg_array_sum_dbl);
+    functions.push_back(calculate_avg_array_sum_Dbl1);
+    functions.push_back(calculate_avg_array_sum_Dbl2);
+    functions.push_back(calculate_avg_array_sum_log2);
+    functions.push_back(calculate_avg_array_sum_Fukushima);
+    functions.push_back(calculate_avg_array_sum_Float64LargeRangeNumber);
+    functions.push_back(calculate_avg_array_sum_Int64PosExp2Int64);
     functions.push_back(calculate_avg_array_sum_Float64PosExp2Int64);
-    //functions.push_back(calculate_avg_sequential_multiply_Float64PosExp2Int64);
-    //functions.push_back(calculate_avg_array_multiply_Float64PosExp2Int64);
+    functions.push_back(calculate_avg_sequential_multiply_Dbl1);
+    functions.push_back(calculate_avg_sequential_multiply_Dbl2);
+    functions.push_back(calculate_avg_sequential_multiply_Fukushima);
+    functions.push_back(calculate_avg_sequential_multiply_Float64LargeRangeNumber);
+    functions.push_back(calculate_avg_sequential_multiply_Int64PosExp2Int64);
+    functions.push_back(calculate_avg_sequential_multiply_Float64PosExp2Int64);
+    functions.push_back(calculate_avg_array_multiply_dbl);
+    functions.push_back(calculate_avg_array_multiply_Dbl1);
+    functions.push_back(calculate_avg_array_multiply_Dbl2);
+    functions.push_back(calculate_avg_array_multiply_log2);
+    functions.push_back(calculate_avg_array_multiply_Fukushima);
+    functions.push_back(calculate_avg_array_multiply_Float64LargeRangeNumber);
+    functions.push_back(calculate_avg_array_multiply_Int64PosExp2Int64);
+    functions.push_back(calculate_avg_array_multiply_Float64PosExp2Int64);
 
     int functions_count = functions.size();
 
@@ -893,7 +897,7 @@ int main() {
         int n_rounds_current = n_rounds[i];
 
         std::vector<double> double_values(n_current);
-        InitializeRandomNumbers(double_values);
+        InitializeRandomNumbers(double_values, min_log2, max_log2);
 
         for (unsigned int f = 0; f < functions.size(); f++) {
             std::function<std::int64_t(std::string&, int, const std::vector<double>&, double&)> function = functions[f];
