@@ -1,5 +1,6 @@
 import time
 import struct
+import math
 import torch
 
 # Read the binary file
@@ -9,6 +10,9 @@ def read_binary_file(filename):
         num_doubles = len(data) // struct.calcsize('d')
         doubles = struct.unpack('d' * num_doubles, data)
         return list(doubles)
+    
+def ln_to_log2(ln_value):
+    return ln_value / math.log(2)
 
 # Calculate log-sum-exp using torch
 def calculate_log_sum_exp(doubles):
@@ -21,59 +25,67 @@ def calculate_log_sum_exp(doubles):
     execution_time_nanoseconds = (end_time - start_time) * 1_000_000_000
 
     print("Count:", tensor.numel())
-    print("Log-Sum-Exp:", log_sum_exp.item())
+    print("Log-Sum-Exp:", ln_to_log2(log_sum_exp.item()))
     print(f"Execution time: {execution_time_nanoseconds} nanoseconds")
 
     return log_sum_exp
 
-# Read doubles from binary file
-doubles = read_binary_file('data.bin')
+def log2_to_ln(log2_value):
+    return log2_value * math.log(2)
 
-result = calculate_log_sum_exp(doubles[:1000])
-result = calculate_log_sum_exp(doubles[:3000])
-result = calculate_log_sum_exp(doubles[:10000])
-result = calculate_log_sum_exp(doubles[:30000])
-result = calculate_log_sum_exp(doubles[:100000])
-result = calculate_log_sum_exp(doubles[:300000])
-result = calculate_log_sum_exp(doubles[:1000000])
-result = calculate_log_sum_exp(doubles[:3000000])
-result = calculate_log_sum_exp(doubles[:10000000])
-result = calculate_log_sum_exp(doubles[:30000000])
-result = calculate_log_sum_exp(doubles)
+# Read doubles from binary file
+doubles_log2 = read_binary_file('data.bin')
+doubles = [log2_to_ln(value) for value in doubles_log2]
+
+print("torch.get_num_threads():", torch.get_num_threads())
+
+for _ in range(1):
+    result = calculate_log_sum_exp(doubles[:1000])
+    result = calculate_log_sum_exp(doubles[:3000])
+    result = calculate_log_sum_exp(doubles[:10000])
+    result = calculate_log_sum_exp(doubles[:30000])
+    result = calculate_log_sum_exp(doubles[:100000])
+    result = calculate_log_sum_exp(doubles[:300000])
+    result = calculate_log_sum_exp(doubles[:1000000])
+    result = calculate_log_sum_exp(doubles[:3000000])
+    result = calculate_log_sum_exp(doubles[:10000000])
+    result = calculate_log_sum_exp(doubles[:30000000])
+    result = calculate_log_sum_exp(doubles)
 
 # C:\msys64\home\FloatingExp2Integer\Python>python logsumexp.py
+# torch.get_num_threads(): 8
 # Count: 1000
-# Log-Sum-Exp: -24.277303072587276
-# Execution time: 1116200.0009790063 nanoseconds
+# Log-Sum-Exp: -21.3121011101092
+# Execution time: 1013099.9726243317 nanoseconds
 # Count: 3000
-# Log-Sum-Exp: -23.155393202897304
-# Execution time: 1283499.994315207 nanoseconds
+# Log-Sum-Exp: -19.708301267289112
+# Execution time: 1056200.0097706914 nanoseconds
 # Count: 10000
-# Log-Sum-Exp: -21.943974860976112
-# Execution time: 133500.02700462937 nanoseconds
+# Log-Sum-Exp: -17.964701494069118
+# Execution time: 270899.96729046106 nanoseconds
 # Count: 30000
-# Log-Sum-Exp: -20.84549363731455
-# Execution time: 217799.9704144895 nanoseconds
+# Log-Sum-Exp: -16.380524377550557
+# Execution time: 238600.01238062978 nanoseconds
 # Count: 100000
-# Log-Sum-Exp: -19.636003929565195
-# Execution time: 480799.9939657748 nanoseconds
+# Log-Sum-Exp: -14.63813971690725
+# Execution time: 336299.99961704016 nanoseconds
 # Count: 300000
-# Log-Sum-Exp: -18.53908126562819
-# Execution time: 703800.0039756298 nanoseconds
+# Log-Sum-Exp: -13.055326874980866
+# Execution time: 750200.0080421567 nanoseconds
 # Count: 1000000
-# Log-Sum-Exp: -17.334269991359015
-# Execution time: 1836600.0149399042 nanoseconds
+# Log-Sum-Exp: -11.317468364916614
+# Execution time: 1617599.9771803617 nanoseconds
 # Count: 3000000
-# Log-Sum-Exp: -16.235441172484787
-# Execution time: 6711399.997584522 nanoseconds
+# Log-Sum-Exp: -9.732198940653394
+# Execution time: 6065300.025511533 nanoseconds
 # Count: 10000000
-# Log-Sum-Exp: -15.031710085573613
-# Execution time: 21436500.013805926 nanoseconds
+# Log-Sum-Exp: -7.995498936018165
+# Execution time: 21973999.973852187 nanoseconds
 # Count: 30000000
-# Log-Sum-Exp: -13.9331482950458
-# Execution time: 59958000.02710894 nanoseconds
+# Log-Sum-Exp: -6.4105928230173745
+# Execution time: 61859800.01464486 nanoseconds
 # Count: 100000000
-# Log-Sum-Exp: -12.729030034082715
-# Execution time: 172586700.00592247 nanoseconds
+# Log-Sum-Exp: -4.673451135115633
+# Execution time: 190469200.02438128 nanoseconds
 
 # C:\msys64\home\FloatingExp2Integer\Python>
