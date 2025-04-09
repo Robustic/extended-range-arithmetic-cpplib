@@ -42,7 +42,7 @@ void InitializeRandomNumbers(std::vector<double>& vec, double min_log2, double m
         vec[i] = a_random_doable;
     }
 
-    save_vector_as_binary(vec, "data.bin");
+    // save_vector_as_binary(vec, "data.bin");
 }
 
 //constexpr size_t n[] = { 1000, 3000, 10000, 30000, 100000, 300000, 1000000, 3000000, 10000000, 30000000, 100000000 };
