@@ -26,6 +26,12 @@ namespace floatingExp2Integer
             }
         }
 
+        static void as_double_vector(const std::vector<floatingExp2Integer::Log2Scale>& from, std::vector<double>& to) {
+            for (size_t i = 0; i < to.size(); i++) {
+                to[i] = std::exp2(from[i].log2scale);
+            }
+        }
+
         double as_double() { return std::exp2(log2scale); }
         double as_log2() { return log2scale; }
 
