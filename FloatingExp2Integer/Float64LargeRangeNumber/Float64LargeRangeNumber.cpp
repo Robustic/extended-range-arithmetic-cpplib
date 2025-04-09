@@ -12,7 +12,7 @@
 
 namespace floatingExp2Integer
 {
-    double Float64LargeRangeNumber::double_to_largeRangeNumber(double dbl) {
+    double Float64LargeRangeNumber::double_to(double dbl) {
         uint64_t dbl_bits = std::bit_cast<uint64_t>(dbl);
         int64_t exponent = (((dbl_bits & 0x7FF0000000000000ull) >> 52) - 1023LL);
         dbl_bits &= 0x800FFFFFFFFFFFFFull;
@@ -22,32 +22,33 @@ namespace floatingExp2Integer
         return (double)exponent + (sicnificand - 1.0);
     }
 
-    void Float64LargeRangeNumber::doubles_to_largeRangeNumbers(const std::vector<double>& in, std::vector<double>& out) {
+    void Float64LargeRangeNumber::doubles_to(const std::vector<double>& in, std::vector<double>& out) {
         for (size_t i = 0; i < in.size(); i++) {
-            out[i] = double_to_largeRangeNumber(in[i]);
+            out[i] = double_to(in[i]);
         }
     }
 
-    double Float64LargeRangeNumber::largeRangeNumber_to_double(double large_range_number) {
+    double Float64LargeRangeNumber::as_double(double large_range_number) {
         double floored_exponent = std::floor(large_range_number);
         int64_t exponent = (int64_t)floored_exponent;
         double sicnificand = large_range_number - floored_exponent + 1.0;
         return sicnificand * std::pow(2.0, (int)exponent);
     }
 
-    double Float64LargeRangeNumber::log2_to_largeRangeNumber(double log2_dbl) {
+    double Float64LargeRangeNumber::as_double() {
+        double floored_exponent = std::floor(encoded);
+        int64_t exponent = (int64_t)floored_exponent;
+        double sicnificand = encoded - floored_exponent + 1.0;
+        return sicnificand * std::pow(2.0, (int)exponent);
+    }
+
+    void Float64LargeRangeNumber::log2_to(double log2_dbl) {
         double floored_exponent = std::floor(log2_dbl);
-        double sicnificand = log2_dbl - floored_exponent + 1.0;
-        return std::exp2(sicnificand) + floored_exponent;
+        double sicnificand = log2_dbl - floored_exponent;
+        encoded = std::exp2(sicnificand) + floored_exponent - 1;
     }
 
-    void Float64LargeRangeNumber::log2s_to_largeRangeNumbers(const std::vector<double>& in, std::vector<double>& out) {
-        for (size_t i = 0; i < in.size(); i++) {
-            out[i] = log2_to_largeRangeNumber(in[i]);
-        }
-    }
-
-    double Float64LargeRangeNumber::largeRangeNumber_to_log2(double large_range_number) {
+    double Float64LargeRangeNumber::as_log2(double large_range_number) {
         double floored_exponent = std::floor(large_range_number);
         double sicnificand = large_range_number - floored_exponent + 1.0;
         return std::log2(sicnificand) + floored_exponent;
@@ -76,7 +77,7 @@ namespace floatingExp2Integer
         sicnificand_d = std::bit_cast<double>(sicnificand_int64);
     }
 
-    double Float64LargeRangeNumber::sum_largeRangeNumbers(double lrn1, double lrn2) {
+    double Float64LargeRangeNumber::sum(double lrn1, double lrn2) {
         int64_t exponent_1;
         double sicnificand_1;
 
@@ -143,7 +144,7 @@ namespace floatingExp2Integer
     //    }
     //}
 
-    double Float64LargeRangeNumber::multiply_largeRangeNumbers(double lrn1, double lrn2) {
+    double Float64LargeRangeNumber::multiply(double lrn1, double lrn2) {
         double exponent_1 = std::floor(lrn1);
         double sicnificand_1 = lrn1 - exponent_1 + 1;
 
@@ -174,11 +175,11 @@ namespace floatingExp2Integer
         }
     }
 
-    double Float64LargeRangeNumber::sum_largeRangeNumbers(std::vector<double>& large_range_numbers) {
+    double Float64LargeRangeNumber::sum(std::vector<double>& large_range_numbers) {
         if (large_range_numbers.size() < 16) {
-            double sum_small = large_range_numbers[0] + (double)large_range_numbers[0];
+            double sum_small = large_range_numbers[0];
             for (size_t k = 1; k < large_range_numbers.size(); k++) {
-                sum_small = sum_largeRangeNumbers(sum_small, large_range_numbers[k]);
+                sum_small = sum(sum_small, large_range_numbers[k]);
             }
             return sum_small;
         }
@@ -244,26 +245,26 @@ namespace floatingExp2Integer
             }
         }
 
-        double sum = -0x1p52;
+        double total_sum = -0x1p52;
 
         for (size_t m = 0; m < n_parallel; m++) {
             for (size_t k = 0; k < 8; k++) {
-                sum = sum_largeRangeNumbers(sum, sicnificand_sum[m][k] + (double)exponent_sum[m][k] - 1);
+                total_sum = sum(total_sum, sicnificand_sum[m][k] + (double)exponent_sum[m][k] - 1);
             }
         }
 
         for (i = i; i < large_range_numbers.size(); i++) {
-            sum = sum_largeRangeNumbers(sum, large_range_numbers[i]);
+            total_sum = sum(total_sum, large_range_numbers[i]);
         }
 
-        return sum;
+        return total_sum;
     }
 
-    double Float64LargeRangeNumber::multiply_largeRangeNumbers(std::vector<double>& large_range_numbers) {
+    double Float64LargeRangeNumber::multiply(std::vector<double>& large_range_numbers) {
         if (large_range_numbers.size() < 16) {
-            double sum_small = large_range_numbers[0] + (double)large_range_numbers[0];
+            double sum_small = large_range_numbers[0];
             for (size_t k = 1; k < large_range_numbers.size(); k++) {
-                sum_small = sum_largeRangeNumbers(sum_small, large_range_numbers[k]);
+                sum_small = multiply(sum_small, large_range_numbers[k]);
             }
             return sum_small;
         }
@@ -307,12 +308,12 @@ namespace floatingExp2Integer
 
         for (size_t m = 0; m < n_parallel; m++) {
             for (size_t k = 0; k < 8; k++) {
-                sum = multiply_largeRangeNumbers(sum, sicnificand_sum[m][k] + exponent_floored_sum[m][k] - 1);
+                sum = multiply(sum, sicnificand_sum[m][k] + exponent_floored_sum[m][k] - 1);
             }
         }
 
         for (i = i; i < large_range_numbers.size(); i++) {
-            sum = multiply_largeRangeNumbers(sum, large_range_numbers[i]);
+            sum = multiply(sum, large_range_numbers[i]);
         }
 
         return sum;
