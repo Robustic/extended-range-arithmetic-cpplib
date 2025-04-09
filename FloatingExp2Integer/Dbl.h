@@ -9,9 +9,18 @@ namespace floatingExp2Integer
         private:
             double dbl;
         public:
-            Dbl() { dbl = 0; }
+            Dbl() { dbl = 1.0; }
             Dbl(double d) { dbl = d; }
-            double asDouble() { return dbl; }
+
+            void log2_to(const double from) { dbl = std::exp2(from); }
+            static void log2s_to(const std::vector<double>& from, std::vector<floatingExp2Integer::Dbl>& to) {
+                for (size_t i = 0; i < to.size(); i++) {
+                    to[i].log2_to(from[i]);
+                }
+            }
+
+            double as_double() { return dbl; }
+            double as_log2() { return std::log2(dbl); }
 
             Dbl& operator+=(Dbl d) { 
                 dbl += d.dbl;
@@ -23,7 +32,7 @@ namespace floatingExp2Integer
                 return *this;
             }
 
-            void sumDbl(const std::vector<floatingExp2Integer::Dbl>& dblValues) {
+            void sum(const std::vector<floatingExp2Integer::Dbl>& dblValues) {
                 floatingExp2Integer::Dbl dblSum1 = 0.0;
                 floatingExp2Integer::Dbl dblSum2 = 0.0;
                 floatingExp2Integer::Dbl dblSum3 = 0.0;
@@ -49,7 +58,7 @@ namespace floatingExp2Integer
                 dbl = dblSum1.dbl + dblSum2.dbl + dblSum3.dbl + dblSum4.dbl + dblSum5.dbl + dblSum6.dbl + dblSum7.dbl + dblSum8.dbl;
             }
 
-            void multiplyDbl(const std::vector<floatingExp2Integer::Dbl>& dblValues) {
+            void multiply(const std::vector<floatingExp2Integer::Dbl>& dblValues) {
                 floatingExp2Integer::Dbl dblSum1 = 0.0;
                 floatingExp2Integer::Dbl dblSum2 = 0.0;
                 floatingExp2Integer::Dbl dblSum3 = 0.0;

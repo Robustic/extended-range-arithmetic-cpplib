@@ -10,7 +10,7 @@
 #include "Timer.h"
 #include "Dbl.h"
 #include "Dbl2.h"
-#include "Dbl3.h"
+#include "Log2Scale.h"
 #include "./Int64PosExp2Int64/Int64PosExp2Int64.h"
 #include "./Float64PosExp2Int64/Float64PosExp2Int64.h"
 #include "./Float64LargeRangeNumber/Float64LargeRangeNumber.h"
@@ -24,27 +24,16 @@ void InitializeRandomNumbers(std::vector<double>& vec, double min_log2, double m
     std::uniform_real_distribution<double> unif(min_log2, max_log2);
     for (unsigned int i = 0; i < vec.size(); i++) {
         double a_random_doable = unif(rng);
-        vec[i] = std::exp2(a_random_doable);
+        vec[i] = a_random_doable;
     }
 }
 
-void DoubleToDblValues(const std::vector<double>& doubleValues, std::vector<floatingExp2Integer::Dbl>& dblValues) {
-    for (unsigned int i = 0; i < dblValues.size(); i++) {
-        dblValues[i] += doubleValues[i];
-    }
-}
 
-void DoubleToDbl2Values(const std::vector<double>& doubleValues, std::vector<floatingExp2Integer::Dbl2>& dbl2Values) {
-    for (unsigned int i = 0; i < dbl2Values.size(); i++) {
-        dbl2Values[i] += doubleValues[i];
-    }
-}
-
-void DoubleToLogValues(const std::vector<double>& doubleValues, std::vector<double>& logValues) {
-    for (unsigned int i = 0; i < logValues.size(); i++) {
-        logValues[i] = std::log2(doubleValues[i]);
-    }
-}
+//void DoubleToLogValues(const std::vector<double>& doubleValues, std::vector<double>& logValues) {
+//    for (unsigned int i = 0; i < logValues.size(); i++) {
+//        logValues[i] = std::log2(doubleValues[i]);
+//    }
+//}
 
 void DoubleToFukushimaValues(const std::vector<double>& doubleValues,
     std::vector<floatingExp2Integer::Fukushima>& fukushimaValues) {
@@ -156,7 +145,7 @@ int64_t calculate_sequential_sum_log2(const std::vector<double>& values, double&
         }
     }
     timer.stop();
-    result = std::exp2(sum);
+    result = sum;
     return timer.time();
 }
 
@@ -164,23 +153,23 @@ int64_t calculate_avg_sequential_sum_log2(std::string& header, unsigned int n_ro
 {
     header = "log2_sequential_sum:";
 
-    std::vector<double> values_converted(values.size());
-    DoubleToLogValues(values, values_converted);
-
     int64_t time_sum = 0.0;
     for (unsigned int i = 0; i < n_rounds; i++) {
-        time_sum += calculate_sequential_sum_log2(values_converted, result);
+        time_sum += calculate_sequential_sum_log2(values, result);
     }
     return time_sum / n_rounds;
 }
 
-int64_t calculate_array_sum_log2(const std::vector<double>& values, double& result) {
+int64_t calculate_array_sum_log2(const std::vector<floatingExp2Integer::Log2Scale>& values, double& result) {
+    std::vector<double> values_converted(values.size());
+    floatingExp2Integer::Log2Scale::as_vector(values, values_converted);
+
     floatingExp2Integer::Timer timer;
     unsigned int i = 0;
     double sum = 0.0;
-    double max = *std::max_element(values.begin(), values.end());
-    for (i = 0; i < values.size(); i++) {
-        sum += std::exp2(values[i] - max);
+    double max = *std::max_element(values_converted.begin(), values_converted.end());
+    for (i = 0; i < values_converted.size(); i++) {
+        sum += std::exp2(values_converted[i] - max);
     }
     timer.stop();
     result = max + std::log2(sum);
@@ -191,8 +180,8 @@ int64_t calculate_avg_array_sum_log2(std::string& header, unsigned int n_rounds,
 {
     header = "log2_array_sum:";
 
-    std::vector<double> values_converted(values.size());
-    DoubleToLogValues(values, values_converted);
+    std::vector<floatingExp2Integer::Log2Scale> values_converted(values.size());
+    floatingExp2Integer::Log2Scale::log2s_to(values, values_converted);
 
     int64_t time_sum = 0.0;
     for (unsigned int i = 0; i < n_rounds; i++) {
@@ -201,12 +190,15 @@ int64_t calculate_avg_array_sum_log2(std::string& header, unsigned int n_rounds,
     return time_sum / n_rounds;
 }
 
-int64_t calculate_array_multiply_log2(const std::vector<double>& values, double& result) {
+int64_t calculate_array_multiply_log2(const std::vector<floatingExp2Integer::Log2Scale>& values, double& result) {
+    std::vector<double> values_converted(values.size());
+    floatingExp2Integer::Log2Scale::as_vector(values, values_converted);
+
     floatingExp2Integer::Timer timer;
     unsigned int i = 0;
     double sum = 0.0;
-    for (i = 0; i < values.size(); i++) {
-        sum += values[i];
+    for (i = 0; i < values_converted.size(); i++) {
+        sum += values_converted[i];
     }
     timer.stop();
     result = sum;
@@ -217,8 +209,8 @@ int64_t calculate_avg_array_multiply_log2(std::string& header, unsigned int n_ro
 {
     header = "log2_array_multiply:";
 
-    std::vector<double> values_converted(values.size());
-    DoubleToLogValues(values, values_converted);
+    std::vector<floatingExp2Integer::Log2Scale> values_converted(values.size());
+    floatingExp2Integer::Log2Scale::log2s_to(values, values_converted);
 
     int64_t time_sum = 0.0;
     for (unsigned int i = 0; i < n_rounds; i++) {
@@ -229,6 +221,20 @@ int64_t calculate_avg_array_multiply_log2(std::string& header, unsigned int n_ro
 
 /// Dbl1 and Dbl2 sum
 
+//template<typename T>
+//int64_t calculate_avg_sequential_sum(std::string& header, unsigned int n_rounds, const std::vector<double>& values, double& result) {
+//    header = "Dbl_sequential_sum:";
+//
+//    std::vector<T> values_converted(values.size());
+//    T::log2s_to(values, values_converted);
+//
+//    int64_t time_sum = 0;
+//    for (unsigned int i = 0; i < n_rounds; i++) {
+//        time_sum += calculate_sequential_sum(values_converted, result);
+//    }
+//    return time_sum / n_rounds;
+//}
+
 int64_t calculate_sequential_sum_Dbl1(const std::vector<floatingExp2Integer::Dbl>& values, double& result) {
     floatingExp2Integer::Timer timer;
     floatingExp2Integer::Dbl sum = 0.0;
@@ -236,7 +242,7 @@ int64_t calculate_sequential_sum_Dbl1(const std::vector<floatingExp2Integer::Dbl
         sum += values[i];
     }
     timer.stop();
-    result = sum.asDouble();
+    result = sum.as_log2();
     return timer.time();
 }
 
@@ -245,7 +251,7 @@ int64_t calculate_avg_sequential_sum_Dbl1(std::string& header, unsigned int n_ro
     header = "Dbl1_sequential_sum:";
 
     std::vector<floatingExp2Integer::Dbl> values_converted(values.size());
-    DoubleToDblValues(values, values_converted);
+    floatingExp2Integer::Dbl::log2s_to(values, values_converted);
 
     int64_t time_sum = 0.0;
     for (unsigned int i = 0; i < n_rounds; i++) {
@@ -261,7 +267,7 @@ int64_t calculate_sequential_sum_Dbl2(const std::vector<floatingExp2Integer::Dbl
         sum += values[i];
     }
     timer.stop();
-    result = sum.asDouble();
+    result = sum.as_log2();
     return timer.time();
 }
 
@@ -270,7 +276,7 @@ int64_t calculate_avg_sequential_sum_Dbl2(std::string& header, unsigned int n_ro
     header = "Dbl2_sequential_sum:";
 
     std::vector<floatingExp2Integer::Dbl2> values_converted(values.size());
-    DoubleToDbl2Values(values, values_converted);
+    floatingExp2Integer::Dbl2::log2s_to(values, values_converted);
 
     int64_t time_sum = 0.0;
     for (unsigned int i = 0; i < n_rounds; i++) {
@@ -282,9 +288,9 @@ int64_t calculate_avg_sequential_sum_Dbl2(std::string& header, unsigned int n_ro
 int64_t calculate_array_sum_Dbl1(const std::vector<floatingExp2Integer::Dbl>& values, double& result) {
     floatingExp2Integer::Timer timer;
     floatingExp2Integer::Dbl sum = 0.0;
-    sum.sumDbl(values);
+    sum.sum(values);
     timer.stop();
-    result = sum.asDouble();
+    result = sum.as_log2();
     return timer.time();
 }
 
@@ -293,7 +299,7 @@ int64_t  calculate_avg_array_sum_Dbl1(std::string& header, unsigned int n_rounds
     header = "Dbl1_array_sum:";
 
     std::vector<floatingExp2Integer::Dbl> values_converted(values.size());
-    DoubleToDblValues(values, values_converted);
+    floatingExp2Integer::Dbl::log2s_to(values, values_converted);
 
     int64_t  time_sum = 0.0;
     for (unsigned int i = 0; i < n_rounds; i++) {
@@ -307,7 +313,7 @@ int64_t  calculate_array_sum_Dbl2(const std::vector<floatingExp2Integer::Dbl2>& 
     floatingExp2Integer::Dbl2 sum = 0.0;
     sum.sumDbl2(values);
     timer.stop();
-    result = sum.asDouble();
+    result = sum.as_log2();
     return timer.time();
 }
 
@@ -316,7 +322,7 @@ int64_t  calculate_avg_array_sum_Dbl2(std::string& header, unsigned int n_rounds
     header = "Dbl2_array_sum:";
 
     std::vector<floatingExp2Integer::Dbl2> values_converted(values.size());
-    DoubleToDbl2Values(values, values_converted);
+    floatingExp2Integer::Dbl2::log2s_to(values, values_converted);
 
     int64_t  time_sum = 0.0;
     for (unsigned int i = 0; i < n_rounds; i++) {
@@ -334,7 +340,7 @@ int64_t  calculate_sequential_multiply_Dbl1(const std::vector<floatingExp2Intege
         multiplied *= values[i];
     }
     timer.stop();
-    result = multiplied.asDouble();
+    result = multiplied.as_log2();
     return timer.time();
 }
 
@@ -343,7 +349,7 @@ int64_t  calculate_avg_sequential_multiply_Dbl1(std::string& header, unsigned in
     header = "Dbl1_sequential_multiply:";
 
     std::vector<floatingExp2Integer::Dbl> values_converted(values.size());
-    DoubleToDblValues(values, values_converted);
+    floatingExp2Integer::Dbl::log2s_to(values, values_converted);
 
     int64_t  time_sum = 0.0;
     for (unsigned int i = 0; i < n_rounds; i++) {
@@ -359,7 +365,7 @@ int64_t  calculate_sequential_multiply_Dbl2(const std::vector<floatingExp2Intege
         multiplied *= values[i];
     }
     timer.stop();
-    result = multiplied.asDouble();
+    result = multiplied.as_log2();
     return timer.time();
 }
 
@@ -368,7 +374,7 @@ int64_t  calculate_avg_sequential_multiply_Dbl2(std::string& header, unsigned in
     header = "Dbl2_sequential_multiply:";
 
     std::vector<floatingExp2Integer::Dbl2> values_converted(values.size());
-    DoubleToDbl2Values(values, values_converted);
+    floatingExp2Integer::Dbl2::log2s_to(values, values_converted);
 
     int64_t  time_sum = 0.0;
     for (unsigned int i = 0; i < n_rounds; i++) {
@@ -380,9 +386,9 @@ int64_t  calculate_avg_sequential_multiply_Dbl2(std::string& header, unsigned in
 int64_t  calculate_array_multiply_Dbl1(const std::vector<floatingExp2Integer::Dbl>& values, double& result) {
     floatingExp2Integer::Timer timer;
     floatingExp2Integer::Dbl multiplied = 1.0;
-    multiplied.multiplyDbl(values);
+    multiplied.multiply(values);
     timer.stop();
-    result = multiplied.asDouble();
+    result = multiplied.as_log2();
     return timer.time();
 }
 
@@ -391,7 +397,7 @@ int64_t  calculate_avg_array_multiply_Dbl1(std::string& header, unsigned int n_r
     header = "Dbl1_array_multiply:";
 
     std::vector<floatingExp2Integer::Dbl> values_converted(values.size());
-    DoubleToDblValues(values, values_converted);
+    floatingExp2Integer::Dbl::log2s_to(values, values_converted);
 
     int64_t  time_sum = 0.0;
     for (unsigned int i = 0; i < n_rounds; i++) {
@@ -405,7 +411,7 @@ int64_t  calculate_array_multiply_Dbl2(const std::vector<floatingExp2Integer::Db
     floatingExp2Integer::Dbl2 multiplied = 1.0;
     multiplied.multiplyDbl2(values);
     timer.stop();
-    result = multiplied.asDouble();
+    result = multiplied.as_log2();
     return timer.time();
 }
 
@@ -414,7 +420,7 @@ int64_t  calculate_avg_array_multiply_Dbl2(std::string& header, unsigned int n_r
     header = "Dbl2_array_multiply:";
 
     std::vector<floatingExp2Integer::Dbl2> values_converted(values.size());
-    DoubleToDbl2Values(values, values_converted);
+    floatingExp2Integer::Dbl2::log2s_to(values, values_converted);
 
     int64_t  time_sum = 0.0;
     for (unsigned int i = 0; i < n_rounds; i++) {

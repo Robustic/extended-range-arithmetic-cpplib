@@ -10,10 +10,18 @@ namespace floatingExp2Integer
             double dbl1;
             double dbl2;
         public:
-            Dbl2() { dbl1 = 0; dbl2 = 0; }
+            Dbl2() { dbl1 = 1.0; dbl2 = -1.0; }
             Dbl2(double d) { dbl1 = d; dbl2 = -d; }
+
+            void log2_to(const double from) { dbl1 = std::exp2(from); dbl2 = -std::exp2(from); }
+            static void log2s_to(const std::vector<double>& from, std::vector<floatingExp2Integer::Dbl2>& to) {
+                for (size_t i = 0; i < to.size(); i++) {
+                    to[i].log2_to(from[i]);
+                }
+            }
             
-            double asDouble() { return 2 * dbl1 + dbl2; }
+            double as_double() { return 2 * dbl1 + dbl2; }
+            double as_log2() { return std::log2(2 * dbl1 + dbl2); }
 
             Dbl2& operator+=(Dbl2 d) {
                 dbl1 += d.dbl1;
