@@ -1,5 +1,6 @@
 #include <cmath>
 #include <cstdint>
+#include <bit>
 #include <bitset>
 #include <iostream>
 
@@ -8,11 +9,13 @@
 namespace floatingExp2Integer
 {
     Fukushima::Fukushima() {
-        this->doubleToFukushima(1.0);
+        scnfcnd = 1.0;
+        exp = 0LL;
     }
 
     Fukushima::Fukushima(double dbl) {
-        this->doubleToFukushima(dbl);
+        scnfcnd = dbl;
+        exp = 0LL;
     }
 
     Fukushima::Fukushima(double dbl, int64_t exponent) {
@@ -20,16 +23,29 @@ namespace floatingExp2Integer
         exp = exponent;
     }
 
-    void Fukushima::doubleToFukushima(double dbl) {
-        scnfcnd = dbl;
-        exp = 0LL;
+    void Fukushima::log2_to(const double from) {
+        double from_floored = std::floor(from);
+        int64_t exponent = (int64_t)from_floored;
+        double multiplier = std::exp2(from - from_floored);
+
+        if (exponent >= 0) {
+            exp = (exponent + EXP_MULTIPLIER / 2) / EXP_MULTIPLIER;
+            scnfcnd = multiplier * std::exp2(exponent - EXP_MULTIPLIER * exp);
+        }
+        else {
+            exp = (exponent - EXP_MULTIPLIER / 2) / EXP_MULTIPLIER;
+            if ((exponent - EXP_MULTIPLIER / 2) - EXP_MULTIPLIER * exp == 0LL && multiplier > 1.0) {
+                exp++;
+            }
+            scnfcnd = multiplier * std::exp2(exponent - EXP_MULTIPLIER * exp);
+        }
     }
 
-    double Fukushima::asDouble() const {
+    double Fukushima::as_double() const {
         return scnfcnd * std::exp2(EXP_MULTIPLIER * exp);
     }
 
-    double Fukushima::fukushimaToLog2() const {
+    double Fukushima::as_log2() const {
         return std::log2(scnfcnd) + EXP_MULTIPLIER * exp;
     }
 

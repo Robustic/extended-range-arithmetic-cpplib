@@ -27,11 +27,11 @@
 
 void print_Fukushima(double number) {
     std::cout << "Test: " << number << std::endl;
-    floatingExp2Integer::Fukushima nmbr(number);
-    std::cout << "nmbr.sicnificand(): " << nmbr.sicnificand() << std::endl;
-    std::cout << "nmbr.exponent(): " << nmbr.exponent() << std::endl;
-    std::cout << "nmbr.asDouble(): " << nmbr.asDouble() << std::endl;
-    std::cout << std::endl;
+    //floatingExp2Integer::Fukushima nmbr(number);
+    //std::cout << "nmbr.sicnificand(): " << nmbr.sicnificand() << std::endl;
+    //std::cout << "nmbr.exponent(): " << nmbr.exponent() << std::endl;
+    //std::cout << "nmbr.asDouble(): " << nmbr.asDouble() << std::endl;
+    //std::cout << std::endl;
 }
 
 int main() {

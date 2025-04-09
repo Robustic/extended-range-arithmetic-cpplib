@@ -73,14 +73,14 @@ namespace floatingExp2Integer
             }
 
             void multiplyDbl2(const std::vector<floatingExp2Integer::Dbl2>& dbl2Values) {
-                floatingExp2Integer::Dbl2 dblSum1 = 0.0;
-                floatingExp2Integer::Dbl2 dblSum2 = 0.0;
-                floatingExp2Integer::Dbl2 dblSum3 = 0.0;
-                floatingExp2Integer::Dbl2 dblSum4 = 0.0;
-                floatingExp2Integer::Dbl2 dblSum5 = 0.0;
-                floatingExp2Integer::Dbl2 dblSum6 = 0.0;
-                floatingExp2Integer::Dbl2 dblSum7 = 0.0;
-                floatingExp2Integer::Dbl2 dblSum8 = 0.0;
+                floatingExp2Integer::Dbl2 dblSum1 = 1.0;
+                floatingExp2Integer::Dbl2 dblSum2 = 1.0;
+                floatingExp2Integer::Dbl2 dblSum3 = 1.0;
+                floatingExp2Integer::Dbl2 dblSum4 = 1.0;
+                floatingExp2Integer::Dbl2 dblSum5 = 1.0;
+                floatingExp2Integer::Dbl2 dblSum6 = 1.0;
+                floatingExp2Integer::Dbl2 dblSum7 = 1.0;
+                floatingExp2Integer::Dbl2 dblSum8 = 1.0;
                 unsigned int i;
                 for (i = 0; i + 7 < dbl2Values.size(); i += 8) {
                     dblSum1.dbl1 *= dbl2Values[i].dbl1;
