@@ -8,6 +8,7 @@
 #include <chrono>
 #include <iomanip>
 #include <cstring>
+#include <cstdlib>
 #include "Timer.h"
 #include "Dbl.h"
 #include "Dbl2.h"
@@ -21,8 +22,8 @@
 
 // CHANGE THESE VALUES TO CALCULATE WITH DIFFERENT VALUE RANGE AND DIFFERENT COUNT OF NUMBERS
 
-constexpr double min_log2 = -10000;
-constexpr double max_log2 = -10;
+//constexpr double min_log2 = -33;//-10000;
+//constexpr double max_log2 = -30;//-10;
 
 //constexpr size_t n[] = { 1000, 3000, 10000, 30000, 100000, 300000, 1000000, 3000000, 10000000, 30000000, 100000000 };
 //constexpr size_t n_rounds[] = { 100000, 30000, 10000, 3000, 1000, 300, 100, 30, 10, 3, 1 };
@@ -660,8 +661,23 @@ int64_t  multiply_parallel_Float64PosExp2Int64(const std::vector<floatingExp2Int
 
 // *******  MAIN  *******
 
-int main() {
+int main(int argc, char* argv[]) {
     std::cout << "START" << std::endl;
+
+    double min_log2;
+    double max_log2;
+
+    if (argc != 3) {
+        min_log2 = -33.0;//-10000;
+        max_log2 = -30.0;//-10;
+    }
+    else {
+        min_log2 = std::atof(argv[1]);
+        max_log2 = std::atof(argv[2]);
+    }
+
+    std::cout << "MIN_limit_log2_of_random_numbers: " << min_log2 << std::endl;
+    std::cout << "MAX_limit_log2_of_random_numbers: " << max_log2 << std::endl;
 
     std::vector<ResultCollection> resultCollections;
 
