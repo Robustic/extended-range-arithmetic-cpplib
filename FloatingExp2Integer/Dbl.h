@@ -7,8 +7,8 @@ namespace floatingExp2Integer
 {
     class Dbl {
         private:
-            double dbl;
         public:
+            double dbl;
             Dbl() { dbl = 1.0; }
             Dbl(double d) { dbl = d; }
 
@@ -33,15 +33,15 @@ namespace floatingExp2Integer
             }
 
             void sum(const std::vector<floatingExp2Integer::Dbl>& dblValues) {
-                floatingExp2Integer::Dbl dblSum1 = 0.0;
-                floatingExp2Integer::Dbl dblSum2 = 0.0;
-                floatingExp2Integer::Dbl dblSum3 = 0.0;
-                floatingExp2Integer::Dbl dblSum4 = 0.0;
-                floatingExp2Integer::Dbl dblSum5 = 0.0;
-                floatingExp2Integer::Dbl dblSum6 = 0.0;
-                floatingExp2Integer::Dbl dblSum7 = 0.0;
-                floatingExp2Integer::Dbl dblSum8 = 0.0;
-                unsigned int i;
+                floatingExp2Integer::Dbl dblSum1(0.0);
+                floatingExp2Integer::Dbl dblSum2(0.0);
+                floatingExp2Integer::Dbl dblSum3(0.0);
+                floatingExp2Integer::Dbl dblSum4(0.0);
+                floatingExp2Integer::Dbl dblSum5(0.0);
+                floatingExp2Integer::Dbl dblSum6(0.0);
+                floatingExp2Integer::Dbl dblSum7(0.0);
+                floatingExp2Integer::Dbl dblSum8(0.0);
+                size_t i = 0;
                 for (i = 0; i + 7 < dblValues.size(); i += 8) {
                     dblSum1.dbl += dblValues[i].dbl;
                     dblSum2.dbl += dblValues[i + 1].dbl;
@@ -59,15 +59,15 @@ namespace floatingExp2Integer
             }
 
             void multiply(const std::vector<floatingExp2Integer::Dbl>& dblValues) {
-                floatingExp2Integer::Dbl dblSum1 = 0.0;
-                floatingExp2Integer::Dbl dblSum2 = 0.0;
-                floatingExp2Integer::Dbl dblSum3 = 0.0;
-                floatingExp2Integer::Dbl dblSum4 = 0.0;
-                floatingExp2Integer::Dbl dblSum5 = 0.0;
-                floatingExp2Integer::Dbl dblSum6 = 0.0;
-                floatingExp2Integer::Dbl dblSum7 = 0.0;
-                floatingExp2Integer::Dbl dblSum8 = 0.0;
-                unsigned int i;
+                floatingExp2Integer::Dbl dblSum1(1.0);
+                floatingExp2Integer::Dbl dblSum2(1.0);
+                floatingExp2Integer::Dbl dblSum3(1.0);
+                floatingExp2Integer::Dbl dblSum4(1.0);
+                floatingExp2Integer::Dbl dblSum5(1.0);
+                floatingExp2Integer::Dbl dblSum6(1.0);
+                floatingExp2Integer::Dbl dblSum7(1.0);
+                floatingExp2Integer::Dbl dblSum8(1.0);
+                size_t i = 0;
                 for (i = 0; i + 7 < dblValues.size(); i += 8) {
                     dblSum1.dbl *= dblValues[i].dbl;
                     dblSum2.dbl *= dblValues[i + 1].dbl;

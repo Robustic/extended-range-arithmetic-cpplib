@@ -83,9 +83,9 @@ void calc_perf(const std::vector<double>& values_as_log2, std::vector<ResultColl
         T::log2s_to(values_as_log2, values_as_T);
 
         int64_t time_sum = 0;
-
         std::string case_name;
         double result_as_log2;
+
         for (size_t i = 0; i < n_rounds_current; i++) {
             time_sum += function(values_as_T, result_as_log2, case_name);
         }
@@ -110,6 +110,7 @@ int64_t sum_sequential_dbl(const std::vector<floatingExp2Integer::Dbl>& values_a
     double sum = 0.0;
     for (size_t i = 0; i < values_as_double.size(); i++) {
         sum += values_as_double[i];
+
         if (sum > 0x1p999) {
             i = values_as_double.size();
         }
@@ -158,6 +159,7 @@ int64_t multiply_sequential_dbl(const std::vector<floatingExp2Integer::Dbl>& val
     double multiplied = 1.0;
     for (size_t i = 0; i < values_as_double.size(); i++) {
         multiplied *= values_as_double[i];
+
         if (multiplied > 0x1p999) {
             i = values_as_double.size();
         }
@@ -255,6 +257,7 @@ int64_t multiply_sequential_log2scale(const std::vector<floatingExp2Integer::Log
     for (size_t i = 0; i < values_as_double.size(); i++) {
         // log(A*B) = log(A) + log(B) 
         sum += values_as_double[i];
+
         if (sum > 0x1p999) {
             i = values_as_double.size();
         }
@@ -299,44 +302,60 @@ int64_t multiply_parallel_log2scale(const std::vector<floatingExp2Integer::Log2S
 
 int64_t sum_sequential_Dbl1(const std::vector<floatingExp2Integer::Dbl>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
+
     floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Dbl sum = 0.0;
+    floatingExp2Integer::Dbl sum(0.0);
     for (size_t i = 0; i < values.size(); i++) {
         sum += values[i];
+
+        if (sum.dbl > 0x1p999) {
+            i = values.size();
+        }
     }
     timer.stop();
+
     result_as_log2 = sum.as_log2();
     return timer.time();
 }
 
 int64_t sum_parallel_Dbl1(const std::vector<floatingExp2Integer::Dbl>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
+
     floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Dbl sum = 0.0;
+    floatingExp2Integer::Dbl sum;
     sum.sum(values);
     timer.stop();
+
     result_as_log2 = sum.as_log2();
     return timer.time();
 }
 
 int64_t  multiply_sequential_Dbl1(const std::vector<floatingExp2Integer::Dbl>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
+
     floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Dbl multiplied = 1.0;
-    for (unsigned int i = 0; i < values.size(); i++) {
+    floatingExp2Integer::Dbl multiplied(1.0);
+    for (size_t i = 0; i < values.size(); i++) {
         multiplied *= values[i];
+
+        if (multiplied.dbl > 0x1p999) {
+            i = values.size();
+        }
     }
     timer.stop();
+
     result_as_log2 = multiplied.as_log2();
     return timer.time();
 }
 
 int64_t  multiply_parallel_Dbl1(const std::vector<floatingExp2Integer::Dbl>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
+
     floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Dbl multiplied = 1.0;
+    floatingExp2Integer::Dbl multiplied;
     multiplied.multiply(values);
     timer.stop();
+
     result_as_log2 = multiplied.as_log2();
     return timer.time();
 }
@@ -345,44 +364,62 @@ int64_t  multiply_parallel_Dbl1(const std::vector<floatingExp2Integer::Dbl>& val
 
 int64_t sum_sequential_Dbl2(const std::vector<floatingExp2Integer::Dbl2>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
+
     floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Dbl2 sum = 0.0;
+    floatingExp2Integer::Dbl2 sum(0.0);
     for (size_t i = 0; i < values.size(); i++) {
         sum += values[i];
+
+        if (sum.dbl2 > 0x1p999) {
+            i = values.size();
+            sum = std::numeric_limits<double>::infinity();
+        }
     }
     timer.stop();
+
     result_as_log2 = sum.as_log2();
     return timer.time();
 }
 
 int64_t  sum_parallel_Dbl2(const std::vector<floatingExp2Integer::Dbl2>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
+
     floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Dbl2 sum = 0.0;
-    sum.sumDbl2(values);
+    floatingExp2Integer::Dbl2 sum;
+    sum.sum(values);
     timer.stop();
+
     result_as_log2 = sum.as_log2();
     return timer.time();
 }
 
 int64_t  multiply_sequential_Dbl2(const std::vector<floatingExp2Integer::Dbl2>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
+
     floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Dbl2 multiplied = 1.0;
-    for (unsigned int i = 0; i < values.size(); i++) {
+    floatingExp2Integer::Dbl2 multiplied(1.0);
+    for (size_t i = 0; i < values.size(); i++) {
         multiplied *= values[i];
+
+        if (multiplied.dbl2 > 0x1p999) {
+            i = values.size();
+            multiplied = std::numeric_limits<double>::infinity();
+        }
     }
     timer.stop();
+
     result_as_log2 = multiplied.as_log2();
     return timer.time();
 }
 
 int64_t  multiply_parallel_Dbl2(const std::vector<floatingExp2Integer::Dbl2>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
+
     floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Dbl2 multiplied = 1.0;
-    multiplied.multiplyDbl2(values);
+    floatingExp2Integer::Dbl2 multiplied;
+    multiplied.multiply(values);
     timer.stop();
+
     result_as_log2 = multiplied.as_log2();
     return timer.time();
 }
