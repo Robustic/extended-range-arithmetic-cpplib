@@ -48,12 +48,12 @@ namespace floatingExp2Integer
             static double as_log2(double dbl);
 
             inline static double sum(double lrn1, double lrn2) {
-                //if (lrn1 - lrn2 > 0x1p53) {
-                //    return lrn1;
-                //}
-                //else if (lrn2 - lrn1 > 0x1p53) {
-                //    return lrn2;
-                //}
+                if (lrn1 - lrn2 > 64) {
+                    return lrn1;
+                }
+                else if (lrn2 - lrn1 > 64) {
+                    return lrn2;
+                }
 
                 int64_t exponent_1;
                 double sicnificand_1;

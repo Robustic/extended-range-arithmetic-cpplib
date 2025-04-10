@@ -208,10 +208,10 @@ int64_t sum_sequential_log2scale(const std::vector<floatingExp2Integer::Log2Scal
     double sum = values_as_double[0];
     for (size_t i = 1; i < values_as_double.size(); i++) {
         double value = values_as_double[i];
-        if (sum - value > 0x1p53) {
+        if (sum - value > 64) {
             sum = sum;
         }
-        else if (value - sum > 0x1p53) {
+        else if (value - sum > 64) {
             sum = value;
         }
         else if (sum > value) {
@@ -453,8 +453,8 @@ int64_t  sum_sequential_Float64LargeRangeNumber(const std::vector<floatingExp2In
     for (size_t i = 1; i < values_as_double.size(); i++) {
         double value = values_as_double[i];
         sum = floatingExp2Integer::Float64LargeRangeNumber::sum(sum, value);
-        if (sum > 1.0) {
-            i++;
+        if (sum > 0x1p970) {
+            i = values_as_double.size();
         }
     }
     result_as_log2 = floatingExp2Integer::Float64LargeRangeNumber::as_log2(sum);
