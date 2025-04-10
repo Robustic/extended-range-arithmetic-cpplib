@@ -97,33 +97,23 @@ namespace floatingExp2Integer
         this->scale();
     }
 
-    void Float64PosExp2Int64::doubleToFloat64PosExp2Int64(double dbl) {
+    void Float64PosExp2Int64::double_to(double dbl) {
         scnfcnd = dbl;
         exp = 0;
         this->scale();
     }
 
-    void Float64PosExp2Int64::log2ToFloat64PosExp2Int64(double log2) {
+    void Float64PosExp2Int64::log2_to(double log2) {
         exp = (int64_t)log2;
         scnfcnd = std::exp2(log2 - exp);
         this->scale();
     }
 
-    double Float64PosExp2Int64::float64PosExp2Int64ToLog2() const {
+    double Float64PosExp2Int64::as_log2() const {
         return std::log2(scnfcnd) + exp;
     }
 
-    double Float64PosExp2Int64::sicnificand() {
-        this->scale();
-        return scnfcnd; 
-    }
-
-    int64_t Float64PosExp2Int64::exponent() {
-        this->scale();
-        return exp;
-    }
-
-    double Float64PosExp2Int64::asDouble() const {
+    double Float64PosExp2Int64::as_double() const {
         return scnfcnd * std::pow(2.0, exp);
     }
 

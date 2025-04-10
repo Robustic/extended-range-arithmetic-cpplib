@@ -21,12 +21,12 @@ namespace floatingExp2Integer
         this->scale();
     }
 
-    void Int64PosExp2Int64::doubleToInt64PosExp2Int64(double dbl) {
+    void Int64PosExp2Int64::double_to(double dbl) {
         this->fromDouble(dbl);
         this->scale();
     }
 
-    void Int64PosExp2Int64::log2ToInt64PosExp2Int64(double log2) {
+    void Int64PosExp2Int64::log2_to(double log2) {
         int64_t exponent = (int64_t)log2;
         double dbl = std::exp2(log2 - exponent);
         this->fromDouble(dbl);
@@ -34,21 +34,11 @@ namespace floatingExp2Integer
         this->scale();
     }
 
-    double Int64PosExp2Int64::int64PosExp2Int64ToLog2() const {
+    double Int64PosExp2Int64::as_log2() const {
         return std::log2(scnfcnd) + exp;
     }
 
-    uint64_t Int64PosExp2Int64::sicnificand() { 
-        this->scale();
-        return scnfcnd; 
-    }
-
-    int64_t Int64PosExp2Int64::exponent() { 
-        this->scale();
-        return exp;
-    }
-
-    double Int64PosExp2Int64::asDouble() const { 
+    double Int64PosExp2Int64::as_double() const { 
         return (double)scnfcnd * std::pow(2.0, exp);
     }
 
