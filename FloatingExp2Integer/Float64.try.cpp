@@ -662,7 +662,7 @@ int64_t  multiply_parallel_Float64PosExp2Int64(const std::vector<floatingExp2Int
 // *******  MAIN  *******
 
 int main(int argc, char* argv[]) {
-    std::cout << "START" << std::endl;
+    std::cout << "START  " << floatingExp2Integer::Timer::current_time() << std::endl;
 
     double min_log2;
     double max_log2;
@@ -742,7 +742,11 @@ int main(int argc, char* argv[]) {
         std::cout << std::endl;
     }
 
-    std::cout << std::endl << "CALCULATION_TIME" << std::endl << "n ";
+    std::cout << std::endl << "CALCULATION_TIME" << std::endl << "Rounds ";
+    for (size_t i = 0; i < n_count; i++) {
+        std::cout << n_rounds[i] << " ";
+    }
+    std::cout << std::endl << "n ";
     for (size_t i = 0; i < n_count; i++) {
         std::cout << n[i] << " ";
     }
@@ -763,7 +767,7 @@ int main(int argc, char* argv[]) {
 
     resultCollections.clear();
 
-    std::cout << std::endl << "END" << std::endl;
+    std::cout << std::endl << "END  " << floatingExp2Integer::Timer::current_time() << std::endl;;
 
     return 0;
 }
