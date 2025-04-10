@@ -12,7 +12,7 @@ namespace floatingExp2Integer
         public:
             Timer() { start = std::chrono::high_resolution_clock::now(); }
             void stop() { end = std::chrono::high_resolution_clock::now(); }
-            int64_t time() { return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count(); }
+            int64_t time() const { return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count(); }
     };
 }
 

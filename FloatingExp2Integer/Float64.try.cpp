@@ -21,8 +21,8 @@
 
 // CHANGE THESE VALUES TO CALCULATE WITH DIFFERENT VALUE RANGE AND DIFFERENT COUNT OF NUMBERS
 
-constexpr double min_log2 = -33;
-constexpr double max_log2 = -30;
+constexpr double min_log2 = -10000;
+constexpr double max_log2 = -10;
 
 //constexpr size_t n[] = { 1000, 3000, 10000, 30000, 100000, 300000, 1000000, 3000000, 10000000, 30000000, 100000000 };
 //constexpr size_t n_rounds[] = { 100000, 30000, 10000, 3000, 1000, 300, 100, 30, 10, 3, 1 };
@@ -53,9 +53,9 @@ void InitializeRandomNumbers(std::vector<double>& vec, double min_log2, double m
     std::mt19937 rng;
     rng.seed(seed_val);
     std::uniform_real_distribution<double> unif(min_log2, max_log2);
-    for (unsigned int i = 0; i < vec.size(); i++) {
-        double a_random_doable = unif(rng);
-        vec[i] = a_random_doable;
+    for (size_t i = 0; i < vec.size(); i++) {
+        double a_random_double = unif(rng);
+        vec[i] = a_random_double;
     }
 
     // save_vector_as_binary(vec, "data.bin");
@@ -70,7 +70,8 @@ struct ResultCollection {
 };
 
 template<typename T>
-void calc_perf(const std::vector<double>& values, std::vector<ResultCollection>& resultCollections, std::function<int64_t(const std::vector<T>&, double&, std::string&)> function) {
+void calc_perf(const std::vector<double>& values, std::vector<ResultCollection>& resultCollections,
+        std::function<int64_t(const std::vector<T>&, double&, std::string&)> function) {
 
     ResultCollection rc;
 
@@ -106,15 +107,15 @@ int64_t sum_sequential_dbl(const std::vector<floatingExp2Integer::Dbl>& values, 
     std::vector<double> values_converted(dblArray, dblArray + values.size());
 
     floatingExp2Integer::Timer timer;
-    size_t i = 0;
     double sum = 0.0;
-    for (i = 0; i < values_converted.size(); i++) {
+    for (size_t i = 0; i < values_converted.size(); i++) {
         sum += values_converted[i];
-        if (sum > 1e100) {
-            i++;
+        if (sum > 0x1p999) {
+            i = values_converted.size();
         }
     }
     timer.stop();
+
     result = std::log2(sum);
     return timer.time();
 }
@@ -126,15 +127,15 @@ int64_t sum_parallel_dbl(const std::vector<floatingExp2Integer::Dbl>& values, do
 
     floatingExp2Integer::Timer timer;
     size_t i = 0;
-    double sum = 0.0; 
+    double sum = 0.0;
     if (16 <= values_converted.size()) {
         __m512d vsum = _mm512_loadu_pd(&values_converted[0]);
-        for (i = 8; i + 7 < values.size(); i += 8) {
+        for (i = 8; i + 7 < values_converted.size(); i += 8) {
             __m512d vb = _mm512_loadu_pd(&values_converted[i]);
             vsum = vsum + vb;
         }
 
-        for (unsigned int k = 0; k < 8; k++) {
+        for (size_t k = 0; k < 8; k++) {
             sum += vsum[k];
         }
     }
@@ -143,6 +144,7 @@ int64_t sum_parallel_dbl(const std::vector<floatingExp2Integer::Dbl>& values, do
         sum += values_converted[i];
     }
     timer.stop();
+
     result = std::log2(sum);
     return timer.time();
 }
@@ -153,15 +155,15 @@ int64_t multiply_sequential_dbl(const std::vector<floatingExp2Integer::Dbl>& val
     std::vector<double> values_converted(dblArray, dblArray + values.size());
 
     floatingExp2Integer::Timer timer;
-    size_t i = 0;
     double multiplied = 1.0;
-    for (i = 0; i < values_converted.size(); i++) {
+    for (size_t i = 0; i < values_converted.size(); i++) {
         multiplied *= values_converted[i];
-        if (multiplied > 1e100) {
-            i++;
+        if (multiplied > 0x1p999) {
+            i = values_converted.size();
         }
     }
     timer.stop();
+
     result = std::log2(multiplied);
     return timer.time();
 }
@@ -172,7 +174,7 @@ int64_t multiply_parallel_dbl(const std::vector<floatingExp2Integer::Dbl>& value
     std::vector<double> values_converted(dblArray, dblArray + values.size());
 
     floatingExp2Integer::Timer timer;
-    unsigned int i = 0;
+    size_t i = 0;
     double multiplied = 1.0;
     if (16 <= values_converted.size()) {
         __m512d vmul = _mm512_set1_pd(1.0);
@@ -181,7 +183,7 @@ int64_t multiply_parallel_dbl(const std::vector<floatingExp2Integer::Dbl>& value
             vmul = vmul * vb;
         }
 
-        for (unsigned int k = 0; k < 8; k++) {
+        for (size_t k = 0; k < 8; k++) {
             multiplied *= vmul[k];
         }
     }
@@ -190,6 +192,7 @@ int64_t multiply_parallel_dbl(const std::vector<floatingExp2Integer::Dbl>& value
         multiplied *= values_converted[i];
     }
     timer.stop();
+
     result = std::log2(multiplied);
     return timer.time();
 }
@@ -382,7 +385,7 @@ int64_t  sum_sequential_Fukushima(const std::vector<floatingExp2Integer::Fukushi
     for (unsigned int i = 0; i < values.size(); i++) {
         sum += values[i];
 
-        if (sum.scnfcnd > 0.1) {
+        if (sum.scnfcnd > 0x1p970) {
             i++;
         }
     }
