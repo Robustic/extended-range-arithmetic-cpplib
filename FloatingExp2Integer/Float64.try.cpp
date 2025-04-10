@@ -206,7 +206,7 @@ int64_t sum_sequential_log2scale(const std::vector<floatingExp2Integer::Log2Scal
 
     floatingExp2Integer::Timer timer;
     double sum = values_converted[0];
-    for (unsigned int i = 1; i < values_converted.size(); i++) {
+    for (size_t i = 1; i < values_converted.size(); i++) {
         double value = values_converted[i];
         if (sum > value) {
             sum = sum + std::log2(1 + std::exp2(value - sum));
@@ -216,23 +216,25 @@ int64_t sum_sequential_log2scale(const std::vector<floatingExp2Integer::Log2Scal
         }
     }
     timer.stop();
+
     result = sum;
     return timer.time();
 }
 
+// More efficient function compiled with Intel Compiler to utilize SIMD
 int64_t sum_parallel_log2scale(const std::vector<floatingExp2Integer::Log2Scale>& values, double& result, std::string& header) {
     header = __func__;
     auto dblArray = std::bit_cast<double*>(values.data());
     std::vector<double> values_converted(dblArray, dblArray + values.size());
 
     floatingExp2Integer::Timer timer;
-    unsigned int i = 0;
     double sum = 0.0;
     double max = *std::max_element(values_converted.begin(), values_converted.end());
-    for (i = 0; i < values_converted.size(); i++) {
+    for (size_t i = 0; i < values_converted.size(); i++) {
         sum += std::exp2(values_converted[i] - max);
     }
     timer.stop();
+
     result = max + std::log2(sum);
     return timer.time();
 }
@@ -243,15 +245,16 @@ int64_t multiply_sequential_log2scale(const std::vector<floatingExp2Integer::Log
     std::vector<double> values_converted(dblArray, dblArray + values.size());
 
     floatingExp2Integer::Timer timer;
-    unsigned int i = 0;
     double sum = 0.0;
-    for (i = 0; i < values_converted.size(); i++) {
+    for (size_t i = 0; i < values_converted.size(); i++) {
+        // log(A*B) = log(A) + log(B) 
         sum += values_converted[i];
-        if (sum > 1e100) {
-            i++;
+        if (sum > 0x1p999) {
+            i = values_converted.size();
         }
     }
     timer.stop();
+
     result = sum;
     return timer.time();
 }
@@ -266,12 +269,13 @@ int64_t multiply_parallel_log2scale(const std::vector<floatingExp2Integer::Log2S
     double sum = 0.0;
     if (16 <= values_converted.size()) {
         __m512d vsum = _mm512_loadu_pd(&values_converted[0]);
-        for (i = 8; i + 7 < values.size(); i += 8) {
+        for (i = 8; i + 7 < values_converted.size(); i += 8) {
             __m512d vb = _mm512_loadu_pd(&values_converted[i]);
+            // log(A*B) = log(A) + log(B) 
             vsum = vsum + vb;
         }
 
-        for (unsigned int k = 0; k < 8; k++) {
+        for (size_t k = 0; k < 8; k++) {
             sum += vsum[k];
         }
     }
@@ -280,6 +284,7 @@ int64_t multiply_parallel_log2scale(const std::vector<floatingExp2Integer::Log2S
         sum += values_converted[i];
     }
     timer.stop();
+
     result = sum;
     return timer.time();
 }
