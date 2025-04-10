@@ -50,12 +50,22 @@ namespace floatingExp2Integer
     }
 
     void Fukushima::sum(const std::vector<floatingExp2Integer::Fukushima>& vector) {
-        const unsigned int parallel_count = 4;
+        const size_t parallel_count = 4;
+
+        if (2 * parallel_count > vector.size()) {
+            floatingExp2Integer::Fukushima sum = vector[0];
+            for (size_t i = 1; i < vector.size(); i++) {
+                sum += vector[i];
+            }
+            scnfcnd = sum.scnfcnd;
+            exp = sum.exp;
+            return;
+        }
 
         double scnfcndSum[parallel_count];
         int64_t expSum[parallel_count];
 
-        for (unsigned int k = 0; k < parallel_count; k++) {
+        for (size_t k = 0; k < parallel_count; k++) {
             scnfcndSum[k] = vector[k].scnfcnd;
             expSum[k] = vector[k].exp;
         }
@@ -63,27 +73,27 @@ namespace floatingExp2Integer
         double scnfcndCurrent[parallel_count];
         int64_t expCurrent[parallel_count];
 
-        for (unsigned int i = parallel_count; i + (parallel_count - 1) < vector.size(); i += parallel_count) {
-            for (unsigned int k = 0; k < parallel_count; k++) {
+        size_t i = parallel_count;
+
+        for (i = parallel_count; i + (parallel_count - 1) < vector.size(); i += parallel_count) {
+            for (size_t k = 0; k < parallel_count; k++) {
                 scnfcndCurrent[k] = vector[i + k].scnfcnd;
                 expCurrent[k] = vector[i + k].exp;
-            }
 
-            for (unsigned int k = 0; k < parallel_count; k++) {
                 if (expSum[k] == expCurrent[k]) {
                     scnfcndSum[k] = scnfcndSum[k] + scnfcndCurrent[k];
                 }
                 else {
-                    int id = expSum[k] - expCurrent[k];
+                    int64_t id = expSum[k] - expCurrent[k];
                     if (id == 1) {
                         scnfcndSum[k] = scnfcndSum[k] + (scnfcndCurrent[k] * BIGI);
+                    }
+                    else if (id > 1) {
+                        scnfcndSum[k] = scnfcndSum[k];
                     }
                     else if (id == -1) {
                         scnfcndSum[k] = scnfcndCurrent[k] + (scnfcndSum[k] * BIGI);
                         expSum[k] = expCurrent[k];
-                    }
-                    else if (id > 1) {
-                        scnfcndSum[k] = scnfcndSum[k];
                     }
                     else {
                         scnfcndSum[k] = scnfcndCurrent[k];
@@ -100,9 +110,13 @@ namespace floatingExp2Integer
 
         floatingExp2Integer::Fukushima sum(scnfcndSum[0], expSum[0]);
 
-        for (unsigned int k = 1; k < parallel_count; k++) {
+        for (size_t k = 1; k < parallel_count; k++) {
             floatingExp2Integer::Fukushima current(scnfcndSum[k], expSum[k]);
             sum += current;
+        }
+
+        for (i = i; i < vector.size(); i++) {
+            sum += vector[i];
         }
 
         scnfcnd = sum.scnfcnd;
@@ -110,12 +124,22 @@ namespace floatingExp2Integer
     }
 
     void Fukushima::multiply(const std::vector<floatingExp2Integer::Fukushima>& vector) {
-        const unsigned int parallel_count = 6;
+        const size_t parallel_count = 6;
+
+        if (2 * parallel_count > vector.size()) {
+            floatingExp2Integer::Fukushima res = vector[0];
+            for (size_t i = 1; i < vector.size(); i++) {
+                res *= vector[i];
+            }
+            scnfcnd = res.scnfcnd;
+            exp = res.exp;
+            return;
+        }
 
         double scnfcndSum[parallel_count];
         int64_t expSum[parallel_count];
 
-        for (unsigned int k = 0; k < parallel_count; k++) {
+        for (size_t k = 0; k < parallel_count; k++) {
             scnfcndSum[k] = vector[k].scnfcnd;
             expSum[k] = vector[k].exp;
         }
@@ -123,13 +147,13 @@ namespace floatingExp2Integer
         double scnfcndCurrent[parallel_count];
         int64_t expCurrent[parallel_count];
 
-        for (unsigned int i = parallel_count; i + (parallel_count - 1) < vector.size(); i += parallel_count) {
-            for (unsigned int k = 0; k < parallel_count; k++) {
+        size_t i = parallel_count;
+
+        for (i = parallel_count; i + (parallel_count - 1) < vector.size(); i += parallel_count) {
+            for (size_t k = 0; k < parallel_count; k++) {
                 scnfcndCurrent[k] = vector[i + k].scnfcnd;
                 expCurrent[k] = vector[i + k].exp;
-            }
 
-            for (unsigned int k = 0; k < parallel_count; k++) {
                 scnfcndSum[k] = scnfcndSum[k] * scnfcndCurrent[k];
                 expSum[k] = expSum[k] + expCurrent[k];
 
@@ -146,9 +170,13 @@ namespace floatingExp2Integer
 
         floatingExp2Integer::Fukushima sum(scnfcndSum[0], expSum[0]);
 
-        for (unsigned int k = 1; k < parallel_count; k++) {
+        for (size_t k = 1; k < parallel_count; k++) {
             floatingExp2Integer::Fukushima current(scnfcndSum[k], expSum[k]);
             sum *= current;
+        }
+
+        for (i = i; i < vector.size(); i++) {
+            sum *= vector[i];
         }
 
         scnfcnd = sum.scnfcnd;
@@ -160,14 +188,14 @@ namespace floatingExp2Integer
             scnfcnd = scnfcnd + z.scnfcnd;
         } 
         else {
-            int id = exp - z.exp;
+            int64_t id = exp - z.exp;
             if (id == 1) {
                 scnfcnd = scnfcnd + (z.scnfcnd * BIGI);
+            } else if (id > 1) {
+                scnfcnd = scnfcnd;
             } else if (id == -1) {
                 scnfcnd = z.scnfcnd + (scnfcnd * BIGI);
                 exp = z.exp;
-            } else if (id > 1) {
-                scnfcnd = scnfcnd;
             } else {
                 scnfcnd = z.scnfcnd;
                 exp = z.exp;

@@ -428,52 +428,60 @@ int64_t  multiply_parallel_Dbl2(const std::vector<floatingExp2Integer::Dbl2>& va
 
 int64_t  sum_sequential_Fukushima(const std::vector<floatingExp2Integer::Fukushima>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
+
     floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Fukushima sum = 0.0;
-    for (unsigned int i = 0; i < values.size(); i++) {
+    floatingExp2Integer::Fukushima sum = values[0];
+    for (size_t i = 1; i < values.size(); i++) {
         sum += values[i];
 
-        if (sum.scnfcnd > 0x1p970) {
-            i++;
+        if (sum.exp > 1000000000000LL) {
+            i = values.size();
         }
     }
     timer.stop();
+
     result_as_log2 = sum.as_log2();
     return timer.time();
 }
 
 int64_t  sum_parallel_Fukushima(const std::vector<floatingExp2Integer::Fukushima>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
+
     floatingExp2Integer::Timer timer;
     floatingExp2Integer::Fukushima collector;
     collector.sum(values);
     timer.stop();
+
     result_as_log2 = collector.as_log2();
     return timer.time();
 }
 
 int64_t  multiply_sequential_Fukushima(const std::vector<floatingExp2Integer::Fukushima>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
+
     floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Fukushima res = 1.0;
-    for (unsigned int i = 0; i < values.size(); i++) {
+    floatingExp2Integer::Fukushima res(1.0);
+    for (size_t i = 0; i < values.size(); i++) {
         res *= values[i];
 
-        if (res.scnfcnd > 0x1.999p479) {
-            i++;
+        if (res.exp > 1000000000000LL) {
+            i = values.size();
         }
     }
     timer.stop();
+
     result_as_log2 = res.as_log2();
     return timer.time();
 }
 
 int64_t  multiply_parallel_Fukushima(const std::vector<floatingExp2Integer::Fukushima>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
+
     floatingExp2Integer::Timer timer;
     floatingExp2Integer::Fukushima collector;
     collector.multiply(values);
     timer.stop();
+
     result_as_log2 = collector.as_log2();
     return timer.time();
 }
@@ -739,7 +747,7 @@ int main() {
 
     resultCollections.clear();
 
-    std::cout << "END" << std::endl;
+    std::cout << std::endl << "END" << std::endl;
 
     return 0;
 }
