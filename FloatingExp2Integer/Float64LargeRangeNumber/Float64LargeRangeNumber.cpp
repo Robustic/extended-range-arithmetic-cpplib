@@ -242,7 +242,8 @@ namespace floatingExp2Integer
             }
         }
 
-        double sum = 1.0;
+        // exponent + (sicnificand - 1.0);
+        double sum = 0.0 + (1.0 - 1.0);
 
         for (size_t m = 0; m < n_parallel; m++) {
             for (size_t k = 0; k < 8; k++) {
