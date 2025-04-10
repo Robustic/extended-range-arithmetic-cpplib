@@ -443,7 +443,7 @@ int64_t  multiply_parallel_Fukushima(const std::vector<floatingExp2Integer::Fuku
 
 // *******  Float64LargeRangeNumber  *******
 
-int64_t  sum_sequential_Float64LargeRangeNumber(std::vector<floatingExp2Integer::Float64LargeRangeNumber>& values_as_T, double& result_as_log2, std::string& case_name) {
+int64_t  sum_sequential_Float64LargeRangeNumber(const std::vector<floatingExp2Integer::Float64LargeRangeNumber>& values_as_T, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
     auto dblArray = std::bit_cast<double*>(values_as_T.data());
     std::vector<double> values_as_double(dblArray, dblArray + values_as_T.size());
@@ -462,7 +462,7 @@ int64_t  sum_sequential_Float64LargeRangeNumber(std::vector<floatingExp2Integer:
     return timer.time();
 }
 
-int64_t  sum_parallel_Float64LargeRangeNumber(std::vector<floatingExp2Integer::Float64LargeRangeNumber>& values_as_T, double& result_as_log2, std::string& case_name) {
+int64_t  sum_parallel_Float64LargeRangeNumber(const std::vector<floatingExp2Integer::Float64LargeRangeNumber>& values_as_T, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
     auto dblArray = std::bit_cast<double*>(values_as_T.data());
     std::vector<double> values_as_double(dblArray, dblArray + values_as_T.size());
@@ -474,7 +474,7 @@ int64_t  sum_parallel_Float64LargeRangeNumber(std::vector<floatingExp2Integer::F
     return timer.time();
 }
 
-int64_t  multiply_sequential_Float64LargeRangeNumber(std::vector<floatingExp2Integer::Float64LargeRangeNumber>& values_as_T, double& result_as_log2, std::string& case_name) {
+int64_t  multiply_sequential_Float64LargeRangeNumber(const std::vector<floatingExp2Integer::Float64LargeRangeNumber>& values_as_T, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
     auto dblArray = std::bit_cast<double*>(values_as_T.data());
     std::vector<double> values_as_double(dblArray, dblArray + values_as_T.size());
@@ -493,7 +493,7 @@ int64_t  multiply_sequential_Float64LargeRangeNumber(std::vector<floatingExp2Int
     return timer.time();
 }
 
-int64_t  multiply_parallel_Float64LargeRangeNumber(std::vector<floatingExp2Integer::Float64LargeRangeNumber>& values_as_T, double& result_as_log2, std::string& case_name) {
+int64_t  multiply_parallel_Float64LargeRangeNumber(const std::vector<floatingExp2Integer::Float64LargeRangeNumber>& values_as_T, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
     auto dblArray = std::bit_cast<double*>(values_as_T.data());
     std::vector<double> values_as_double(dblArray, dblArray + values_as_T.size());
