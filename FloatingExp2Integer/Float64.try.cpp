@@ -555,52 +555,60 @@ int64_t  multiply_parallel_Float64LargeRangeNumber(const std::vector<floatingExp
 
 int64_t  sum_sequential_Int64PosExp2Int64(const std::vector<floatingExp2Integer::Int64PosExp2Int64>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
+
     floatingExp2Integer::Timer timer;
     floatingExp2Integer::Int64PosExp2Int64 res = values[0];
-    for (unsigned int i = 1; i < values.size(); i++) {
+    for (size_t i = 1; i < values.size(); i++) {
         res += values[i];
 
         if (res.scnfcnd < 1000ull) {
-            i++;
+            i = values.size();
         }
     }
     timer.stop();
+
     result_as_log2 = res.as_log2();
     return timer.time();
 }
 
 int64_t  sum_parallel_Int64PosExp2Int64(const std::vector<floatingExp2Integer::Int64PosExp2Int64>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
+
     floatingExp2Integer::Timer timer;
     floatingExp2Integer::Int64PosExp2Int64 res;
     res.sum(values);
     timer.stop();
+
     result_as_log2 = res.as_log2();
     return timer.time();
 }
 
 int64_t  multiply_sequential_Int64PosExp2Int64(const std::vector<floatingExp2Integer::Int64PosExp2Int64>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
+
     floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Int64PosExp2Int64 res = 1.0;
-    for (unsigned int i = 0; i < values.size(); i++) {
+    floatingExp2Integer::Int64PosExp2Int64 res = values[0];
+    for (size_t i = 1; i < values.size(); i++) {
         res *= values[i];
 
-        if (res.exp > -3ll) {
-            i++;
+        if (res.scnfcnd < 1000ull) {
+            i = values.size();
         }
     }
     timer.stop();
+
     result_as_log2 = res.as_log2();
     return timer.time();
 }
 
 int64_t  multiply_parallel_Int64PosExp2Int64(const std::vector<floatingExp2Integer::Int64PosExp2Int64>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
+
     floatingExp2Integer::Timer timer;
     floatingExp2Integer::Int64PosExp2Int64 res;
     res.multiply(values);
     timer.stop();
+
     result_as_log2 = res.as_log2();
     return timer.time();
 }
