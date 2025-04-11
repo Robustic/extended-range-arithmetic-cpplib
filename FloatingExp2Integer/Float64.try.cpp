@@ -113,7 +113,7 @@ int64_t sum_sequential_dbl(const std::vector<floatingExp2Integer::Dbl>& values_a
         sum += values_as_double[i];
 
         if (sum > 0x1p999) {
-            i = values_as_double.size();
+            i++;
         }
     }
     timer.stop();
@@ -162,7 +162,7 @@ int64_t multiply_sequential_dbl(const std::vector<floatingExp2Integer::Dbl>& val
         multiplied *= values_as_double[i];
 
         if (multiplied > 0x1p999) {
-            i = values_as_double.size();
+            i++;
         }
     }
     timer.stop();
@@ -260,7 +260,7 @@ int64_t multiply_sequential_log2scale(const std::vector<floatingExp2Integer::Log
         sum += values_as_double[i];
 
         if (sum > 0x1p999) {
-            i = values_as_double.size();
+            i++;
         }
     }
     timer.stop();
@@ -310,7 +310,7 @@ int64_t sum_sequential_Dbl1(const std::vector<floatingExp2Integer::Dbl>& values,
         sum += values[i];
 
         if (sum.dbl > 0x1p999) {
-            i = values.size();
+            i++;
         }
     }
     timer.stop();
@@ -340,7 +340,7 @@ int64_t  multiply_sequential_Dbl1(const std::vector<floatingExp2Integer::Dbl>& v
         multiplied *= values[i];
 
         if (multiplied.dbl > 0x1p999) {
-            i = values.size();
+            i++;
         }
     }
     timer.stop();
@@ -372,7 +372,7 @@ int64_t sum_sequential_Dbl2(const std::vector<floatingExp2Integer::Dbl2>& values
         sum += values[i];
 
         if (sum.dbl2 > 0x1p999) {
-            i = values.size();
+            i++;
             sum = std::numeric_limits<double>::infinity();
         }
     }
@@ -403,7 +403,7 @@ int64_t  multiply_sequential_Dbl2(const std::vector<floatingExp2Integer::Dbl2>& 
         multiplied *= values[i];
 
         if (multiplied.dbl2 > 0x1p999) {
-            i = values.size();
+            i++;
             multiplied = std::numeric_limits<double>::infinity();
         }
     }
@@ -436,7 +436,7 @@ int64_t  sum_sequential_Fukushima(const std::vector<floatingExp2Integer::Fukushi
         sum += values[i];
 
         if (sum.exp > 1000000000000LL) {
-            i = values.size();
+            i++;
         }
     }
     timer.stop();
@@ -466,7 +466,7 @@ int64_t  multiply_sequential_Fukushima(const std::vector<floatingExp2Integer::Fu
         res *= values[i];
 
         if (res.exp > 1000000000000LL) {
-            i = values.size();
+            i++;
         }
     }
     timer.stop();
@@ -500,7 +500,7 @@ int64_t  sum_sequential_Float64LargeRangeNumber(const std::vector<floatingExp2In
         double value = values_as_double[i];
         sum = floatingExp2Integer::Float64LargeRangeNumber::sum(sum, value);
         if (sum > 0x1p970) {
-            i = values_as_double.size();
+            i++;
         }
     }
     result_as_log2 = floatingExp2Integer::Float64LargeRangeNumber::as_log2(sum);
@@ -562,7 +562,7 @@ int64_t  sum_sequential_Int64PosExp2Int64(const std::vector<floatingExp2Integer:
         res += values[i];
 
         if (res.scnfcnd < 1000ull) {
-            i = values.size();
+            i++;
         }
     }
     timer.stop();
@@ -592,7 +592,7 @@ int64_t  multiply_sequential_Int64PosExp2Int64(const std::vector<floatingExp2Int
         res *= values[i];
 
         if (res.scnfcnd < 1000ull) {
-            i = values.size();
+            i++;
         }
     }
     timer.stop();
@@ -617,9 +617,10 @@ int64_t  multiply_parallel_Int64PosExp2Int64(const std::vector<floatingExp2Integ
 
 int64_t  sum_sequential_Float64PosExp2Int64(const std::vector<floatingExp2Integer::Float64PosExp2Int64>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
+
     floatingExp2Integer::Timer timer;
     floatingExp2Integer::Float64PosExp2Int64 res = values[0];
-    for (unsigned int i = 1; i < values.size(); i++) {
+    for (size_t i = 1; i < values.size(); i++) {
         res += values[i];
 
         if (res.scnfcnd < 0.5) {
@@ -627,42 +628,49 @@ int64_t  sum_sequential_Float64PosExp2Int64(const std::vector<floatingExp2Intege
         }
     }
     timer.stop();
+
     result_as_log2 = res.as_log2();
     return timer.time();
 }
 
 int64_t  sum_parallel_Float64PosExp2Int64(const std::vector<floatingExp2Integer::Float64PosExp2Int64>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
+
     floatingExp2Integer::Timer timer;
     floatingExp2Integer::Float64PosExp2Int64 res;
     res.sum(values);
     timer.stop();
+
     result_as_log2 = res.as_log2();
     return timer.time();
 }
 
 int64_t  multiply_sequential_Float64PosExp2Int64(const std::vector<floatingExp2Integer::Float64PosExp2Int64>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
+
     floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Float64PosExp2Int64 res = 1.0;
-    for (unsigned int i = 0; i < values.size(); i++) {
+    floatingExp2Integer::Float64PosExp2Int64 res = values[0];
+    for (size_t i = 1; i < values.size(); i++) {
         res *= values[i];
 
-        if (res.exp > -3ll) {
+        if (res.scnfcnd < 0.5) {
             i++;
         }
     }
     timer.stop();
+
     result_as_log2 = res.as_log2();
     return timer.time();
 }
 
 int64_t  multiply_parallel_Float64PosExp2Int64(const std::vector<floatingExp2Integer::Float64PosExp2Int64>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
+
     floatingExp2Integer::Timer timer;
     floatingExp2Integer::Float64PosExp2Int64 res;
     res.multiply(values);
     timer.stop();
+
     result_as_log2 = res.as_log2();
     return timer.time();
 }

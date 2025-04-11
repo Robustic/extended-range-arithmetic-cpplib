@@ -32,12 +32,22 @@ namespace floatingExp2Integer
     }
 
     void Float64PosExp2Int64::sum(const std::vector<floatingExp2Integer::Float64PosExp2Int64>& vector) {
-        const unsigned int parallel_count = 4;
+        const size_t parallel_count = 4;
+
+        if (2 * parallel_count > vector.size()) {
+            floatingExp2Integer::Float64PosExp2Int64 sum = vector[0];
+            for (size_t i = 1; i < vector.size(); i++) {
+                sum += vector[i];
+            }
+            scnfcnd = sum.scnfcnd;
+            exp = sum.exp;
+            return;
+        }
 
         double scnfcndSum[parallel_count];
         int64_t expSum[parallel_count];
 
-        for (unsigned int k = 0; k < parallel_count; k++) {
+        for (size_t k = 0; k < parallel_count; k++) {
             scnfcndSum[k] = vector[k].scnfcnd;
             expSum[k] = vector[k].exp;
         }
@@ -45,13 +55,13 @@ namespace floatingExp2Integer
         double scnfcndCurrent[parallel_count];
         int64_t expCurrent[parallel_count];
 
-        for (unsigned int i = parallel_count; i + (parallel_count - 1) < vector.size(); i += parallel_count) {
-            for (unsigned int k = 0; k < parallel_count; k++) {
+        size_t i = parallel_count;
+
+        for (i = parallel_count; i + (parallel_count - 1) < vector.size(); i += parallel_count) {
+            for (size_t k = 0; k < parallel_count; k++) {
                 scnfcndCurrent[k] = vector[i + k].scnfcnd;
                 expCurrent[k] = vector[i + k].exp;
-            }
 
-            for (unsigned int k = 0; k < parallel_count; k++) {
                 int64_t exp_diff = expSum[k] - expCurrent[k];
                 uint64_t* sgnfcnd_bits = reinterpret_cast<uint64_t*>(&scnfcndSum[k]);
                 uint64_t* sgnfcnd_bits_z = reinterpret_cast<uint64_t*>(&scnfcndCurrent[k]);
@@ -77,24 +87,39 @@ namespace floatingExp2Integer
                     }
                 }
 
-                if (scnfcndSum[k] >= 2.0) {
-                    scnfcndSum[k] *= 0.5;
-                    expSum[k]++;
+                if (scnfcndSum[k] >= 0x1p12) {
+                    uint64_t* sgnfcnd_bits = reinterpret_cast<uint64_t*>(&scnfcndSum[k]);
+                    expSum[k] += ((*sgnfcnd_bits & 0x7FF0000000000000ull) >> 52) - 1023;
+                    *sgnfcnd_bits &= 0x800FFFFFFFFFFFFFull;
+                    *sgnfcnd_bits |= 0x3FF0000000000000ull;
+                    scnfcndSum[k] = *reinterpret_cast<double*>(sgnfcnd_bits);
                 }
             }
         }
 
+        for (size_t k = 0; k < parallel_count; k++) {
+            uint64_t* sgnfcnd_bits = reinterpret_cast<uint64_t*>(&scnfcndSum[k]);
+            expSum[k] += ((*sgnfcnd_bits & 0x7FF0000000000000ull) >> 52) - 1023;
+            *sgnfcnd_bits &= 0x800FFFFFFFFFFFFFull;
+            *sgnfcnd_bits |= 0x3FF0000000000000ull;
+            scnfcndSum[k] = *reinterpret_cast<double*>(sgnfcnd_bits);
+        }
+
         floatingExp2Integer::Float64PosExp2Int64 sum(scnfcndSum[0], expSum[0]);
 
-        for (unsigned int k = 1; k < parallel_count; k++) {
+        for (size_t k = 1; k < parallel_count; k++) {
             floatingExp2Integer::Float64PosExp2Int64 current(scnfcndSum[k], expSum[k]);
             sum += current;
+        }
+
+        for (i = i; i < vector.size(); i++) {
+            sum += vector[i];
         }
 
         scnfcnd = sum.scnfcnd;
         exp = sum.exp;
 
-        this->scale();
+        // scaling already done
     }
 
     void Float64PosExp2Int64::double_to(double dbl) {
@@ -148,12 +173,22 @@ namespace floatingExp2Integer
     }
 
     void Float64PosExp2Int64::multiply(const std::vector<floatingExp2Integer::Float64PosExp2Int64>& vector) {
-        const unsigned int parallel_count = 4;
+        const size_t parallel_count = 4;
+
+        if (2 * parallel_count > vector.size()) {
+            floatingExp2Integer::Float64PosExp2Int64 sum = vector[0];
+            for (size_t i = 1; i < vector.size(); i++) {
+                sum *= vector[i];
+            }
+            scnfcnd = sum.scnfcnd;
+            exp = sum.exp;
+            return;
+        }
 
         double scnfcndSum[parallel_count];
         int64_t expSum[parallel_count];
 
-        for (unsigned int k = 0; k < parallel_count; k++) {
+        for (size_t k = 0; k < parallel_count; k++) {
             scnfcndSum[k] = vector[k].scnfcnd;
             expSum[k] = vector[k].exp;
         }
@@ -161,33 +196,49 @@ namespace floatingExp2Integer
         double scnfcndCurrent[parallel_count];
         int64_t expCurrent[parallel_count];
 
-        for (unsigned int i = parallel_count; i + (parallel_count - 1) < vector.size(); i += parallel_count) {
-            for (unsigned int k = 0; k < parallel_count; k++) {
+        size_t i = parallel_count;
+
+        for (i = parallel_count; i + (parallel_count - 1) < vector.size(); i += parallel_count) {
+            for (size_t k = 0; k < parallel_count; k++) {
                 scnfcndCurrent[k] = vector[i + k].scnfcnd;
                 expCurrent[k] = vector[i + k].exp;
-            }
 
-            for (unsigned int k = 0; k < parallel_count; k++) {
                 scnfcndSum[k] *= scnfcndCurrent[k];
                 expSum[k] += expCurrent[k];
-                if (scnfcndSum[k] >= 2.0) {
-                    scnfcndSum[k] *= 0.5;
-                    expSum[k]++;
+
+                if (scnfcndSum[k] >= 0x1p500) {
+                    uint64_t* sgnfcnd_bits = reinterpret_cast<uint64_t*>(&scnfcndSum[k]);
+                    expSum[k] += ((*sgnfcnd_bits & 0x7FF0000000000000ull) >> 52) - 1023;
+                    *sgnfcnd_bits &= 0x800FFFFFFFFFFFFFull;
+                    *sgnfcnd_bits |= 0x3FF0000000000000ull;
+                    scnfcndSum[k] = *reinterpret_cast<double*>(sgnfcnd_bits);
                 }
             }
         }
 
+        for (size_t k = 0; k < parallel_count; k++) {
+            uint64_t* sgnfcnd_bits = reinterpret_cast<uint64_t*>(&scnfcndSum[k]);
+            expSum[k] += ((*sgnfcnd_bits & 0x7FF0000000000000ull) >> 52) - 1023;
+            *sgnfcnd_bits &= 0x800FFFFFFFFFFFFFull;
+            *sgnfcnd_bits |= 0x3FF0000000000000ull;
+            scnfcndSum[k] = *reinterpret_cast<double*>(sgnfcnd_bits);
+        }
+
         floatingExp2Integer::Float64PosExp2Int64 sum(scnfcndSum[0], expSum[0]);
 
-        for (unsigned int k = 1; k < parallel_count; k++) {
+        for (size_t k = 1; k < parallel_count; k++) {
             floatingExp2Integer::Float64PosExp2Int64 current(scnfcndSum[k], expSum[k]);
             sum *= current;
+        }
+
+        for (i = i; i < vector.size(); i++) {
+            sum *= vector[i];
         }
 
         scnfcnd = sum.scnfcnd;
         exp = sum.exp;
 
-        this->scale();
+        // scaling already done
     }
 
     Float64PosExp2Int64& Float64PosExp2Int64::operator*=(Float64PosExp2Int64 z) {
