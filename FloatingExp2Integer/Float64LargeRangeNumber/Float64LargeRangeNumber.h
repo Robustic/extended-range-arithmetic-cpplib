@@ -31,27 +31,23 @@ namespace floatingExp2Integer
                 sicnificand_d = std::bit_cast<double>(sicnificand_int64);
             }
         public:
-            double encoded;
-            Float64LargeRangeNumber() { encoded = 1.0; }
-            Float64LargeRangeNumber(double enc) { encoded = enc; }
             static double double_to(double dbl);
             static void doubles_to(const std::vector<double>& in, std::vector<double>& out);
             static double as_double(double dbl);
-            double as_double();
 
-            void log2_to(double dbl);
-            static void log2s_to(const std::vector<double>& in, std::vector<floatingExp2Integer::Float64LargeRangeNumber>& out) {
+            static double log2_to(double dbl);
+            static void log2s_to(const std::vector<double>& in, std::vector<double>& out) {
                 for (size_t i = 0; i < out.size(); i++) {
-                    out[i].log2_to(in[i]);
+                    out[i] = log2_to(in[i]);
                 }
             }
             static double as_log2(double dbl);
 
             inline static double sum(double lrn1, double lrn2) {
-                if (lrn1 - lrn2 > 64) {
+                if (lrn1 - lrn2 > 54) {
                     return lrn1;
                 }
-                else if (lrn2 - lrn1 > 64) {
+                else if (lrn2 - lrn1 > 54) {
                     return lrn2;
                 }
 
@@ -70,15 +66,9 @@ namespace floatingExp2Integer
                 int64_t sicnificand_int64_2 = std::bit_cast<int64_t>(sicnificand_2);
 
                 if (exp_diff > 0) {
-                    if (exp_diff > 63) {
-                        return lrn1;
-                    }
                     sicnificand_int64_2 -= exp_diff << 52;
                 }
                 else if (exp_diff < 0) {
-                    if (exp_diff < -63) {
-                        return lrn2;
-                    }
                     sicnificand_int64_1 -= (-exp_diff) << 52;
                     exponent_1 = exponent_2;
                 }
@@ -96,10 +86,27 @@ namespace floatingExp2Integer
                     return (double)exponent_1 + sicnificand_1 - 1.0;
                 }
             }
-            static double multiply(double lrn1, double lrn2);
+            inline static double multiply(double lrn1, double lrn2) {
+                double exponent_1 = std::floor(lrn1);
+                double sicnificand_1 = lrn1 - exponent_1 + 1;
 
-            static double sum(std::vector<double>& lrns);
-            static double multiply(std::vector<double>& lrns);
+                double exponent_2 = std::floor(lrn2);
+                double sicnificand_2 = lrn2 - exponent_2 + 1;
+
+                sicnificand_1 *= sicnificand_2;
+                exponent_1 += exponent_2;
+
+                if (sicnificand_1 >= 2.0) {
+                    sicnificand_1 *= 0.5;
+                    return (double)exponent_1 + sicnificand_1;
+                }
+                else {
+                    return (double)exponent_1 + sicnificand_1 - 1.0;
+                }
+            }
+
+            static double sum(const std::vector<double>& lrns);
+            static double multiply(const std::vector<double>& lrns);
     };
 }
 

@@ -98,6 +98,33 @@ void calc_perf(const std::vector<double>& values_as_log2, std::vector<ResultColl
     resultCollections.push_back(rc);
 }
 
+void calc_perf_Float64LargeRangeNumber(const std::vector<double>& values_as_log2, std::vector<ResultCollection>& resultCollections,
+    std::function<int64_t(const std::vector<double>&, double&, std::string&)> function) {
+
+    ResultCollection rc;
+
+    for (size_t i = 0; i < n_count; i++) {
+        size_t n_current = n[i];
+        size_t n_rounds_current = n_rounds[i];
+
+        std::vector<double> values_as_double(n_current);
+        floatingExp2Integer::Float64LargeRangeNumber::log2s_to(values_as_log2, values_as_double);
+
+        int64_t time_sum = 0;
+        std::string case_name;
+        double result_as_log2;
+
+        for (size_t i = 0; i < n_rounds_current; i++) {
+            time_sum += function(values_as_double, result_as_log2, case_name);
+        }
+
+        rc.case_name = case_name;
+        rc.results_as_log2[i] = result_as_log2;
+        rc.times[i] = time_sum / n_rounds_current;
+    }
+    resultCollections.push_back(rc);
+}
+
 // *******  CASES  *******
 
 // *******  double  *******
@@ -211,10 +238,10 @@ int64_t sum_sequential_log2scale(const std::vector<floatingExp2Integer::Log2Scal
     double sum = values_as_double[0];
     for (size_t i = 1; i < values_as_double.size(); i++) {
         double value = values_as_double[i];
-        if (sum - value > 64) {
+        if (sum - value > 54) {
             sum = sum;
         }
-        else if (value - sum > 64) {
+        else if (value - sum > 54) {
             sum = value;
         }
         else if (sum > value) {
@@ -489,65 +516,63 @@ int64_t  multiply_parallel_Fukushima(const std::vector<floatingExp2Integer::Fuku
 
 // *******  Float64LargeRangeNumber  *******
 
-int64_t  sum_sequential_Float64LargeRangeNumber(const std::vector<floatingExp2Integer::Float64LargeRangeNumber>& values_as_T, double& result_as_log2, std::string& case_name) {
+int64_t  sum_sequential_Float64LargeRangeNumber(const std::vector<double>& values_as_lrn, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
-    auto dblArray = std::bit_cast<double*>(values_as_T.data());
-    std::vector<double> values_as_double(dblArray, dblArray + values_as_T.size());
 
     floatingExp2Integer::Timer timer;
-    double sum = values_as_double[0];
-    for (size_t i = 1; i < values_as_double.size(); i++) {
-        double value = values_as_double[i];
+    double sum = values_as_lrn[0];
+    for (size_t i = 1; i < values_as_lrn.size(); i++) {
+        double value = values_as_lrn[i];
         sum = floatingExp2Integer::Float64LargeRangeNumber::sum(sum, value);
-        if (sum > 0x1p970) {
+
+        if (sum > 0x1p999) {
             i++;
         }
     }
-    result_as_log2 = floatingExp2Integer::Float64LargeRangeNumber::as_log2(sum);
     timer.stop();
+
+    result_as_log2 = floatingExp2Integer::Float64LargeRangeNumber::as_log2(sum);
     return timer.time();
 }
 
-int64_t  sum_parallel_Float64LargeRangeNumber(const std::vector<floatingExp2Integer::Float64LargeRangeNumber>& values_as_T, double& result_as_log2, std::string& case_name) {
+int64_t  sum_parallel_Float64LargeRangeNumber(const std::vector<double>& values_as_lrn, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
-    auto dblArray = std::bit_cast<double*>(values_as_T.data());
-    std::vector<double> values_as_double(dblArray, dblArray + values_as_T.size());
 
     floatingExp2Integer::Timer timer;
-    double sum = floatingExp2Integer::Float64LargeRangeNumber::sum(values_as_double);
-    result_as_log2 = floatingExp2Integer::Float64LargeRangeNumber::as_log2(sum);
+    double sum = floatingExp2Integer::Float64LargeRangeNumber::sum(values_as_lrn);
     timer.stop();
+
+    result_as_log2 = floatingExp2Integer::Float64LargeRangeNumber::as_log2(sum);
     return timer.time();
 }
 
-int64_t  multiply_sequential_Float64LargeRangeNumber(const std::vector<floatingExp2Integer::Float64LargeRangeNumber>& values_as_T, double& result_as_log2, std::string& case_name) {
+int64_t  multiply_sequential_Float64LargeRangeNumber(const std::vector<double>& values_as_lrn, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
-    auto dblArray = std::bit_cast<double*>(values_as_T.data());
-    std::vector<double> values_as_double(dblArray, dblArray + values_as_T.size());
 
     floatingExp2Integer::Timer timer;
-    double res = values_as_double[0];
-    for (size_t i = 1; i < values_as_double.size(); i++) {
-        double value = values_as_double[i];
+    double res = values_as_lrn[0];
+    for (size_t i = 1; i < values_as_lrn.size(); i++) {
+        double value = values_as_lrn[i];
         res = floatingExp2Integer::Float64LargeRangeNumber::multiply(res, value);
-        if (res > 1.0) {
+
+        if (res > 0x1p999) {
             i++;
         }
     }
-    result_as_log2 = floatingExp2Integer::Float64LargeRangeNumber::as_log2(res);
     timer.stop();
+
+    result_as_log2 = floatingExp2Integer::Float64LargeRangeNumber::as_log2(res);
     return timer.time();
 }
 
-int64_t  multiply_parallel_Float64LargeRangeNumber(const std::vector<floatingExp2Integer::Float64LargeRangeNumber>& values_as_T, double& result_as_log2, std::string& case_name) {
+int64_t  multiply_parallel_Float64LargeRangeNumber(const std::vector<double>& values_as_lrn, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
-    auto dblArray = std::bit_cast<double*>(values_as_T.data());
-    std::vector<double> values_as_double(dblArray, dblArray + values_as_T.size());
 
     floatingExp2Integer::Timer timer;
-    double res = floatingExp2Integer::Float64LargeRangeNumber::multiply(values_as_double);
-    result_as_log2 = floatingExp2Integer::Float64LargeRangeNumber::as_log2(res);
+    double res = floatingExp2Integer::Float64LargeRangeNumber::multiply(values_as_lrn);
     timer.stop();
+
+    result_as_log2 = floatingExp2Integer::Float64LargeRangeNumber::as_log2(res);
     return timer.time();
 }
 
