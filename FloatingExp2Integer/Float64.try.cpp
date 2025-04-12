@@ -493,7 +493,6 @@ int64_t sum_sequential_Dbl2(const std::vector<floatingExp2Integer::Dbl2>& values
 
         if (sum.dbl2 > 0x1p999) {
             i++;
-            sum = std::numeric_limits<double>::infinity();
         }
     }
     timer.stop();
@@ -524,7 +523,6 @@ int64_t  multiply_sequential_Dbl2(const std::vector<floatingExp2Integer::Dbl2>& 
 
         if (multiplied.dbl2 > 0x1p999) {
             i++;
-            multiplied = std::numeric_limits<double>::infinity();
         }
     }
     timer.stop();
@@ -555,7 +553,7 @@ int64_t  sum_sequential_Fukushima(const std::vector<floatingExp2Integer::Fukushi
     for (size_t i = 1; i < values.size(); i++) {
         sum += values[i];
 
-        if (sum.exp > 1000000000000LL) {
+        if (sum.scnfcnd > 0x1.11111111111111111111111111p479) {
             i++;
         }
     }
@@ -585,7 +583,7 @@ int64_t  multiply_sequential_Fukushima(const std::vector<floatingExp2Integer::Fu
     for (size_t i = 0; i < values.size(); i++) {
         res *= values[i];
 
-        if (res.exp > 1000000000000LL) {
+        if (res.scnfcnd > 0x1.11111111111111111111111111p479) {
             i++;
         }
     }
