@@ -98,6 +98,64 @@ void calc_perf(const std::vector<double>& values_as_log2, std::vector<ResultColl
     resultCollections.push_back(rc);
 }
 
+void calc_perf_double(const std::vector<double>& values_as_log2, std::vector<ResultCollection>& resultCollections,
+    std::function<int64_t(const std::vector<double>&, double&, std::string&)> function) {
+
+    ResultCollection rc;
+
+    for (size_t i = 0; i < n_count; i++) {
+        size_t n_current = n[i];
+        size_t n_rounds_current = n_rounds[i];
+
+        std::vector<double> values_as_double(n_current);
+        for (size_t i = 0; i < values_as_double.size(); i++) {
+            values_as_double[i] = std::exp2(values_as_log2[i]);
+        }
+
+        int64_t time_sum = 0;
+        std::string case_name;
+        double result_as_log2;
+
+        for (size_t i = 0; i < n_rounds_current; i++) {
+            time_sum += function(values_as_double, result_as_log2, case_name);
+        }
+
+        rc.case_name = case_name;
+        rc.results_as_log2[i] = result_as_log2;
+        rc.times[i] = time_sum / n_rounds_current;
+    }
+    resultCollections.push_back(rc);
+}
+
+void calc_perf_log2scale(const std::vector<double>& values_as_log2, std::vector<ResultCollection>& resultCollections,
+    std::function<int64_t(const std::vector<double>&, double&, std::string&)> function) {
+
+    ResultCollection rc;
+
+    for (size_t i = 0; i < n_count; i++) {
+        size_t n_current = n[i];
+        size_t n_rounds_current = n_rounds[i];
+
+        std::vector<double> values_as_log2_limitted(n_current);
+        for (size_t i = 0; i < values_as_log2_limitted.size(); i++) {
+            values_as_log2_limitted[i] = values_as_log2[i];
+        }
+
+        int64_t time_sum = 0;
+        std::string case_name;
+        double result_as_log2;
+
+        for (size_t i = 0; i < n_rounds_current; i++) {
+            time_sum += function(values_as_log2_limitted, result_as_log2, case_name);
+        }
+
+        rc.case_name = case_name;
+        rc.results_as_log2[i] = result_as_log2;
+        rc.times[i] = time_sum / n_rounds_current;
+    }
+    resultCollections.push_back(rc);
+}
+
 void calc_perf_Float64LargeRangeNumber(const std::vector<double>& values_as_log2, std::vector<ResultCollection>& resultCollections,
     std::function<int64_t(const std::vector<double>&, double&, std::string&)> function) {
 
@@ -129,10 +187,8 @@ void calc_perf_Float64LargeRangeNumber(const std::vector<double>& values_as_log2
 
 // *******  double  *******
 
-int64_t sum_sequential_dbl(const std::vector<floatingExp2Integer::Dbl>& values_as_T, double& result_as_log2, std::string& case_name) {
+int64_t sum_sequential_dbl(const std::vector<double>& values_as_double, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
-    auto dblArray = std::bit_cast<double*>(values_as_T.data());
-    std::vector<double> values_as_double(dblArray, dblArray + values_as_T.size());
 
     floatingExp2Integer::Timer timer;
     double sum = 0.0;
@@ -149,10 +205,8 @@ int64_t sum_sequential_dbl(const std::vector<floatingExp2Integer::Dbl>& values_a
     return timer.time();
 }
 
-int64_t sum_parallel_dbl(const std::vector<floatingExp2Integer::Dbl>& values_as_T, double& result_as_log2, std::string& case_name) {
+int64_t sum_parallel_dbl(const std::vector<double>& values_as_double, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
-    auto dblArray = std::bit_cast<double*>(values_as_T.data());
-    std::vector<double> values_as_double(dblArray, dblArray + values_as_T.size());
 
     floatingExp2Integer::Timer timer;
     size_t i = 0;
@@ -178,10 +232,8 @@ int64_t sum_parallel_dbl(const std::vector<floatingExp2Integer::Dbl>& values_as_
     return timer.time();
 }
 
-int64_t multiply_sequential_dbl(const std::vector<floatingExp2Integer::Dbl>& values_as_T, double& result_as_log2, std::string& case_name) {
+int64_t multiply_sequential_dbl(const std::vector<double>& values_as_double, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
-    auto dblArray = std::bit_cast<double*>(values_as_T.data());
-    std::vector<double> values_as_double(dblArray, dblArray + values_as_T.size());
 
     floatingExp2Integer::Timer timer;
     double multiplied = 1.0;
@@ -198,10 +250,8 @@ int64_t multiply_sequential_dbl(const std::vector<floatingExp2Integer::Dbl>& val
     return timer.time();
 }
 
-int64_t multiply_parallel_dbl(const std::vector<floatingExp2Integer::Dbl>& values_as_T, double& result_as_log2, std::string& case_name) {
+int64_t multiply_parallel_dbl(const std::vector<double>& values_as_double, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
-    auto dblArray = std::bit_cast<double*>(values_as_T.data());
-    std::vector<double> values_as_double(dblArray, dblArray + values_as_T.size());
 
     floatingExp2Integer::Timer timer;
     size_t i = 0;
@@ -229,15 +279,13 @@ int64_t multiply_parallel_dbl(const std::vector<floatingExp2Integer::Dbl>& value
 
 // *******  log2scale  *******
 
-int64_t sum_sequential_log2scale(const std::vector<floatingExp2Integer::Log2Scale>& values_as_T, double& result_as_log2, std::string& case_name) {
+int64_t sum_sequential_log2scale(const std::vector<double>& values_as_log2, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
-    auto dblArray = std::bit_cast<double*>(values_as_T.data());
-    std::vector<double> values_as_double(dblArray, dblArray + values_as_T.size());
 
     floatingExp2Integer::Timer timer;
-    double sum = values_as_double[0];
-    for (size_t i = 1; i < values_as_double.size(); i++) {
-        double value = values_as_double[i];
+    double sum = values_as_log2[0];
+    for (size_t i = 1; i < values_as_log2.size(); i++) {
+        double value = values_as_log2[i];
         if (sum - value > 54) {
             sum = sum;
         }
@@ -258,16 +306,14 @@ int64_t sum_sequential_log2scale(const std::vector<floatingExp2Integer::Log2Scal
 }
 
 // More efficient function compiled with Intel Compiler to utilize SIMD
-int64_t sum_parallel_log2scale(const std::vector<floatingExp2Integer::Log2Scale>& values_as_T, double& result_as_log2, std::string& case_name) {
+int64_t sum_parallel_log2scale(const std::vector<double>& values_as_log2, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
-    auto dblArray = std::bit_cast<double*>(values_as_T.data());
-    std::vector<double> values_as_double(dblArray, dblArray + values_as_T.size());
 
     floatingExp2Integer::Timer timer;
     double sum = 0.0;
-    double max = *std::max_element(values_as_double.begin(), values_as_double.end());
-    for (size_t i = 0; i < values_as_double.size(); i++) {
-        sum += std::exp2(values_as_double[i] - max);
+    double max = *std::max_element(values_as_log2.begin(), values_as_log2.end());
+    for (size_t i = 0; i < values_as_log2.size(); i++) {
+        sum += std::exp2(values_as_log2[i] - max);
     }
     timer.stop();
 
@@ -275,16 +321,14 @@ int64_t sum_parallel_log2scale(const std::vector<floatingExp2Integer::Log2Scale>
     return timer.time();
 }
 
-int64_t multiply_sequential_log2scale(const std::vector<floatingExp2Integer::Log2Scale>& values_as_T, double& result_as_log2, std::string& case_name) {
+int64_t multiply_sequential_log2scale(const std::vector<double>& values_as_log2, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
-    auto dblArray = std::bit_cast<double*>(values_as_T.data());
-    std::vector<double> values_as_double(dblArray, dblArray + values_as_T.size());
 
     floatingExp2Integer::Timer timer;
     double sum = 0.0;
-    for (size_t i = 0; i < values_as_double.size(); i++) {
+    for (size_t i = 0; i < values_as_log2.size(); i++) {
         // log(A*B) = log(A) + log(B) 
-        sum += values_as_double[i];
+        sum += values_as_log2[i];
 
         if (sum > 0x1p999) {
             i++;
@@ -296,18 +340,16 @@ int64_t multiply_sequential_log2scale(const std::vector<floatingExp2Integer::Log
     return timer.time();
 }
 
-int64_t multiply_parallel_log2scale(const std::vector<floatingExp2Integer::Log2Scale>& values_as_T, double& result_as_log2, std::string& case_name) {
+int64_t multiply_parallel_log2scale(const std::vector<double>& values_as_log2, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
-    auto dblArray = std::bit_cast<double*>(values_as_T.data());
-    std::vector<double> values_as_double(dblArray, dblArray + values_as_T.size());
 
     floatingExp2Integer::Timer timer;
     size_t i = 0;
     double sum = 0.0;
-    if (16 <= values_as_double.size()) {
-        __m512d vsum = _mm512_loadu_pd(&values_as_double[0]);
-        for (i = 8; i + 7 < values_as_double.size(); i += 8) {
-            __m512d vb = _mm512_loadu_pd(&values_as_double[i]);
+    if (16 <= values_as_log2.size()) {
+        __m512d vsum = _mm512_loadu_pd(&values_as_log2[0]);
+        for (i = 8; i + 7 < values_as_log2.size(); i += 8) {
+            __m512d vb = _mm512_loadu_pd(&values_as_log2[i]);
             // log(A*B) = log(A) + log(B) 
             vsum = vsum + vb;
         }
@@ -317,8 +359,8 @@ int64_t multiply_parallel_log2scale(const std::vector<floatingExp2Integer::Log2S
         }
     }
 
-    for (i = i; i < values_as_double.size(); i++) {
-        sum += values_as_double[i];
+    for (i = i; i < values_as_log2.size(); i++) {
+        sum += values_as_log2[i];
     }
     timer.stop();
 
@@ -729,39 +771,39 @@ int main(int argc, char* argv[]) {
     std::cout << "RANDOM NUMBERS DEFINED" << std::endl;
 
 
-    calc_perf<floatingExp2Integer::Dbl>(double_values, resultCollections, sum_sequential_dbl);
-    calc_perf<floatingExp2Integer::Log2Scale>(double_values, resultCollections, sum_sequential_log2scale);
+    calc_perf_double(double_values, resultCollections, sum_sequential_dbl);
+    calc_perf_log2scale(double_values, resultCollections, sum_sequential_log2scale);
     calc_perf<floatingExp2Integer::Dbl>(double_values, resultCollections, sum_sequential_Dbl1);
     calc_perf<floatingExp2Integer::Dbl2>(double_values, resultCollections, sum_sequential_Dbl2);
     calc_perf<floatingExp2Integer::Fukushima>(double_values, resultCollections, sum_sequential_Fukushima);
-    calc_perf<floatingExp2Integer::Float64LargeRangeNumber>(double_values, resultCollections, sum_sequential_Float64LargeRangeNumber);
+    calc_perf_Float64LargeRangeNumber(double_values, resultCollections, sum_sequential_Float64LargeRangeNumber);
     calc_perf<floatingExp2Integer::Int64PosExp2Int64>(double_values, resultCollections, sum_sequential_Int64PosExp2Int64);
     calc_perf<floatingExp2Integer::Float64PosExp2Int64>(double_values, resultCollections, sum_sequential_Float64PosExp2Int64);
 
-    calc_perf<floatingExp2Integer::Dbl>(double_values, resultCollections, sum_parallel_dbl);
-    calc_perf<floatingExp2Integer::Log2Scale>(double_values, resultCollections, sum_parallel_log2scale);
+    calc_perf_double(double_values, resultCollections, sum_parallel_dbl);
+    calc_perf_log2scale(double_values, resultCollections, sum_parallel_log2scale);
     calc_perf<floatingExp2Integer::Dbl>(double_values, resultCollections, sum_parallel_Dbl1);
     calc_perf<floatingExp2Integer::Dbl2>(double_values, resultCollections, sum_parallel_Dbl2);
     calc_perf<floatingExp2Integer::Fukushima>(double_values, resultCollections, sum_parallel_Fukushima);
-    calc_perf<floatingExp2Integer::Float64LargeRangeNumber>(double_values, resultCollections, sum_parallel_Float64LargeRangeNumber);
+    calc_perf_Float64LargeRangeNumber(double_values, resultCollections, sum_parallel_Float64LargeRangeNumber);
     calc_perf<floatingExp2Integer::Int64PosExp2Int64>(double_values, resultCollections, sum_parallel_Int64PosExp2Int64);
     calc_perf<floatingExp2Integer::Float64PosExp2Int64>(double_values, resultCollections, sum_parallel_Float64PosExp2Int64);
 
-    calc_perf<floatingExp2Integer::Dbl>(double_values, resultCollections, multiply_sequential_dbl);
-    calc_perf<floatingExp2Integer::Log2Scale>(double_values, resultCollections, multiply_sequential_log2scale);
+    calc_perf_double(double_values, resultCollections, multiply_sequential_dbl);
+    calc_perf_log2scale(double_values, resultCollections, multiply_sequential_log2scale);
     calc_perf<floatingExp2Integer::Dbl>(double_values, resultCollections, multiply_sequential_Dbl1);
     calc_perf<floatingExp2Integer::Dbl2>(double_values, resultCollections, multiply_sequential_Dbl2);
     calc_perf<floatingExp2Integer::Fukushima>(double_values, resultCollections, multiply_sequential_Fukushima);
-    calc_perf<floatingExp2Integer::Float64LargeRangeNumber>(double_values, resultCollections, multiply_sequential_Float64LargeRangeNumber);
+    calc_perf_Float64LargeRangeNumber(double_values, resultCollections, multiply_sequential_Float64LargeRangeNumber);
     calc_perf<floatingExp2Integer::Int64PosExp2Int64>(double_values, resultCollections, multiply_sequential_Int64PosExp2Int64);
     calc_perf<floatingExp2Integer::Float64PosExp2Int64>(double_values, resultCollections, multiply_sequential_Float64PosExp2Int64);
 
-    calc_perf<floatingExp2Integer::Dbl>(double_values, resultCollections, multiply_parallel_dbl);
-    calc_perf<floatingExp2Integer::Log2Scale>(double_values, resultCollections, multiply_parallel_log2scale);
+    calc_perf_double(double_values, resultCollections, multiply_parallel_dbl);
+    calc_perf_log2scale(double_values, resultCollections, multiply_parallel_log2scale);
     calc_perf<floatingExp2Integer::Dbl>(double_values, resultCollections, multiply_parallel_Dbl1);
     calc_perf<floatingExp2Integer::Dbl2>(double_values, resultCollections, multiply_parallel_Dbl2);
     calc_perf<floatingExp2Integer::Fukushima>(double_values, resultCollections, multiply_parallel_Fukushima);
-    calc_perf<floatingExp2Integer::Float64LargeRangeNumber>(double_values, resultCollections, multiply_parallel_Float64LargeRangeNumber);
+    calc_perf_Float64LargeRangeNumber(double_values, resultCollections, multiply_parallel_Float64LargeRangeNumber);
     calc_perf<floatingExp2Integer::Int64PosExp2Int64>(double_values, resultCollections, multiply_parallel_Int64PosExp2Int64);
     calc_perf<floatingExp2Integer::Float64PosExp2Int64>(double_values, resultCollections, multiply_parallel_Float64PosExp2Int64);
 
