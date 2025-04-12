@@ -25,7 +25,7 @@
                 "CMAKE_CXX_STANDARD": "23",
                 "CMAKE_CXX_STANDARD_REQUIRED": "ON",
                 "CMAKE_CXX_EXTENSIONS": "OFF",
-                "CMAKE_CXX_FLAGS_INIT": "-Wall -Wextra -Wpedantic -O3 -flto -march=haswell", //native -O3 -flto -ffast-math",
+                "CMAKE_CXX_FLAGS_INIT": "-Wall -Wextra -Wpedantic -Ofast -flto -march=native -ffast-math",
                 "CMAKE_EXE_LINKER_FLAGS": ""
             }
         }
