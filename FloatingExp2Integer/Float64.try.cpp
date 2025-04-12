@@ -25,10 +25,11 @@
 //constexpr double min_log2 = -33;//-10000;
 //constexpr double max_log2 = -30;//-10;
 
-//constexpr size_t n[] = { 1000, 3000, 10000, 30000, 100000, 300000, 1000000, 3000000, 10000000, 30000000, 100000000 };
-//constexpr size_t n_rounds[] = { 100000, 30000, 10000, 3000, 1000, 300, 100, 30, 10, 3, 1 };
 constexpr size_t n[] = { 1000, 3000, 10000, 30000, 100000, 300000, 1000000, 3000000, 10000000, 30000000, 100000000 };
-constexpr size_t n_rounds[] = { 10000, 3000, 1000, 300, 100, 30, 10, 1, 1, 1, 1 };
+constexpr size_t n_rounds[] = { 10000, 10000, 10000, 3000, 1000, 300, 100, 30, 10, 3, 1 };
+//constexpr size_t n_rounds[] = { 10000, 10000, 10000, 3000, 1000, 1000, 1000, 300, 100, 30, 10 };
+//constexpr size_t n[] = { 1, 2, 3, 27, 33, 2000, 3000, 10000000 };
+//constexpr size_t n_rounds[] = { 1, 1, 1, 1, 1, 1, 1, 1 };
 
 // *******  COMMON FUNCTIONS  *******
 
@@ -208,27 +209,44 @@ int64_t sum_sequential_dbl(const std::vector<double>& values_as_double, double& 
 int64_t sum_parallel_dbl(const std::vector<double>& values_as_double, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
 
-    floatingExp2Integer::Timer timer;
-    size_t i = 0;
-    double sum = 0.0;
-    if (16 <= values_as_double.size()) {
-        __m512d vsum = _mm512_loadu_pd(&values_as_double[0]);
-        for (i = 8; i + 7 < values_as_double.size(); i += 8) {
-            __m512d vb = _mm512_loadu_pd(&values_as_double[i]);
-            vsum = vsum + vb;
-        }
+    floatingExp2Integer::Timer timer;    
+    double res = 0.0;
+    constexpr size_t n_parallel = 4;
 
-        for (size_t k = 0; k < 8; k++) {
-            sum += vsum[k];
+    if (values_as_double.size() < 2 * 8 * n_parallel) {
+        for (size_t k = 0; k < values_as_double.size(); k++) {
+            res += values_as_double[k];
         }
     }
+    else {
+        __m512d vres[n_parallel];
+        __m512d vb[n_parallel];
 
-    for (i = i; i < values_as_double.size(); i++) {
-        sum += values_as_double[i];
+        for (size_t m = 0; m < n_parallel; m++) {
+            vres[m] = _mm512_loadu_pd(&values_as_double[8 * m]);
+        }
+
+        size_t i = 8 * n_parallel;
+        for (i = 8 * n_parallel; i + (8 * n_parallel - 1) < values_as_double.size(); i += 8 * n_parallel) {
+            for (size_t m = 0; m < n_parallel; m++) {
+                vb[m] = _mm512_loadu_pd(&values_as_double[i + 8 * m]);
+                vres[m] = vres[m] + vb[m];
+            }
+        }
+
+        for (size_t m = 0; m < n_parallel; m++) {
+            for (size_t k = 0; k < 8; k++) {
+                res += vres[m][k];
+            }
+        }
+
+        for (i = i; i < values_as_double.size(); i++) {
+            res += values_as_double[i];
+        }
     }
     timer.stop();
 
-    result_as_log2 = std::log2(sum);
+    result_as_log2 = std::log2(res);
     return timer.time();
 }
 
@@ -254,26 +272,43 @@ int64_t multiply_parallel_dbl(const std::vector<double>& values_as_double, doubl
     case_name = __func__;
 
     floatingExp2Integer::Timer timer;
-    size_t i = 0;
-    double multiplied = 1.0;
-    if (16 <= values_as_double.size()) {
-        __m512d vmul = _mm512_set1_pd(1.0);
-        for (i = 0; i + 7 < values_as_double.size(); i += 8) {
-            __m512d vb = _mm512_loadu_pd(&values_as_double[i]);
-            vmul = vmul * vb;
-        }
+    double res = 1.0;
+    constexpr size_t n_parallel = 4;
 
-        for (size_t k = 0; k < 8; k++) {
-            multiplied *= vmul[k];
+    if (values_as_double.size() < 2 * 8 * n_parallel) {
+        for (size_t k = 0; k < values_as_double.size(); k++) {
+            res *= values_as_double[k];
         }
     }
+    else {
+        __m512d vres[n_parallel];
+        __m512d vb[n_parallel];
 
-    for (i = i; i < values_as_double.size(); i++) {
-        multiplied *= values_as_double[i];
+        for (size_t m = 0; m < n_parallel; m++) {
+            vres[m] = _mm512_loadu_pd(&values_as_double[8 * m]);
+        }
+
+        size_t i = 8 * n_parallel;
+        for (i = 8 * n_parallel; i + (8 * n_parallel - 1) < values_as_double.size(); i += 8 * n_parallel) {
+            for (size_t m = 0; m < n_parallel; m++) {
+                vb[m] = _mm512_loadu_pd(&values_as_double[i + 8 * m]);
+                vres[m] = vres[m] * vb[m];
+            }
+        }
+
+        for (size_t m = 0; m < n_parallel; m++) {
+            for (size_t k = 0; k < 8; k++) {            
+                res *= vres[m][k];
+            }
+        }
+
+        for (i = i; i < values_as_double.size(); i++) {
+            res *= values_as_double[i];
+        }
     }
     timer.stop();
 
-    result_as_log2 = std::log2(multiplied);
+    result_as_log2 = std::log2(res);
     return timer.time();
 }
 
@@ -344,27 +379,43 @@ int64_t multiply_parallel_log2scale(const std::vector<double>& values_as_log2, d
     case_name = __func__;
 
     floatingExp2Integer::Timer timer;
-    size_t i = 0;
-    double sum = 0.0;
-    if (16 <= values_as_log2.size()) {
-        __m512d vsum = _mm512_loadu_pd(&values_as_log2[0]);
-        for (i = 8; i + 7 < values_as_log2.size(); i += 8) {
-            __m512d vb = _mm512_loadu_pd(&values_as_log2[i]);
-            // log(A*B) = log(A) + log(B) 
-            vsum = vsum + vb;
-        }
+    double res = 0.0;
+    constexpr size_t n_parallel = 4;
 
-        for (size_t k = 0; k < 8; k++) {
-            sum += vsum[k];
+    if (values_as_log2.size() < 2 * 8 * n_parallel) {
+        for (size_t k = 0; k < values_as_log2.size(); k++) {
+            res += values_as_log2[k];
         }
     }
+    else {
+        __m512d vres[n_parallel];
+        __m512d vb[n_parallel];
 
-    for (i = i; i < values_as_log2.size(); i++) {
-        sum += values_as_log2[i];
+        for (size_t m = 0; m < n_parallel; m++) {
+            vres[m] = _mm512_loadu_pd(&values_as_log2[8 * m]);
+        }
+
+        size_t i = 8 * n_parallel;
+        for (i = 8 * n_parallel; i + (8 * n_parallel - 1) < values_as_log2.size(); i += 8 * n_parallel) {
+            for (size_t m = 0; m < n_parallel; m++) {
+                vb[m] = _mm512_loadu_pd(&values_as_log2[i + 8 * m]);
+                vres[m] = vres[m] + vb[m];
+            }
+        }
+
+        for (size_t m = 0; m < n_parallel; m++) {
+            for (size_t k = 0; k < 8; k++) {
+                res += vres[m][k];
+            }
+        }
+
+        for (i = i; i < values_as_log2.size(); i++) {
+            res += values_as_log2[i];
+        }
     }
     timer.stop();
 
-    result_as_log2 = sum;
+    result_as_log2 = res;
     return timer.time();
 }
 
