@@ -35,7 +35,8 @@ constexpr size_t n_rounds[] = { 10000, 10000, 10000, 3000, 1000, 300, 100, 30, 1
 
 constexpr size_t n_count = sizeof(n) / sizeof(n[0]);
 
-void save_vector_as_binary(const std::vector<double>& vec, const std::string& filename) {
+void save_vector_as_binary(const std::vector<double>& vec, double min_log2, double max_log2) {
+    std::string filename = "log2range_" + std::to_string(static_cast<int>(min_log2)) + "_to_" + std::to_string(static_cast<int>(max_log2)) + ".bin";
     std::ofstream outFile(filename, std::ios::binary);
     if (!outFile) {
         std::cerr << "Error opening file for writing!" << std::endl;
@@ -60,7 +61,7 @@ void InitializeRandomNumbers(std::vector<double>& vec, double min_log2, double m
         vec[i] = a_random_double;
     }
 
-    // save_vector_as_binary(vec, "data.bin");
+    //save_vector_as_binary(vec, min_log2, max_log2);
 }
 
 // *******  TEMPLATE  *******
@@ -333,6 +334,10 @@ int64_t sum_sequential_log2scale(const std::vector<double>& values_as_log2, doub
         else {
             sum = value + std::log2(std::exp2(sum - value) + 1);
         }
+
+        if (sum > 0x1p999) {
+            i++;
+        }
     }
     timer.stop();
 
@@ -355,6 +360,144 @@ int64_t sum_parallel_log2scale(const std::vector<double>& values_as_log2, double
     result_as_log2 = max + std::log2(sum);
     return timer.time();
 }
+
+//// ********************************************
+// 
+//// @echo off
+////set OMP_NUM_THREADS = 8
+////icx /Qiopenmp -O3 -Qstd=c++23 /Qpar-num-threads:1 -march=skylake-avx512 -ffast-math Float64.try.cpp Float64ExtendedExp.cpp -o Float64.exe
+////echo Float64.exe
+//
+//int64_t sum_parallel_log2scale_OPTION_2_SIMD(const std::vector<double>& values_as_log2, double& result_as_log2, std::string& case_name) {
+//    case_name = __func__;
+//
+//    floatingExp2Integer::Timer timer;
+//    size_t i = 0;
+//    double sum = 0.0;
+//    double max = *std::max_element(values_as_log2.begin(), values_as_log2.end());
+//    if (8 <= values_as_log2.size()) {
+//        __m256d vmax = _mm256_set1_pd(max);
+//        __m256d va = _mm256_loadu_pd(&values_as_log2[0]);
+//        va = va - vmax;
+//        __m256d vsum = _mm256_exp2_pd(va);
+//        for (i = 4; i + 3 < values_as_log2.size(); i += 4) {
+//            __m256d vb = _mm256_loadu_pd(&values_as_log2[i]);
+//            vb = vb - vmax;
+//            __m256d vexp = _mm256_exp2_pd(vb);
+//            vsum = vsum + vexp;
+//        }
+//
+//        for (size_t k = 0; k < 4; k++) {
+//            sum += vsum[k];
+//        }
+//    }
+//
+//    for (i = i; i < values_as_log2.size(); i++) {
+//        sum += std::exp2(values_as_log2[i] - max);
+//    }
+//    timer.stop();
+//
+//    result_as_log2 = max + std::log2(sum);
+//    return timer.time();
+//}
+//
+//static const size_t SIZE = 4096;
+//
+//inline double calculate_array_sum_log2_split(const std::vector<double>& values, size_t start) {
+//    double sum = 0.0;
+//    double max = *std::max_element(values.begin() + start, values.begin() + start + SIZE);
+//
+//    __m256d vmax = _mm256_set1_pd(max);
+//    __m256d va = _mm256_loadu_pd(&values[start]);
+//    va = va - vmax;
+//    __m256d vsum = _mm256_exp2_pd(va);
+//
+//    for (size_t i = start + 4; i + 3 < start + SIZE; i += 4) {
+//        __m256d vb = _mm256_loadu_pd(&values[i]);
+//        vb = vb - vmax;
+//        __m256d vexp = _mm256_exp2_pd(vb);
+//        vsum = vsum + vexp;
+//    }
+//
+//    for (size_t k = 0; k < 4; k++) {
+//        sum += vsum[k];
+//    }
+//    double result = max + std::log2(sum);
+//
+//    return result;
+//}
+//
+//inline double calculate_array_sum_log2_rest(const std::vector<double>& values, size_t start) {
+//    size_t i = 0;
+//    double sum = 0.0;
+//    double max = *std::max_element(values.begin() + start, values.end());
+//    if (8 <= values.size() - start) {
+//        __m256d vmax = _mm256_set1_pd(max);
+//        __m256d va = _mm256_loadu_pd(&values[0]);
+//        va = va - vmax;
+//        __m256d vsum = _mm256_exp2_pd(va);
+//        for (i = 4 + start; i + 3 < values.size(); i += 4) {
+//            __m256d vb = _mm256_loadu_pd(&values[i]);
+//            vb = vb - vmax;
+//            __m256d vexp = _mm256_exp2_pd(vb);
+//            vsum = vsum + vexp;
+//        }
+//
+//        for (size_t k = 0; k < 4; k++) {
+//            sum += vsum[k];
+//        }
+//    }
+//
+//    for (i = i; i < values.size(); i++) {
+//        sum += std::exp2(values[i] - max);
+//    }
+//    double result = max + std::log2(sum);
+//
+//    return result;
+//}
+//
+//int64_t sum_parallel_log2scale_OPTION_3_SIMD_betterCaching(const std::vector<double>& values_as_log2, double& result_as_log2, std::string& case_name) {
+//    case_name = __func__;
+//
+//    floatingExp2Integer::Timer timer;
+//    size_t n_count = ((values_as_log2.size() - 1) / SIZE) + 1;
+//
+//    std::vector<double> collected_values(n_count);
+//
+//    for (size_t i = 0; i < n_count - 1; i++) {
+//        collected_values[i] = calculate_array_sum_log2_split(values_as_log2, i * SIZE);
+//    }
+//    collected_values[n_count - 1] = calculate_array_sum_log2_rest(values_as_log2, (n_count - 1) * SIZE);
+//
+//    double result = calculate_array_sum_log2_rest(collected_values, 0);
+//    timer.stop();
+//
+//    result_as_log2 = result;
+//    return timer.time();
+//}
+//
+//int64_t sum_parallel_log2scale_OPTION_4_SIMD_betterCaching_threading(const std::vector<double>& values_as_log2, double& result_as_log2, std::string& case_name) {
+//    case_name = __func__;
+//
+//    floatingExp2Integer::Timer timer;
+//    size_t n_count = ((values_as_log2.size() - 1) / SIZE) + 1;
+//
+//    std::vector<double> collected_values(n_count);
+//
+//#pragma omp parallel for schedule(static, 1)
+//    for (size_t i = 0; i < n_count - 1; i++) {
+//        collected_values[i] = calculate_array_sum_log2_split(values_as_log2, i * SIZE);
+//    }
+//    collected_values[n_count - 1] = calculate_array_sum_log2_rest(values_as_log2, (n_count - 1) * SIZE);
+//
+//    double result = calculate_array_sum_log2_rest(collected_values, 0);
+//    timer.stop();
+//
+//    result_as_log2 = result;
+//    return timer.time();
+//}
+//
+//// ********************************************
 
 int64_t multiply_sequential_log2scale(const std::vector<double>& values_as_log2, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
