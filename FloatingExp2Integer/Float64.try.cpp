@@ -196,10 +196,6 @@ int64_t sum_sequential_dbl(const std::vector<double>& values_as_double, double& 
     double sum = 0.0;
     for (size_t i = 0; i < values_as_double.size(); i++) {
         sum += values_as_double[i];
-
-        if (sum > 0x1p999) {
-            i++;
-        }
     }
     timer.stop();
 
@@ -258,10 +254,6 @@ int64_t multiply_sequential_dbl(const std::vector<double>& values_as_double, dou
     double multiplied = 1.0;
     for (size_t i = 0; i < values_as_double.size(); i++) {
         multiplied *= values_as_double[i];
-
-        if (multiplied > 0x1p999) {
-            i++;
-        }
     }
     timer.stop();
 
@@ -333,10 +325,6 @@ int64_t sum_sequential_log2scale(const std::vector<double>& values_as_log2, doub
         }
         else {
             sum = value + std::log2(std::exp2(sum - value) + 1);
-        }
-
-        if (sum > 0x1p999) {
-            i++;
         }
     }
     timer.stop();
@@ -507,10 +495,6 @@ int64_t multiply_sequential_log2scale(const std::vector<double>& values_as_log2,
     for (size_t i = 0; i < values_as_log2.size(); i++) {
         // log(A*B) = log(A) + log(B) 
         sum += values_as_log2[i];
-
-        if (sum > 0x1p999) {
-            i++;
-        }
     }
     timer.stop();
 
@@ -571,10 +555,6 @@ int64_t sum_sequential_Dbl1(const std::vector<floatingExp2Integer::Dbl>& values,
     floatingExp2Integer::Dbl sum(0.0);
     for (size_t i = 0; i < values.size(); i++) {
         sum += values[i];
-
-        if (sum.dbl > 0x1p999) {
-            i++;
-        }
     }
     timer.stop();
 
@@ -601,10 +581,6 @@ int64_t  multiply_sequential_Dbl1(const std::vector<floatingExp2Integer::Dbl>& v
     floatingExp2Integer::Dbl multiplied(1.0);
     for (size_t i = 0; i < values.size(); i++) {
         multiplied *= values[i];
-
-        if (multiplied.dbl > 0x1p999) {
-            i++;
-        }
     }
     timer.stop();
 
@@ -633,10 +609,6 @@ int64_t sum_sequential_Dbl2(const std::vector<floatingExp2Integer::Dbl2>& values
     floatingExp2Integer::Dbl2 sum(0.0);
     for (size_t i = 0; i < values.size(); i++) {
         sum += values[i];
-
-        if (sum.dbl2 > 0x1p999) {
-            i++;
-        }
     }
     timer.stop();
 
@@ -663,10 +635,6 @@ int64_t  multiply_sequential_Dbl2(const std::vector<floatingExp2Integer::Dbl2>& 
     floatingExp2Integer::Dbl2 multiplied(1.0);
     for (size_t i = 0; i < values.size(); i++) {
         multiplied *= values[i];
-
-        if (multiplied.dbl2 > 0x1p999) {
-            i++;
-        }
     }
     timer.stop();
 
@@ -695,10 +663,6 @@ int64_t  sum_sequential_Fukushima(const std::vector<floatingExp2Integer::Fukushi
     floatingExp2Integer::Fukushima sum = values[0];
     for (size_t i = 1; i < values.size(); i++) {
         sum += values[i];
-
-        if (sum.scnfcnd > 0x1.11111111111111111111111111p479) {
-            i++;
-        }
     }
     timer.stop();
 
@@ -725,10 +689,6 @@ int64_t  multiply_sequential_Fukushima(const std::vector<floatingExp2Integer::Fu
     floatingExp2Integer::Fukushima res(1.0);
     for (size_t i = 0; i < values.size(); i++) {
         res *= values[i];
-
-        if (res.scnfcnd > 0x1.11111111111111111111111111p479) {
-            i++;
-        }
     }
     timer.stop();
 
@@ -758,10 +718,6 @@ int64_t  sum_sequential_Float64LargeRangeNumber(const std::vector<double>& value
     for (size_t i = 1; i < values_as_lrn.size(); i++) {
         double value = values_as_lrn[i];
         sum = floatingExp2Integer::Float64LargeRangeNumber::sum(sum, value);
-
-        if (sum > 0x1p999) {
-            i++;
-        }
     }
     timer.stop();
 
@@ -788,10 +744,6 @@ int64_t  multiply_sequential_Float64LargeRangeNumber(const std::vector<double>& 
     for (size_t i = 1; i < values_as_lrn.size(); i++) {
         double value = values_as_lrn[i];
         res = floatingExp2Integer::Float64LargeRangeNumber::multiply(res, value);
-
-        if (res > 0x1p999) {
-            i++;
-        }
     }
     timer.stop();
 
@@ -819,10 +771,6 @@ int64_t  sum_sequential_Int64PosExp2Int64(const std::vector<floatingExp2Integer:
     floatingExp2Integer::Int64PosExp2Int64 res = values[0];
     for (size_t i = 1; i < values.size(); i++) {
         res += values[i];
-
-        if (res.scnfcnd < 1000ull) {
-            i++;
-        }
     }
     timer.stop();
 
@@ -849,10 +797,6 @@ int64_t  multiply_sequential_Int64PosExp2Int64(const std::vector<floatingExp2Int
     floatingExp2Integer::Int64PosExp2Int64 res = values[0];
     for (size_t i = 1; i < values.size(); i++) {
         res *= values[i];
-
-        if (res.scnfcnd < 1000ull) {
-            i++;
-        }
     }
     timer.stop();
 
@@ -881,10 +825,6 @@ int64_t  sum_sequential_Float64PosExp2Int64(const std::vector<floatingExp2Intege
     floatingExp2Integer::Float64PosExp2Int64 res = values[0];
     for (size_t i = 1; i < values.size(); i++) {
         res += values[i];
-
-        if (res.scnfcnd < 0.5) {
-            i++;
-        }
     }
     timer.stop();
 
@@ -911,10 +851,6 @@ int64_t  multiply_sequential_Float64PosExp2Int64(const std::vector<floatingExp2I
     floatingExp2Integer::Float64PosExp2Int64 res = values[0];
     for (size_t i = 1; i < values.size(); i++) {
         res *= values[i];
-
-        if (res.scnfcnd < 0.5) {
-            i++;
-        }
     }
     timer.stop();
 
