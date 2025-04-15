@@ -25,7 +25,7 @@
                 "CMAKE_CXX_STANDARD": "23",
                 "CMAKE_CXX_STANDARD_REQUIRED": "ON",
                 "CMAKE_CXX_EXTENSIONS": "OFF",
-                "CMAKE_CXX_FLAGS_INIT": "-Wall -Wextra -Wpedantic -O1 -flto -march=native -fno-tree-loop-vectorize -fno-tree-slp-vectorize -ffinite-math-only -fno-signed-zeros -fno-trapping-math -fno-math-errno -freciprocal-math -funsafe-math-optimizations -fcx-limited-range",
+                "CMAKE_CXX_FLAGS_INIT": "-Wall -Wextra -Wpedantic -O3 -flto -march=native -fno-tree-vectorize -fno-tree-loop-vectorize -fno-tree-slp-vectorize -ffinite-math-only -fno-signed-zeros -fno-trapping-math -fno-math-errno -freciprocal-math -funsafe-math-optimizations -fcx-limited-range",
                 "CMAKE_EXE_LINKER_FLAGS": ""
             }
         }

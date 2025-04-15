@@ -714,14 +714,15 @@ int64_t  sum_sequential_Float64LargeRangeNumber(const std::vector<double>& value
     case_name = __func__;
 
     floatingExp2Integer::Timer timer;
-    double sum = values_as_lrn[0];
+    floatingExp2Integer::Float64LargeRangeNumber collector;
+    collector.set_encoded(values_as_lrn[0]);
     for (size_t i = 1; i < values_as_lrn.size(); i++) {
         double value = values_as_lrn[i];
-        sum = floatingExp2Integer::Float64LargeRangeNumber::sum(sum, value);
+        collector += value;
     }
     timer.stop();
 
-    result_as_log2 = floatingExp2Integer::Float64LargeRangeNumber::as_log2(sum);
+    result_as_log2 = collector.as_log2();
     return timer.time();
 }
 
@@ -740,14 +741,15 @@ int64_t  multiply_sequential_Float64LargeRangeNumber(const std::vector<double>& 
     case_name = __func__;
 
     floatingExp2Integer::Timer timer;
-    double res = values_as_lrn[0];
+    floatingExp2Integer::Float64LargeRangeNumber collector;
+    collector.set_encoded(values_as_lrn[0]);
     for (size_t i = 1; i < values_as_lrn.size(); i++) {
         double value = values_as_lrn[i];
-        res = floatingExp2Integer::Float64LargeRangeNumber::multiply(res, value);
+        collector *= value;
     }
     timer.stop();
 
-    result_as_log2 = floatingExp2Integer::Float64LargeRangeNumber::as_log2(res);
+    result_as_log2 = collector.as_log2();
     return timer.time();
 }
 
