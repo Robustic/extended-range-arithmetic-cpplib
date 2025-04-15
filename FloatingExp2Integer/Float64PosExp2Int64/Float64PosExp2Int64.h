@@ -7,13 +7,13 @@ namespace floatingExp2Integer
 {
     class Float64PosExp2Int64 {
         private:
+            double scnfcnd;
+            int64_t exp;
+
             Float64PosExp2Int64(double sicnificand, int64_t exponent);
             inline void checkRuleForScale();
             inline void scale();
         public:
-            double scnfcnd;
-            int64_t exp;
-
             Float64PosExp2Int64();
             Float64PosExp2Int64(double dbl);
 
