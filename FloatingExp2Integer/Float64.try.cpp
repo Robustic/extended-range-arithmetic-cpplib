@@ -314,10 +314,10 @@ int64_t sum_sequential_log2scale(const std::vector<double>& values_as_log2, doub
     double sum = values_as_log2[0];
     for (size_t i = 1; i < values_as_log2.size(); i++) {
         double value = values_as_log2[i];
-        if (sum - value > 54) {
+        if (sum - value > 54.0) {
             sum = sum;
         }
-        else if (value - sum > 54) {
+        else if (sum - value < -54.0) {
             sum = value;
         }
         else if (sum > value) {

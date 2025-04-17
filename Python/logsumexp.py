@@ -23,7 +23,7 @@ def calculate_log_sum_exp(doubles, repeat_count):
         log_sum_exp = torch.logsumexp(tensor, dim=0)
     end_time = time.perf_counter()
     
-    execution_time_nanoseconds = (end_time - start_time) * 1_000_000_000
+    execution_time_nanoseconds = (end_time - start_time) * 1_000_000_000 / repeat_count;
 
     print("Count:", tensor.numel())
     print("Log-Sum-Exp:", ln_to_log2(log_sum_exp.item()))
