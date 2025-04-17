@@ -71,10 +71,10 @@ namespace floatingExp2Integer
     }
 
     double Float64LargeRangeNumber::sum(double lrn1, double lrn2) {
-        if (lrn1 - lrn2 > 54) {
+        if (lrn1 - lrn2 > 54.0) {
             return lrn1;
         }
-        else if (lrn2 - lrn1 > 54) {
+        else if (lrn1 - lrn2 < -54.0) {
             return lrn2;
         }
 
@@ -116,10 +116,10 @@ namespace floatingExp2Integer
 
     Float64LargeRangeNumber& Float64LargeRangeNumber::operator+=(double encoded_2) {
         double diff = (double)exp - encoded_2;
-        if (diff > 55.0) {
+        if (diff > 54.0) {
             return *this;
         }
-        else if (diff < -55.0) {
+        else if (diff < -54.0) {
             int64_t exponent_temp;
             double sicnificand_temp;
             decode_fast_int(encoded_2, exponent_temp, sicnificand_temp);

@@ -148,14 +148,14 @@ namespace floatingExp2Integer
         uint64_t* sgnfcnd_bits_z = reinterpret_cast<uint64_t*>(&z.scnfcnd);
 
         if (exp_diff >= 0) {
-            if (exp_diff > 64) {
+            if (exp_diff > 52) {
                 return *this;
             }
             *sgnfcnd_bits_z -= exp_diff << 52;
             scnfcnd += z.scnfcnd;
         }
         else {
-            if (exp_diff < -64) {
+            if (exp_diff < -52) {
                 scnfcnd = z.scnfcnd;
                 exp = z.exp;
                 return *this;

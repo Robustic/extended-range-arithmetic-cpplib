@@ -76,7 +76,7 @@ namespace floatingExp2Integer
                 int64_t exp_diff = expSum[k] - expCurrent[k];
 
                 if (exp_diff >= 0) {
-                    if (exp_diff > 63) {
+                    if (exp_diff > 62) {
                         //
                     }
                     else {
@@ -84,7 +84,7 @@ namespace floatingExp2Integer
                     }
                 }
                 else {
-                    if (exp_diff < -63) {
+                    if (exp_diff < -62) {
                         scnfcndSum[k] = scnfcndCurrent[k];
                         expSum[k] = expCurrent[k];
                     }
@@ -129,13 +129,13 @@ namespace floatingExp2Integer
         int64_t exp_diff = exp - z.exp;
 
         if (exp_diff >= 0) {
-            if (exp_diff > 63) {
+            if (exp_diff > 52) {
                 return *this;
             }
             scnfcnd += z.scnfcnd >> exp_diff;
         }
         else {
-            if (exp_diff < -63) {
+            if (exp_diff < -52) {
                 scnfcnd = z.scnfcnd;
                 exp = z.exp;
                 return *this;
