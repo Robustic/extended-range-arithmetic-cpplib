@@ -100,6 +100,37 @@ void calc_perf(const std::vector<double>& values_as_log2, std::vector<ResultColl
     resultCollections.push_back(rc);
 }
 
+template<typename T>
+void calc_perf_sorted(const std::vector<double>& values_as_log2, std::vector<ResultCollection>& resultCollections,
+    std::function<int64_t(const std::vector<T>&, double&, std::string&)> function) {
+
+    ResultCollection rc;
+
+    for (size_t i = 0; i < n_count; i++) {
+        size_t n_current = n[i];
+        size_t n_rounds_current = n_rounds[i];
+
+        std::vector<double> sorted(n_current);
+        std::copy(values_as_log2.begin(), values_as_log2.begin() + n_current, std::back_inserter(sorted));
+        std::sort(sorted.begin(), sorted.end());
+        std::vector<T> values_as_T(n_current);
+        T::log2s_to(sorted, values_as_T);
+
+        int64_t time_sum = 0;
+        std::string case_name;
+        double result_as_log2;
+
+        for (size_t i = 0; i < n_rounds_current; i++) {
+            time_sum += function(values_as_T, result_as_log2, case_name);
+        }
+
+        rc.case_name = case_name;
+        rc.results_as_log2[i] = result_as_log2;
+        rc.times[i] = time_sum / n_rounds_current;
+    }
+    resultCollections.push_back(rc);
+}
+
 void calc_perf_double(const std::vector<double>& values_as_log2, std::vector<ResultCollection>& resultCollections,
     std::function<int64_t(const std::vector<double>&, double&, std::string&)> function) {
 
@@ -169,6 +200,34 @@ void calc_perf_Float64LargeRangeNumber(const std::vector<double>& values_as_log2
 
         std::vector<double> values_as_double(n_current);
         floatingExp2Integer::Float64LargeRangeNumber::log2s_to(values_as_log2, values_as_double);
+
+        int64_t time_sum = 0;
+        std::string case_name;
+        double result_as_log2;
+
+        for (size_t i = 0; i < n_rounds_current; i++) {
+            time_sum += function(values_as_double, result_as_log2, case_name);
+        }
+
+        rc.case_name = case_name;
+        rc.results_as_log2[i] = result_as_log2;
+        rc.times[i] = time_sum / n_rounds_current;
+    }
+    resultCollections.push_back(rc);
+}
+
+void calc_perf_Float64LargeRangeNumber_sorted(const std::vector<double>& values_as_log2, std::vector<ResultCollection>& resultCollections,
+    std::function<int64_t(const std::vector<double>&, double&, std::string&)> function) {
+
+    ResultCollection rc;
+
+    for (size_t i = 0; i < n_count; i++) {
+        size_t n_current = n[i];
+        size_t n_rounds_current = n_rounds[i];
+
+        std::vector<double> values_as_double(n_current);
+        floatingExp2Integer::Float64LargeRangeNumber::log2s_to(values_as_log2, values_as_double);
+        std::sort(values_as_double.begin(), values_as_double.end());
 
         int64_t time_sum = 0;
         std::string case_name;
