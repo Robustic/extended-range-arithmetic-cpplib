@@ -12,7 +12,6 @@
 #include "Timer.h"
 #include "Dbl.h"
 #include "Dbl2.h"
-#include "Log2Scale.h"
 #include "./IntExp2Int64/IntExp2Int64.h"
 #include "./FloatExp2Int64/FloatExp2Int64.h"
 #include "./WideRangeNumber64/WideRangeNumber64.h"
@@ -61,6 +60,7 @@ void InitializeRandomNumbers(std::vector<double>& vec, double min_log2, double m
         vec[i] = a_random_double;
     }
 
+    //// Save as binary to import rundom numbers data to Python:
     //save_vector_as_binary(vec, min_log2, max_log2);
 }
 

@@ -1,5 +1,10 @@
 # FloatingExp2Integer
 
+## License
+
+[FloatingExp2Integer](https://creativecommons.org) © 1999 by [Juha Malinen](https://creativecommons.org) is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)<img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" style="max-width: 1.5em; max-height: 1.5em; margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" style="max-width: 1.5em; max-height: 1.5em; margin-left: .2em;">
+
+
 ## Automatic tests
 
 Run the following commands in the cloned repository root:
@@ -14,7 +19,7 @@ cmake --build build_debug
 cmake --build build_release
 // some output
 ./build_release/Int32PosExp2Int32.test
-Running main() from /home/juhamali/Documents/Gradu/FloatingExp2Integer/build_release/_deps/googletest-src/googletest/src/gtest_main.cc
+Running main() from /FloatingExp2Integer/build_release/_deps/googletest-src/googletest/src/gtest_main.cc
 [==========] Running 5 tests from 1 test suite.
 [----------] Global test environment set-up.
 [----------] 5 tests from DoubleExp2Int
