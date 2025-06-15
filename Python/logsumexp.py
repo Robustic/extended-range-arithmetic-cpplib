@@ -20,6 +20,7 @@ def calculate_log_sum_exp(doubles, repeat_count):
     
     start_time = time.perf_counter()
     for _ in range(repeat_count):
+        # torch.logsumexp() is used here
         log_sum_exp = torch.logsumexp(tensor, dim=0)
     end_time = time.perf_counter()
     
@@ -35,7 +36,7 @@ def log2_to_ln(log2_value):
     return log2_value * math.log(2)
 
 # Read doubles from binary file
-doubles_log2 = read_binary_file('log2range_-100_to_0.bin')
+doubles_log2 = read_binary_file('log2range_-110_to_-100.bin')
 doubles = [log2_to_ln(value) for value in doubles_log2]
 
 print("torch.get_num_threads():", torch.get_num_threads())

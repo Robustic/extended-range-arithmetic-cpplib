@@ -1,6 +1,8 @@
 #ifndef INT64POS_EXP2INT64_H_
 #define INT64POS_EXP2INT64_H_
 
+#include <vector>
+
 namespace floatingExp2Integer
 {
     class Int64PosExp2Int64 {
