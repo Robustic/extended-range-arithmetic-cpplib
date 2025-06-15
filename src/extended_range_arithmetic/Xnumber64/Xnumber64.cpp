@@ -4,26 +4,26 @@
 #include <bitset>
 #include <iostream>
 
-#include "Xnumber.h"
+#include "Xnumber64.h"
 
 namespace extended_range_arithmetic
 {
-    Xnumber::Xnumber() {
+    Xnumber64::Xnumber64() {
         scnfcnd = 1.0;
         exp = 0LL;
     }
 
-    Xnumber::Xnumber(double dbl) {
+    Xnumber64::Xnumber64(double dbl) {
         scnfcnd = dbl;
         exp = 0LL;
     }
 
-    Xnumber::Xnumber(double dbl, int64_t exponent) {
+    Xnumber64::Xnumber64(double dbl, int64_t exponent) {
         scnfcnd = dbl;
         exp = exponent;
     }
 
-    void Xnumber::log2_to(const double from) {
+    void Xnumber64::log2_to(const double from) {
         double from_floored = std::floor(from);
         int64_t exponent = (int64_t)from_floored;
         double multiplier = std::exp2(from - from_floored);
@@ -41,19 +41,19 @@ namespace extended_range_arithmetic
         }
     }
 
-    double Xnumber::as_double() const {
+    double Xnumber64::as_double() const {
         return scnfcnd * std::exp2(EXP_MULTIPLIER * exp);
     }
 
-    double Xnumber::as_log2() const {
+    double Xnumber64::as_log2() const {
         return std::log2(scnfcnd) + EXP_MULTIPLIER * exp;
     }
 
-    void Xnumber::sum(const std::vector<extended_range_arithmetic::Xnumber>& vector) {
+    void Xnumber64::sum(const std::vector<extended_range_arithmetic::Xnumber64>& vector) {
         const size_t parallel_count = 4;
 
         if (2 * parallel_count > vector.size()) {
-            extended_range_arithmetic::Xnumber sum = vector[0];
+            extended_range_arithmetic::Xnumber64 sum = vector[0];
             for (size_t i = 1; i < vector.size(); i++) {
                 sum += vector[i];
             }
@@ -108,10 +108,10 @@ namespace extended_range_arithmetic
             }
         }
 
-        extended_range_arithmetic::Xnumber sum(scnfcndSum[0], expSum[0]);
+        extended_range_arithmetic::Xnumber64 sum(scnfcndSum[0], expSum[0]);
 
         for (size_t k = 1; k < parallel_count; k++) {
-            extended_range_arithmetic::Xnumber current(scnfcndSum[k], expSum[k]);
+            extended_range_arithmetic::Xnumber64 current(scnfcndSum[k], expSum[k]);
             sum += current;
         }
 
@@ -123,11 +123,11 @@ namespace extended_range_arithmetic
         exp = sum.exp;
     }
 
-    void Xnumber::multiply(const std::vector<extended_range_arithmetic::Xnumber>& vector) {
+    void Xnumber64::multiply(const std::vector<extended_range_arithmetic::Xnumber64>& vector) {
         const size_t parallel_count = 6;
 
         if (2 * parallel_count > vector.size()) {
-            extended_range_arithmetic::Xnumber res = vector[0];
+            extended_range_arithmetic::Xnumber64 res = vector[0];
             for (size_t i = 1; i < vector.size(); i++) {
                 res *= vector[i];
             }
@@ -168,10 +168,10 @@ namespace extended_range_arithmetic
             }
         }
 
-        extended_range_arithmetic::Xnumber sum(scnfcndSum[0], expSum[0]);
+        extended_range_arithmetic::Xnumber64 sum(scnfcndSum[0], expSum[0]);
 
         for (size_t k = 1; k < parallel_count; k++) {
-            extended_range_arithmetic::Xnumber current(scnfcndSum[k], expSum[k]);
+            extended_range_arithmetic::Xnumber64 current(scnfcndSum[k], expSum[k]);
             sum *= current;
         }
 
@@ -183,7 +183,7 @@ namespace extended_range_arithmetic
         exp = sum.exp;
     }
 
-    Xnumber& Xnumber::operator+=(Xnumber z) {
+    Xnumber64& Xnumber64::operator+=(Xnumber64 z) {
         if (exp == z.exp) {
             scnfcnd = scnfcnd + z.scnfcnd;
         } 
@@ -210,7 +210,7 @@ namespace extended_range_arithmetic
         return *this;
     }
 
-    Xnumber& Xnumber::operator*=(Xnumber z) {
+    Xnumber64& Xnumber64::operator*=(Xnumber64 z) {
         scnfcnd = scnfcnd * z.scnfcnd;
         exp = exp + z.exp;
 
@@ -219,7 +219,7 @@ namespace extended_range_arithmetic
         return *this;
     }
 
-    inline void Xnumber::xnorm() {
+    inline void Xnumber64::xnorm() {
         if (scnfcnd >= BIGS) {
             scnfcnd *= BIGI;
             exp += 1;
@@ -229,7 +229,7 @@ namespace extended_range_arithmetic
         }
     }
 
-    // Xnumber operator+(Xnumber a, const Xnumber b) { return a+=b; }
-    // Xnumber operator*(Xnumber a, const Xnumber b) { return a*=b; }
+    // Xnumber64 operator+(Xnumber64 a, const Xnumber64 b) { return a+=b; }
+    // Xnumber64 operator*(Xnumber64 a, const Xnumber64 b) { return a*=b; }
 }
 

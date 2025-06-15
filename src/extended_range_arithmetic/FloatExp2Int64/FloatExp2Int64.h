@@ -1,5 +1,5 @@
-#ifndef FLOAT64POS_EXP2INT64_H_
-#define FLOAT64POS_EXP2INT64_H_
+#ifndef FLOAT_EXP2_INT_64_H_
+#define FLOAT_EXP2_INT_64_H_
 
 #include <vector>
 

@@ -1,5 +1,5 @@
-#ifndef FLOAT64_LARGERANGENUMBER_H_
-#define FLOAT64_LARGERANGENUMBER_H_
+#ifndef WIDERANGENUMBER_64_H_
+#define WIDERANGENUMBER_64_H_
 
 #include <vector>
 #include <cmath>

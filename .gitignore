@@ -35,10 +35,4 @@
 .vscode/
 build_debug/
 build_release/
-eigen-3.4.0/
-vectorclass/
-glibc/
-test_libmvec/
-libtensorflow-cpu-linux-x86_64/
-TensorFlow/
-Python/*.bin
+logsumexp-torch-test/*.bin

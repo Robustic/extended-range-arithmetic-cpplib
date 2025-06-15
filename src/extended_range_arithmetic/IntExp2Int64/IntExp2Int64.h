@@ -1,5 +1,5 @@
-#ifndef INT64POS_EXP2INT64_H_
-#define INT64POS_EXP2INT64_H_
+#ifndef INT_EXP2_INT_64_H_
+#define INT_EXP2_INT_64_H_
 
 #include <vector>
 

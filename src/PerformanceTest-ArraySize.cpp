@@ -15,7 +15,7 @@
 #include "./extended_range_arithmetic/IntExp2Int64/IntExp2Int64.h"
 #include "./extended_range_arithmetic/FloatExp2Int64/FloatExp2Int64.h"
 #include "./extended_range_arithmetic/WideRangeNumber64/WideRangeNumber64.h"
-#include "./extended_range_arithmetic/Xnumber/Xnumber.h"
+#include "./extended_range_arithmetic/Xnumber64/Xnumber64.h"
 
 // *******  PARAMETERS  *******
 
@@ -412,10 +412,13 @@ int64_t sum_parallel_log2scale(const std::vector<double>& values_as_log2, double
 
 //// ********************************************
 // 
+//// Code for Intel oneAPI DPC++/C++ Compiler to use SIMD instructions for log2() and exp2()
+//// =======================================================================================
+// 
 //// @echo off
 ////set OMP_NUM_THREADS = 8
-////icx /Qiopenmp -O3 -Qstd=c++23 /Qpar-num-threads:1 -march=skylake-avx512 -ffast-math Float64.try.cpp Float64ExtendedExp.cpp -o Float64.exe
-////echo Float64.exe
+////icx /Qiopenmp -O3 -Qstd=c++23 /Qpar-num-threads:1 -march=skylake-avx512 -ffast-math PerformanceTest-ArraySize.cpp -o PerformanceTest-ArraySize.exe
+////echo PerformanceTest-ArraySize.exe
 //
 //int64_t sum_parallel_log2scale_OPTION_2_SIMD(const std::vector<double>& values_as_log2, double& result_as_log2, std::string& case_name) {
 //    case_name = __func__;
@@ -715,13 +718,13 @@ int64_t  multiply_parallel_Dbl2(const std::vector<dbl2::Dbl2>& values, double& r
     return timer.time();
 }
 
-// *******  Xnumber  *******
+// *******  Xnumber64  *******
 
-int64_t  sum_sequential_Xnumber(const std::vector<extended_range_arithmetic::Xnumber>& values, double& result_as_log2, std::string& case_name) {
+int64_t  sum_sequential_Xnumber64(const std::vector<extended_range_arithmetic::Xnumber64>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
 
     timer::Timer timer;
-    extended_range_arithmetic::Xnumber sum = values[0];
+    extended_range_arithmetic::Xnumber64 sum = values[0];
     for (size_t i = 1; i < values.size(); i++) {
         sum += values[i];
     }
@@ -731,11 +734,11 @@ int64_t  sum_sequential_Xnumber(const std::vector<extended_range_arithmetic::Xnu
     return timer.time();
 }
 
-int64_t  sum_parallel_Xnumber(const std::vector<extended_range_arithmetic::Xnumber>& values, double& result_as_log2, std::string& case_name) {
+int64_t  sum_parallel_Xnumber64(const std::vector<extended_range_arithmetic::Xnumber64>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
 
     timer::Timer timer;
-    extended_range_arithmetic::Xnumber collector;
+    extended_range_arithmetic::Xnumber64 collector;
     collector.sum(values);
     timer.stop();
 
@@ -743,11 +746,11 @@ int64_t  sum_parallel_Xnumber(const std::vector<extended_range_arithmetic::Xnumb
     return timer.time();
 }
 
-int64_t  multiply_sequential_Xnumber(const std::vector<extended_range_arithmetic::Xnumber>& values, double& result_as_log2, std::string& case_name) {
+int64_t  multiply_sequential_Xnumber64(const std::vector<extended_range_arithmetic::Xnumber64>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
 
     timer::Timer timer;
-    extended_range_arithmetic::Xnumber res(1.0);
+    extended_range_arithmetic::Xnumber64 res(1.0);
     for (size_t i = 0; i < values.size(); i++) {
         res *= values[i];
     }
@@ -757,11 +760,11 @@ int64_t  multiply_sequential_Xnumber(const std::vector<extended_range_arithmetic
     return timer.time();
 }
 
-int64_t  multiply_parallel_Xnumber(const std::vector<extended_range_arithmetic::Xnumber>& values, double& result_as_log2, std::string& case_name) {
+int64_t  multiply_parallel_Xnumber64(const std::vector<extended_range_arithmetic::Xnumber64>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
 
     timer::Timer timer;
-    extended_range_arithmetic::Xnumber collector;
+    extended_range_arithmetic::Xnumber64 collector;
     collector.multiply(values);
     timer.stop();
 
@@ -966,7 +969,7 @@ int main(int argc, char* argv[]) {
     calc_perf_log2scale(double_values, resultCollections, sum_sequential_log2scale);
     calc_perf<dbl::Dbl>(double_values, resultCollections, sum_sequential_Dbl1);
     calc_perf<dbl2::Dbl2>(double_values, resultCollections, sum_sequential_Dbl2);
-    calc_perf<extended_range_arithmetic::Xnumber>(double_values, resultCollections, sum_sequential_Xnumber);
+    calc_perf<extended_range_arithmetic::Xnumber64>(double_values, resultCollections, sum_sequential_Xnumber64);
     calc_perf_WideRangeNumber64(double_values, resultCollections, sum_sequential_WideRangeNumber64);
     calc_perf<extended_range_arithmetic::IntExp2Int64>(double_values, resultCollections, sum_sequential_IntExp2Int64);
     calc_perf<extended_range_arithmetic::FloatExp2Int64>(double_values, resultCollections, sum_sequential_FloatExp2Int64);
@@ -975,7 +978,7 @@ int main(int argc, char* argv[]) {
     calc_perf_log2scale(double_values, resultCollections, sum_parallel_log2scale);
     calc_perf<dbl::Dbl>(double_values, resultCollections, sum_parallel_Dbl1);
     calc_perf<dbl2::Dbl2>(double_values, resultCollections, sum_parallel_Dbl2);
-    calc_perf<extended_range_arithmetic::Xnumber>(double_values, resultCollections, sum_parallel_Xnumber);
+    calc_perf<extended_range_arithmetic::Xnumber64>(double_values, resultCollections, sum_parallel_Xnumber64);
     calc_perf_WideRangeNumber64(double_values, resultCollections, sum_parallel_WideRangeNumber64);
     calc_perf<extended_range_arithmetic::IntExp2Int64>(double_values, resultCollections, sum_parallel_IntExp2Int64);
     calc_perf<extended_range_arithmetic::FloatExp2Int64>(double_values, resultCollections, sum_parallel_FloatExp2Int64);
@@ -984,7 +987,7 @@ int main(int argc, char* argv[]) {
     calc_perf_log2scale(double_values, resultCollections, multiply_sequential_log2scale);
     calc_perf<dbl::Dbl>(double_values, resultCollections, multiply_sequential_Dbl1);
     calc_perf<dbl2::Dbl2>(double_values, resultCollections, multiply_sequential_Dbl2);
-    calc_perf<extended_range_arithmetic::Xnumber>(double_values, resultCollections, multiply_sequential_Xnumber);
+    calc_perf<extended_range_arithmetic::Xnumber64>(double_values, resultCollections, multiply_sequential_Xnumber64);
     calc_perf_WideRangeNumber64(double_values, resultCollections, multiply_sequential_WideRangeNumber64);
     calc_perf<extended_range_arithmetic::IntExp2Int64>(double_values, resultCollections, multiply_sequential_IntExp2Int64);
     calc_perf<extended_range_arithmetic::FloatExp2Int64>(double_values, resultCollections, multiply_sequential_FloatExp2Int64);
@@ -993,7 +996,7 @@ int main(int argc, char* argv[]) {
     calc_perf_log2scale(double_values, resultCollections, multiply_parallel_log2scale);
     calc_perf<dbl::Dbl>(double_values, resultCollections, multiply_parallel_Dbl1);
     calc_perf<dbl2::Dbl2>(double_values, resultCollections, multiply_parallel_Dbl2);
-    calc_perf<extended_range_arithmetic::Xnumber>(double_values, resultCollections, multiply_parallel_Xnumber);
+    calc_perf<extended_range_arithmetic::Xnumber64>(double_values, resultCollections, multiply_parallel_Xnumber64);
     calc_perf_WideRangeNumber64(double_values, resultCollections, multiply_parallel_WideRangeNumber64);
     calc_perf<extended_range_arithmetic::IntExp2Int64>(double_values, resultCollections, multiply_parallel_IntExp2Int64);
     calc_perf<extended_range_arithmetic::FloatExp2Int64>(double_values, resultCollections, multiply_parallel_FloatExp2Int64);

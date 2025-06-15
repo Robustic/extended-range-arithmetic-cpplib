@@ -23,7 +23,7 @@ endif()
 ADD_LIBRARY(extended_range_arithmetic_module 
   ${PROJECT_SOURCE_DIR}/src/extended_range_arithmetic/FloatExp2Int64/FloatExp2Int64.cpp
   ${PROJECT_SOURCE_DIR}/src/extended_range_arithmetic/WideRangeNumber64/WideRangeNumber64.cpp
-  ${PROJECT_SOURCE_DIR}/src/extended_range_arithmetic/Xnumber/Xnumber.cpp
+  ${PROJECT_SOURCE_DIR}/src/extended_range_arithmetic/Xnumber64/Xnumber64.cpp
   ${PROJECT_SOURCE_DIR}/src/extended_range_arithmetic/IntExp2Int64/IntExp2Int64.cpp
 )
 
