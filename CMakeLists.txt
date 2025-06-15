@@ -23,7 +23,7 @@ endif()
 
 ADD_LIBRARY(floatingExp2IntegerModule 
   ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Float64PosExp2Int64/Float64PosExp2Int64.cpp
-  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Float64LargeRangeNumber/Float64LargeRangeNumber.cpp
+  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/WideRangeNumber64/WideRangeNumber64.cpp
   ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Fukushima/Fukushima.cpp
   ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Int64PosExp2Int64/Int64PosExp2Int64.cpp
 )

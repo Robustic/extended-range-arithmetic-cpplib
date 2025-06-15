@@ -8,11 +8,11 @@
 #include <bitset>
 #include <cstdint>
 
-#include "Float64LargeRangeNumber.h"
+#include "WideRangeNumber64.h"
 
 namespace floatingExp2Integer
 {
-    double Float64LargeRangeNumber::double_to(double dbl) {
+    double WideRangeNumber64::double_to(double dbl) {
         uint64_t dbl_bits = std::bit_cast<uint64_t>(dbl);
         int64_t exponent = (((dbl_bits & 0x7FF0000000000000ull) >> 52) - 1023LL);
         dbl_bits &= 0x800FFFFFFFFFFFFFull;
@@ -22,26 +22,26 @@ namespace floatingExp2Integer
         return (double)exponent + (sicnificand - 1.0);
     }
 
-    void Float64LargeRangeNumber::doubles_to(const std::vector<double>& in, std::vector<double>& out) {
+    void WideRangeNumber64::doubles_to(const std::vector<double>& in, std::vector<double>& out) {
         for (size_t i = 0; i < in.size(); i++) {
             out[i] = double_to(in[i]);
         }
     }
 
-    double Float64LargeRangeNumber::as_double(double large_range_number) {
+    double WideRangeNumber64::as_double(double large_range_number) {
         double floored_exponent = std::floor(large_range_number);
         int64_t exponent = (int64_t)floored_exponent;
         double sicnificand = large_range_number - floored_exponent + 1.0;
         return sicnificand * std::pow(2.0, (int)exponent);
     }
 
-    double Float64LargeRangeNumber::log2_to(double log2_dbl) {
+    double WideRangeNumber64::log2_to(double log2_dbl) {
         double floored_exponent = std::floor(log2_dbl);
         double sicnificand = log2_dbl - floored_exponent;
         return std::exp2(sicnificand) + floored_exponent - 1;
     }
 
-    double Float64LargeRangeNumber::as_log2(double large_range_number) {
+    double WideRangeNumber64::as_log2(double large_range_number) {
         double floored_exponent = std::floor(large_range_number);
         double sicnificand = large_range_number - floored_exponent + 1.0;
         return std::log2(sicnificand) + floored_exponent;
@@ -70,7 +70,7 @@ namespace floatingExp2Integer
         sicnificand_d = std::bit_cast<double>(sicnificand_int64);
     }
 
-    double Float64LargeRangeNumber::sum(double lrn1, double lrn2) {
+    double WideRangeNumber64::sum(double lrn1, double lrn2) {
         if (lrn1 - lrn2 > 54.0) {
             return lrn1;
         }
@@ -114,7 +114,7 @@ namespace floatingExp2Integer
         }
     }
 
-    Float64LargeRangeNumber& Float64LargeRangeNumber::operator+=(double encoded_2) {
+    WideRangeNumber64& WideRangeNumber64::operator+=(double encoded_2) {
         double diff = (double)exp - encoded_2;
         if (diff > 54.0) {
             return *this;
@@ -163,7 +163,7 @@ namespace floatingExp2Integer
         return *this;
     }
 
-    double Float64LargeRangeNumber::sum(const std::vector<double>& large_range_numbers) {
+    double WideRangeNumber64::sum(const std::vector<double>& large_range_numbers) {
         constexpr size_t n_parallel = 5;
 
         if (large_range_numbers.size() < 2 * 8 * n_parallel) {
@@ -267,7 +267,7 @@ namespace floatingExp2Integer
         return total_sum;
     }
 
-    Float64LargeRangeNumber& Float64LargeRangeNumber::operator*=(double encoded_2) {
+    WideRangeNumber64& WideRangeNumber64::operator*=(double encoded_2) {
         double exponent_2 = std::floor(encoded_2);
         double sicnificand_2 = encoded_2 - exponent_2 + 1;
 
@@ -286,7 +286,7 @@ namespace floatingExp2Integer
         return *this;
     }
 
-    double Float64LargeRangeNumber::multiply(double lrn1, double lrn2) {
+    double WideRangeNumber64::multiply(double lrn1, double lrn2) {
         double exponent_1 = std::floor(lrn1);
         double sicnificand_1 = lrn1 - exponent_1 + 1;
 
@@ -305,7 +305,7 @@ namespace floatingExp2Integer
         }
     }
 
-    double Float64LargeRangeNumber::multiply(const std::vector<double>& large_range_numbers) {
+    double WideRangeNumber64::multiply(const std::vector<double>& large_range_numbers) {
         constexpr size_t n_parallel = 5;
 
         if (large_range_numbers.size() < 2 * 8 * n_parallel) {

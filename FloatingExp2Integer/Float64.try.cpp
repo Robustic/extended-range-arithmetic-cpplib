@@ -15,7 +15,7 @@
 #include "Log2Scale.h"
 #include "./Int64PosExp2Int64/Int64PosExp2Int64.h"
 #include "./Float64PosExp2Int64/Float64PosExp2Int64.h"
-#include "./Float64LargeRangeNumber/Float64LargeRangeNumber.h"
+#include "./WideRangeNumber64/WideRangeNumber64.h"
 #include "./Fukushima/Fukushima.h"
 
 // *******  PARAMETERS  *******
@@ -189,7 +189,7 @@ void calc_perf_log2scale(const std::vector<double>& values_as_log2, std::vector<
     resultCollections.push_back(rc);
 }
 
-void calc_perf_Float64LargeRangeNumber(const std::vector<double>& values_as_log2, std::vector<ResultCollection>& resultCollections,
+void calc_perf_WideRangeNumber64(const std::vector<double>& values_as_log2, std::vector<ResultCollection>& resultCollections,
     std::function<int64_t(const std::vector<double>&, double&, std::string&)> function) {
 
     ResultCollection rc;
@@ -199,7 +199,7 @@ void calc_perf_Float64LargeRangeNumber(const std::vector<double>& values_as_log2
         size_t n_rounds_current = n_rounds[i];
 
         std::vector<double> values_as_double(n_current);
-        floatingExp2Integer::Float64LargeRangeNumber::log2s_to(values_as_log2, values_as_double);
+        floatingExp2Integer::WideRangeNumber64::log2s_to(values_as_log2, values_as_double);
 
         int64_t time_sum = 0;
         std::string case_name;
@@ -216,7 +216,7 @@ void calc_perf_Float64LargeRangeNumber(const std::vector<double>& values_as_log2
     resultCollections.push_back(rc);
 }
 
-void calc_perf_Float64LargeRangeNumber_sorted(const std::vector<double>& values_as_log2, std::vector<ResultCollection>& resultCollections,
+void calc_perf_WideRangeNumber64_sorted(const std::vector<double>& values_as_log2, std::vector<ResultCollection>& resultCollections,
     std::function<int64_t(const std::vector<double>&, double&, std::string&)> function) {
 
     ResultCollection rc;
@@ -226,7 +226,7 @@ void calc_perf_Float64LargeRangeNumber_sorted(const std::vector<double>& values_
         size_t n_rounds_current = n_rounds[i];
 
         std::vector<double> values_as_double(n_current);
-        floatingExp2Integer::Float64LargeRangeNumber::log2s_to(values_as_log2, values_as_double);
+        floatingExp2Integer::WideRangeNumber64::log2s_to(values_as_log2, values_as_double);
         std::sort(values_as_double.begin(), values_as_double.end());
 
         int64_t time_sum = 0;
@@ -767,13 +767,13 @@ int64_t  multiply_parallel_Fukushima(const std::vector<floatingExp2Integer::Fuku
     return timer.time();
 }
 
-// *******  Float64LargeRangeNumber  *******
+// *******  WideRangeNumber64  *******
 
-int64_t  sum_sequential_Float64LargeRangeNumber(const std::vector<double>& values_as_lrn, double& result_as_log2, std::string& case_name) {
+int64_t  sum_sequential_WideRangeNumber64(const std::vector<double>& values_as_lrn, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
 
     floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Float64LargeRangeNumber collector;
+    floatingExp2Integer::WideRangeNumber64 collector;
     collector.set_encoded(values_as_lrn[0]);
     for (size_t i = 1; i < values_as_lrn.size(); i++) {
         double value = values_as_lrn[i];
@@ -785,22 +785,22 @@ int64_t  sum_sequential_Float64LargeRangeNumber(const std::vector<double>& value
     return timer.time();
 }
 
-int64_t  sum_parallel_Float64LargeRangeNumber(const std::vector<double>& values_as_lrn, double& result_as_log2, std::string& case_name) {
+int64_t  sum_parallel_WideRangeNumber64(const std::vector<double>& values_as_lrn, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
 
     floatingExp2Integer::Timer timer;
-    double sum = floatingExp2Integer::Float64LargeRangeNumber::sum(values_as_lrn);
+    double sum = floatingExp2Integer::WideRangeNumber64::sum(values_as_lrn);
     timer.stop();
 
-    result_as_log2 = floatingExp2Integer::Float64LargeRangeNumber::as_log2(sum);
+    result_as_log2 = floatingExp2Integer::WideRangeNumber64::as_log2(sum);
     return timer.time();
 }
 
-int64_t  multiply_sequential_Float64LargeRangeNumber(const std::vector<double>& values_as_lrn, double& result_as_log2, std::string& case_name) {
+int64_t  multiply_sequential_WideRangeNumber64(const std::vector<double>& values_as_lrn, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
 
     floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Float64LargeRangeNumber collector;
+    floatingExp2Integer::WideRangeNumber64 collector;
     collector.set_encoded(values_as_lrn[0]);
     for (size_t i = 1; i < values_as_lrn.size(); i++) {
         double value = values_as_lrn[i];
@@ -812,14 +812,14 @@ int64_t  multiply_sequential_Float64LargeRangeNumber(const std::vector<double>& 
     return timer.time();
 }
 
-int64_t  multiply_parallel_Float64LargeRangeNumber(const std::vector<double>& values_as_lrn, double& result_as_log2, std::string& case_name) {
+int64_t  multiply_parallel_WideRangeNumber64(const std::vector<double>& values_as_lrn, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
 
     floatingExp2Integer::Timer timer;
-    double res = floatingExp2Integer::Float64LargeRangeNumber::multiply(values_as_lrn);
+    double res = floatingExp2Integer::WideRangeNumber64::multiply(values_as_lrn);
     timer.stop();
 
-    result_as_log2 = floatingExp2Integer::Float64LargeRangeNumber::as_log2(res);
+    result_as_log2 = floatingExp2Integer::WideRangeNumber64::as_log2(res);
     return timer.time();
 }
 
@@ -965,7 +965,7 @@ int main(int argc, char* argv[]) {
     calc_perf<floatingExp2Integer::Dbl>(double_values, resultCollections, sum_sequential_Dbl1);
     calc_perf<floatingExp2Integer::Dbl2>(double_values, resultCollections, sum_sequential_Dbl2);
     calc_perf<floatingExp2Integer::Fukushima>(double_values, resultCollections, sum_sequential_Fukushima);
-    calc_perf_Float64LargeRangeNumber(double_values, resultCollections, sum_sequential_Float64LargeRangeNumber);
+    calc_perf_WideRangeNumber64(double_values, resultCollections, sum_sequential_WideRangeNumber64);
     calc_perf<floatingExp2Integer::Int64PosExp2Int64>(double_values, resultCollections, sum_sequential_Int64PosExp2Int64);
     calc_perf<floatingExp2Integer::Float64PosExp2Int64>(double_values, resultCollections, sum_sequential_Float64PosExp2Int64);
 
@@ -974,7 +974,7 @@ int main(int argc, char* argv[]) {
     calc_perf<floatingExp2Integer::Dbl>(double_values, resultCollections, sum_parallel_Dbl1);
     calc_perf<floatingExp2Integer::Dbl2>(double_values, resultCollections, sum_parallel_Dbl2);
     calc_perf<floatingExp2Integer::Fukushima>(double_values, resultCollections, sum_parallel_Fukushima);
-    calc_perf_Float64LargeRangeNumber(double_values, resultCollections, sum_parallel_Float64LargeRangeNumber);
+    calc_perf_WideRangeNumber64(double_values, resultCollections, sum_parallel_WideRangeNumber64);
     calc_perf<floatingExp2Integer::Int64PosExp2Int64>(double_values, resultCollections, sum_parallel_Int64PosExp2Int64);
     calc_perf<floatingExp2Integer::Float64PosExp2Int64>(double_values, resultCollections, sum_parallel_Float64PosExp2Int64);
 
@@ -983,7 +983,7 @@ int main(int argc, char* argv[]) {
     calc_perf<floatingExp2Integer::Dbl>(double_values, resultCollections, multiply_sequential_Dbl1);
     calc_perf<floatingExp2Integer::Dbl2>(double_values, resultCollections, multiply_sequential_Dbl2);
     calc_perf<floatingExp2Integer::Fukushima>(double_values, resultCollections, multiply_sequential_Fukushima);
-    calc_perf_Float64LargeRangeNumber(double_values, resultCollections, multiply_sequential_Float64LargeRangeNumber);
+    calc_perf_WideRangeNumber64(double_values, resultCollections, multiply_sequential_WideRangeNumber64);
     calc_perf<floatingExp2Integer::Int64PosExp2Int64>(double_values, resultCollections, multiply_sequential_Int64PosExp2Int64);
     calc_perf<floatingExp2Integer::Float64PosExp2Int64>(double_values, resultCollections, multiply_sequential_Float64PosExp2Int64);
 
@@ -992,7 +992,7 @@ int main(int argc, char* argv[]) {
     calc_perf<floatingExp2Integer::Dbl>(double_values, resultCollections, multiply_parallel_Dbl1);
     calc_perf<floatingExp2Integer::Dbl2>(double_values, resultCollections, multiply_parallel_Dbl2);
     calc_perf<floatingExp2Integer::Fukushima>(double_values, resultCollections, multiply_parallel_Fukushima);
-    calc_perf_Float64LargeRangeNumber(double_values, resultCollections, multiply_parallel_Float64LargeRangeNumber);
+    calc_perf_WideRangeNumber64(double_values, resultCollections, multiply_parallel_WideRangeNumber64);
     calc_perf<floatingExp2Integer::Int64PosExp2Int64>(double_values, resultCollections, multiply_parallel_Int64PosExp2Int64);
     calc_perf<floatingExp2Integer::Float64PosExp2Int64>(double_values, resultCollections, multiply_parallel_Float64PosExp2Int64);
 

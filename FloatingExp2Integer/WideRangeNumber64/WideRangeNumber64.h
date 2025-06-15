@@ -7,13 +7,13 @@
 
 namespace floatingExp2Integer
 {
-    class Float64LargeRangeNumber {
+    class WideRangeNumber64 {
         private:
             double scnfcnd;
             int64_t exp;
             double encoded;
         public:
-            Float64LargeRangeNumber() {
+            WideRangeNumber64() {
                 exp = 0;
                 scnfcnd = 1;
                 encoded = 0;
@@ -38,7 +38,7 @@ namespace floatingExp2Integer
             }
             static double as_log2(double dbl);
             double as_log2() {
-                return Float64LargeRangeNumber::as_log2(encoded);
+                return WideRangeNumber64::as_log2(encoded);
             }
 
             static double sum(double lrn1, double lrn2);
@@ -47,8 +47,8 @@ namespace floatingExp2Integer
             static double sum(const std::vector<double>& lrns);
             static double multiply(const std::vector<double>& lrns);
 
-            Float64LargeRangeNumber& operator+=(double encoded_2);
-            Float64LargeRangeNumber& operator*=(double encoded_2);
+            WideRangeNumber64& operator+=(double encoded_2);
+            WideRangeNumber64& operator*=(double encoded_2);
     };
 }
 
