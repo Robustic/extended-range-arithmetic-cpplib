@@ -41,6 +41,6 @@ Running main() from /extended-range-arithmetic-cpplib/build_debug/_deps/googlete
 In Windows 11 you can give high priority with:
 
 ```
-start "build_release/Float64.try.exe" /high
+start "build_release/PerformanceTest-ArraySize.exe" /high
  ```
 

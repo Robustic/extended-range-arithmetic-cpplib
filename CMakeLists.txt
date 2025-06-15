@@ -64,10 +64,10 @@ endif()
 
 
 add_executable(
-  Float64.try
-  ${PROJECT_SOURCE_DIR}/src/Float64.try.cpp
+  PerformanceTest-ArraySize
+  ${PROJECT_SOURCE_DIR}/src/PerformanceTest-ArraySize.cpp
 )
 target_link_libraries(
-  Float64.try
+  PerformanceTest-ArraySize
   extended_range_arithmetic_module
 )
