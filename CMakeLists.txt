@@ -22,27 +22,27 @@ endif()
 
 
 ADD_LIBRARY(floatingExp2IntegerModule 
-  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Float64PosExp2Int64/Float64PosExp2Int64.cpp
+  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/FloatExp2Int64/FloatExp2Int64.cpp
   ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/WideRangeNumber64/WideRangeNumber64.cpp
-  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Fukushima/Fukushima.cpp
+  ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Xnumber/Xnumber.cpp
   ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Int64PosExp2Int64/Int64PosExp2Int64.cpp
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   add_executable(
-    Float64PosExp2Int64.test
-    ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/Float64PosExp2Int64/Float64PosExp2Int64.test.cpp
+    FloatExp2Int64.test
+    ${PROJECT_SOURCE_DIR}/FloatingExp2Integer/FloatExp2Int64/FloatExp2Int64.test.cpp
   )
   target_link_libraries(
-    Float64PosExp2Int64.test
+    FloatExp2Int64.test
     floatingExp2IntegerModule
   )
   target_link_libraries(
-    Float64PosExp2Int64.test
+    FloatExp2Int64.test
     GTest::gtest_main
   )
   include(GoogleTest)
-  gtest_discover_tests(Float64PosExp2Int64.test)
+  gtest_discover_tests(FloatExp2Int64.test)
 endif()
 
 

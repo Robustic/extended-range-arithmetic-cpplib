@@ -1,0 +1,46 @@
+#ifndef FLOAT64POS_EXP2INT64_H_
+#define FLOAT64POS_EXP2INT64_H_
+
+#include <vector>
+
+namespace floatingExp2Integer
+{
+    class FloatExp2Int64 {
+        private:
+            double scnfcnd;
+            int64_t exp;
+
+            FloatExp2Int64(double sicnificand, int64_t exponent);
+            inline void checkRuleForScale();
+            inline void scale();
+        public:
+            FloatExp2Int64();
+            FloatExp2Int64(double dbl);
+
+            void double_to(double dbl);
+            void log2_to(double log2);
+            static void log2s_to(const std::vector<double>& from, std::vector<floatingExp2Integer::FloatExp2Int64>& to) {
+                for (size_t i = 0; i < to.size(); i++) {
+                    to[i].log2_to(from[i]);
+                }
+            }
+
+            void sum(const std::vector<floatingExp2Integer::FloatExp2Int64>& vector);
+            void multiply(const std::vector<floatingExp2Integer::FloatExp2Int64>& vector);
+
+            double as_double() const;
+            double as_log2() const;
+
+            double sicnificand() const { return scnfcnd; };
+            int64_t exponent() const { return exp; };
+
+            FloatExp2Int64& operator+=(FloatExp2Int64 z);
+            FloatExp2Int64& operator*=(FloatExp2Int64 z);
+            FloatExp2Int64& operator*=(double& dbl);
+    };
+
+    FloatExp2Int64 operator+(FloatExp2Int64 a, const FloatExp2Int64 b);
+    FloatExp2Int64 operator*(FloatExp2Int64 a, const FloatExp2Int64 b);
+}
+
+#endif

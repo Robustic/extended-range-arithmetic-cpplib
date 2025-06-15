@@ -14,7 +14,7 @@
 #include "Dbl2.h"
 #include "Log2Scale.h"
 #include "./Int64PosExp2Int64/Int64PosExp2Int64.h"
-#include "./Float64PosExp2Int64/Float64PosExp2Int64.h"
+#include "./FloatExp2Int64/FloatExp2Int64.h"
 #include "./WideRangeNumber64/WideRangeNumber64.h"
 #include "./Xnumber/Xnumber.h"
 
@@ -877,13 +877,13 @@ int64_t  multiply_parallel_Int64PosExp2Int64(const std::vector<floatingExp2Integ
     return timer.time();
 }
 
-// *******  Float64PosExp2Int64  *******
+// *******  FloatExp2Int64  *******
 
-int64_t  sum_sequential_Float64PosExp2Int64(const std::vector<floatingExp2Integer::Float64PosExp2Int64>& values, double& result_as_log2, std::string& case_name) {
+int64_t  sum_sequential_FloatExp2Int64(const std::vector<floatingExp2Integer::FloatExp2Int64>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
 
     floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Float64PosExp2Int64 res = values[0];
+    floatingExp2Integer::FloatExp2Int64 res = values[0];
     for (size_t i = 1; i < values.size(); i++) {
         res += values[i];
     }
@@ -893,11 +893,11 @@ int64_t  sum_sequential_Float64PosExp2Int64(const std::vector<floatingExp2Intege
     return timer.time();
 }
 
-int64_t  sum_parallel_Float64PosExp2Int64(const std::vector<floatingExp2Integer::Float64PosExp2Int64>& values, double& result_as_log2, std::string& case_name) {
+int64_t  sum_parallel_FloatExp2Int64(const std::vector<floatingExp2Integer::FloatExp2Int64>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
 
     floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Float64PosExp2Int64 res;
+    floatingExp2Integer::FloatExp2Int64 res;
     res.sum(values);
     timer.stop();
 
@@ -905,11 +905,11 @@ int64_t  sum_parallel_Float64PosExp2Int64(const std::vector<floatingExp2Integer:
     return timer.time();
 }
 
-int64_t  multiply_sequential_Float64PosExp2Int64(const std::vector<floatingExp2Integer::Float64PosExp2Int64>& values, double& result_as_log2, std::string& case_name) {
+int64_t  multiply_sequential_FloatExp2Int64(const std::vector<floatingExp2Integer::FloatExp2Int64>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
 
     floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Float64PosExp2Int64 res = values[0];
+    floatingExp2Integer::FloatExp2Int64 res = values[0];
     for (size_t i = 1; i < values.size(); i++) {
         res *= values[i];
     }
@@ -919,11 +919,11 @@ int64_t  multiply_sequential_Float64PosExp2Int64(const std::vector<floatingExp2I
     return timer.time();
 }
 
-int64_t  multiply_parallel_Float64PosExp2Int64(const std::vector<floatingExp2Integer::Float64PosExp2Int64>& values, double& result_as_log2, std::string& case_name) {
+int64_t  multiply_parallel_FloatExp2Int64(const std::vector<floatingExp2Integer::FloatExp2Int64>& values, double& result_as_log2, std::string& case_name) {
     case_name = __func__;
 
     floatingExp2Integer::Timer timer;
-    floatingExp2Integer::Float64PosExp2Int64 res;
+    floatingExp2Integer::FloatExp2Int64 res;
     res.multiply(values);
     timer.stop();
 
@@ -967,7 +967,7 @@ int main(int argc, char* argv[]) {
     calc_perf<floatingExp2Integer::Xnumber>(double_values, resultCollections, sum_sequential_Xnumber);
     calc_perf_WideRangeNumber64(double_values, resultCollections, sum_sequential_WideRangeNumber64);
     calc_perf<floatingExp2Integer::Int64PosExp2Int64>(double_values, resultCollections, sum_sequential_Int64PosExp2Int64);
-    calc_perf<floatingExp2Integer::Float64PosExp2Int64>(double_values, resultCollections, sum_sequential_Float64PosExp2Int64);
+    calc_perf<floatingExp2Integer::FloatExp2Int64>(double_values, resultCollections, sum_sequential_FloatExp2Int64);
 
     calc_perf_double(double_values, resultCollections, sum_parallel_dbl);
     calc_perf_log2scale(double_values, resultCollections, sum_parallel_log2scale);
@@ -976,7 +976,7 @@ int main(int argc, char* argv[]) {
     calc_perf<floatingExp2Integer::Xnumber>(double_values, resultCollections, sum_parallel_Xnumber);
     calc_perf_WideRangeNumber64(double_values, resultCollections, sum_parallel_WideRangeNumber64);
     calc_perf<floatingExp2Integer::Int64PosExp2Int64>(double_values, resultCollections, sum_parallel_Int64PosExp2Int64);
-    calc_perf<floatingExp2Integer::Float64PosExp2Int64>(double_values, resultCollections, sum_parallel_Float64PosExp2Int64);
+    calc_perf<floatingExp2Integer::FloatExp2Int64>(double_values, resultCollections, sum_parallel_FloatExp2Int64);
 
     calc_perf_double(double_values, resultCollections, multiply_sequential_dbl);
     calc_perf_log2scale(double_values, resultCollections, multiply_sequential_log2scale);
@@ -985,7 +985,7 @@ int main(int argc, char* argv[]) {
     calc_perf<floatingExp2Integer::Xnumber>(double_values, resultCollections, multiply_sequential_Xnumber);
     calc_perf_WideRangeNumber64(double_values, resultCollections, multiply_sequential_WideRangeNumber64);
     calc_perf<floatingExp2Integer::Int64PosExp2Int64>(double_values, resultCollections, multiply_sequential_Int64PosExp2Int64);
-    calc_perf<floatingExp2Integer::Float64PosExp2Int64>(double_values, resultCollections, multiply_sequential_Float64PosExp2Int64);
+    calc_perf<floatingExp2Integer::FloatExp2Int64>(double_values, resultCollections, multiply_sequential_FloatExp2Int64);
 
     calc_perf_double(double_values, resultCollections, multiply_parallel_dbl);
     calc_perf_log2scale(double_values, resultCollections, multiply_parallel_log2scale);
@@ -994,7 +994,7 @@ int main(int argc, char* argv[]) {
     calc_perf<floatingExp2Integer::Xnumber>(double_values, resultCollections, multiply_parallel_Xnumber);
     calc_perf_WideRangeNumber64(double_values, resultCollections, multiply_parallel_WideRangeNumber64);
     calc_perf<floatingExp2Integer::Int64PosExp2Int64>(double_values, resultCollections, multiply_parallel_Int64PosExp2Int64);
-    calc_perf<floatingExp2Integer::Float64PosExp2Int64>(double_values, resultCollections, multiply_parallel_Float64PosExp2Int64);
+    calc_perf<floatingExp2Integer::FloatExp2Int64>(double_values, resultCollections, multiply_parallel_FloatExp2Int64);
 
 
     std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 1);

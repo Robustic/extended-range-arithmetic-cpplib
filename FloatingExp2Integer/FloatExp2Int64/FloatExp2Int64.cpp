@@ -2,7 +2,7 @@
 #include <cmath>
 #include <vector>
 #include <cstring>
-#include "Float64PosExp2Int64.h"
+#include "FloatExp2Int64.h"
 
 typedef double double4_t __attribute__((vector_size(4 * sizeof(double))));
 typedef uint64_t uint64_4_t __attribute__((vector_size(4 * sizeof(uint64_t))));
@@ -13,29 +13,29 @@ constexpr double4_t double4_0 { 0.0, 0.0, 0.0, 0.0 };
 
 namespace floatingExp2Integer
 {
-    Float64PosExp2Int64::Float64PosExp2Int64() {
+    FloatExp2Int64::FloatExp2Int64() {
         scnfcnd = 1.0;
         exp = 0;
         this->scale();
     }
 
-    Float64PosExp2Int64::Float64PosExp2Int64(double dbl) {
+    FloatExp2Int64::FloatExp2Int64(double dbl) {
         scnfcnd = dbl;
         exp = 0;
         this->scale();
     }
 
-    Float64PosExp2Int64::Float64PosExp2Int64(double sicnificand, int64_t exponent) {
+    FloatExp2Int64::FloatExp2Int64(double sicnificand, int64_t exponent) {
         scnfcnd = sicnificand;
         exp = exponent;
         this->scale();
     }
 
-    void Float64PosExp2Int64::sum(const std::vector<floatingExp2Integer::Float64PosExp2Int64>& vector) {
+    void FloatExp2Int64::sum(const std::vector<floatingExp2Integer::FloatExp2Int64>& vector) {
         const size_t parallel_count = 4;
 
         if (2 * parallel_count > vector.size()) {
-            floatingExp2Integer::Float64PosExp2Int64 sum = vector[0];
+            floatingExp2Integer::FloatExp2Int64 sum = vector[0];
             for (size_t i = 1; i < vector.size(); i++) {
                 sum += vector[i];
             }
@@ -105,10 +105,10 @@ namespace floatingExp2Integer
             scnfcndSum[k] = *reinterpret_cast<double*>(sgnfcnd_bits);
         }
 
-        floatingExp2Integer::Float64PosExp2Int64 sum(scnfcndSum[0], expSum[0]);
+        floatingExp2Integer::FloatExp2Int64 sum(scnfcndSum[0], expSum[0]);
 
         for (size_t k = 1; k < parallel_count; k++) {
-            floatingExp2Integer::Float64PosExp2Int64 current(scnfcndSum[k], expSum[k]);
+            floatingExp2Integer::FloatExp2Int64 current(scnfcndSum[k], expSum[k]);
             sum += current;
         }
 
@@ -122,27 +122,27 @@ namespace floatingExp2Integer
         // scaling already done
     }
 
-    void Float64PosExp2Int64::double_to(double dbl) {
+    void FloatExp2Int64::double_to(double dbl) {
         scnfcnd = dbl;
         exp = 0;
         this->scale();
     }
 
-    void Float64PosExp2Int64::log2_to(double log2) {
+    void FloatExp2Int64::log2_to(double log2) {
         exp = (int64_t)log2;
         scnfcnd = std::exp2(log2 - exp);
         this->scale();
     }
 
-    double Float64PosExp2Int64::as_log2() const {
+    double FloatExp2Int64::as_log2() const {
         return std::log2(scnfcnd) + exp;
     }
 
-    double Float64PosExp2Int64::as_double() const {
+    double FloatExp2Int64::as_double() const {
         return scnfcnd * std::pow(2.0, exp);
     }
 
-    Float64PosExp2Int64& Float64PosExp2Int64::operator+=(Float64PosExp2Int64 z) {
+    FloatExp2Int64& FloatExp2Int64::operator+=(FloatExp2Int64 z) {
         int64_t exp_diff = exp - z.exp;
         uint64_t* sgnfcnd_bits = reinterpret_cast<uint64_t*>(&scnfcnd);
         uint64_t* sgnfcnd_bits_z = reinterpret_cast<uint64_t*>(&z.scnfcnd);
@@ -172,11 +172,11 @@ namespace floatingExp2Integer
         return *this;
     }
 
-    void Float64PosExp2Int64::multiply(const std::vector<floatingExp2Integer::Float64PosExp2Int64>& vector) {
+    void FloatExp2Int64::multiply(const std::vector<floatingExp2Integer::FloatExp2Int64>& vector) {
         const size_t parallel_count = 4;
 
         if (2 * parallel_count > vector.size()) {
-            floatingExp2Integer::Float64PosExp2Int64 sum = vector[0];
+            floatingExp2Integer::FloatExp2Int64 sum = vector[0];
             for (size_t i = 1; i < vector.size(); i++) {
                 sum *= vector[i];
             }
@@ -224,10 +224,10 @@ namespace floatingExp2Integer
             scnfcndSum[k] = *reinterpret_cast<double*>(sgnfcnd_bits);
         }
 
-        floatingExp2Integer::Float64PosExp2Int64 sum(scnfcndSum[0], expSum[0]);
+        floatingExp2Integer::FloatExp2Int64 sum(scnfcndSum[0], expSum[0]);
 
         for (size_t k = 1; k < parallel_count; k++) {
-            floatingExp2Integer::Float64PosExp2Int64 current(scnfcndSum[k], expSum[k]);
+            floatingExp2Integer::FloatExp2Int64 current(scnfcndSum[k], expSum[k]);
             sum *= current;
         }
 
@@ -241,7 +241,7 @@ namespace floatingExp2Integer
         // scaling already done
     }
 
-    Float64PosExp2Int64& Float64PosExp2Int64::operator*=(Float64PosExp2Int64 z) {
+    FloatExp2Int64& FloatExp2Int64::operator*=(FloatExp2Int64 z) {
         scnfcnd *= z.scnfcnd;
         exp += z.exp;
         if (scnfcnd >= 2.0) {
@@ -251,21 +251,21 @@ namespace floatingExp2Integer
         return *this;
     }
 
-    Float64PosExp2Int64& Float64PosExp2Int64::operator*=(double& dbl) {
-        Float64PosExp2Int64 z(dbl);
+    FloatExp2Int64& FloatExp2Int64::operator*=(double& dbl) {
+        FloatExp2Int64 z(dbl);
         scnfcnd *= z.scnfcnd;
         exp += z.exp;
         this->checkRuleForScale();
         return *this;
     }
 
-    inline void Float64PosExp2Int64::checkRuleForScale() {
+    inline void FloatExp2Int64::checkRuleForScale() {
         if (0x1p12 <= scnfcnd) {
             this->scale();
         }
     }
 
-    inline void Float64PosExp2Int64::scale() {
+    inline void FloatExp2Int64::scale() {
         uint64_t* sgnfcnd_bits = reinterpret_cast<uint64_t*>(&scnfcnd);
         exp += ((*sgnfcnd_bits & 0x7FF0000000000000ull) >> 52) - 1023;
         *sgnfcnd_bits &= 0x800FFFFFFFFFFFFFull;
@@ -273,7 +273,7 @@ namespace floatingExp2Integer
         scnfcnd = *reinterpret_cast<double*>(sgnfcnd_bits);
     }
 
-    Float64PosExp2Int64 operator+(Float64PosExp2Int64 a, const Float64PosExp2Int64 b) { return a+=b; }
-    Float64PosExp2Int64 operator*(Float64PosExp2Int64 a, const Float64PosExp2Int64 b) { return a*=b; }
+    FloatExp2Int64 operator+(FloatExp2Int64 a, const FloatExp2Int64 b) { return a+=b; }
+    FloatExp2Int64 operator*(FloatExp2Int64 a, const FloatExp2Int64 b) { return a*=b; }
 }
 
