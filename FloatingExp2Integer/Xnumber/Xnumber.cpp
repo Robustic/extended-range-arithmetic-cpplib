@@ -4,26 +4,26 @@
 #include <bitset>
 #include <iostream>
 
-#include "Fukushima.h"
+#include "Xnumber.h"
 
 namespace floatingExp2Integer
 {
-    Fukushima::Fukushima() {
+    Xnumber::Xnumber() {
         scnfcnd = 1.0;
         exp = 0LL;
     }
 
-    Fukushima::Fukushima(double dbl) {
+    Xnumber::Xnumber(double dbl) {
         scnfcnd = dbl;
         exp = 0LL;
     }
 
-    Fukushima::Fukushima(double dbl, int64_t exponent) {
+    Xnumber::Xnumber(double dbl, int64_t exponent) {
         scnfcnd = dbl;
         exp = exponent;
     }
 
-    void Fukushima::log2_to(const double from) {
+    void Xnumber::log2_to(const double from) {
         double from_floored = std::floor(from);
         int64_t exponent = (int64_t)from_floored;
         double multiplier = std::exp2(from - from_floored);
@@ -41,19 +41,19 @@ namespace floatingExp2Integer
         }
     }
 
-    double Fukushima::as_double() const {
+    double Xnumber::as_double() const {
         return scnfcnd * std::exp2(EXP_MULTIPLIER * exp);
     }
 
-    double Fukushima::as_log2() const {
+    double Xnumber::as_log2() const {
         return std::log2(scnfcnd) + EXP_MULTIPLIER * exp;
     }
 
-    void Fukushima::sum(const std::vector<floatingExp2Integer::Fukushima>& vector) {
+    void Xnumber::sum(const std::vector<floatingExp2Integer::Xnumber>& vector) {
         const size_t parallel_count = 4;
 
         if (2 * parallel_count > vector.size()) {
-            floatingExp2Integer::Fukushima sum = vector[0];
+            floatingExp2Integer::Xnumber sum = vector[0];
             for (size_t i = 1; i < vector.size(); i++) {
                 sum += vector[i];
             }
@@ -108,10 +108,10 @@ namespace floatingExp2Integer
             }
         }
 
-        floatingExp2Integer::Fukushima sum(scnfcndSum[0], expSum[0]);
+        floatingExp2Integer::Xnumber sum(scnfcndSum[0], expSum[0]);
 
         for (size_t k = 1; k < parallel_count; k++) {
-            floatingExp2Integer::Fukushima current(scnfcndSum[k], expSum[k]);
+            floatingExp2Integer::Xnumber current(scnfcndSum[k], expSum[k]);
             sum += current;
         }
 
@@ -123,11 +123,11 @@ namespace floatingExp2Integer
         exp = sum.exp;
     }
 
-    void Fukushima::multiply(const std::vector<floatingExp2Integer::Fukushima>& vector) {
+    void Xnumber::multiply(const std::vector<floatingExp2Integer::Xnumber>& vector) {
         const size_t parallel_count = 6;
 
         if (2 * parallel_count > vector.size()) {
-            floatingExp2Integer::Fukushima res = vector[0];
+            floatingExp2Integer::Xnumber res = vector[0];
             for (size_t i = 1; i < vector.size(); i++) {
                 res *= vector[i];
             }
@@ -168,10 +168,10 @@ namespace floatingExp2Integer
             }
         }
 
-        floatingExp2Integer::Fukushima sum(scnfcndSum[0], expSum[0]);
+        floatingExp2Integer::Xnumber sum(scnfcndSum[0], expSum[0]);
 
         for (size_t k = 1; k < parallel_count; k++) {
-            floatingExp2Integer::Fukushima current(scnfcndSum[k], expSum[k]);
+            floatingExp2Integer::Xnumber current(scnfcndSum[k], expSum[k]);
             sum *= current;
         }
 
@@ -183,7 +183,7 @@ namespace floatingExp2Integer
         exp = sum.exp;
     }
 
-    Fukushima& Fukushima::operator+=(Fukushima z) {
+    Xnumber& Xnumber::operator+=(Xnumber z) {
         if (exp == z.exp) {
             scnfcnd = scnfcnd + z.scnfcnd;
         } 
@@ -210,7 +210,7 @@ namespace floatingExp2Integer
         return *this;
     }
 
-    Fukushima& Fukushima::operator*=(Fukushima z) {
+    Xnumber& Xnumber::operator*=(Xnumber z) {
         scnfcnd = scnfcnd * z.scnfcnd;
         exp = exp + z.exp;
 
@@ -219,7 +219,7 @@ namespace floatingExp2Integer
         return *this;
     }
 
-    inline void Fukushima::xnorm() {
+    inline void Xnumber::xnorm() {
         if (scnfcnd >= BIGS) {
             scnfcnd *= BIGI;
             exp += 1;
@@ -229,7 +229,7 @@ namespace floatingExp2Integer
         }
     }
 
-    // Fukushima operator+(Fukushima a, const Fukushima b) { return a+=b; }
-    // Fukushima operator*(Fukushima a, const Fukushima b) { return a*=b; }
+    // Xnumber operator+(Xnumber a, const Xnumber b) { return a+=b; }
+    // Xnumber operator*(Xnumber a, const Xnumber b) { return a*=b; }
 }
 
