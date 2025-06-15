@@ -10,7 +10,7 @@
 
 #include "WideRangeNumber64.h"
 
-namespace floatingExp2Integer
+namespace extended_range_arithmetic
 {
     double WideRangeNumber64::double_to(double dbl) {
         uint64_t dbl_bits = std::bit_cast<uint64_t>(dbl);

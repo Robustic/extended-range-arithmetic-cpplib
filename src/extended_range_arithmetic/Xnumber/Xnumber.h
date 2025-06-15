@@ -3,7 +3,7 @@
 
 #include <vector>
 
-namespace floatingExp2Integer
+namespace extended_range_arithmetic
 {
     class Xnumber {
         private:
@@ -23,14 +23,14 @@ namespace floatingExp2Integer
             Xnumber(double dbl);
 
             void log2_to(const double from);
-            static void log2s_to(const std::vector<double>& from, std::vector<floatingExp2Integer::Xnumber>& to) {
+            static void log2s_to(const std::vector<double>& from, std::vector<extended_range_arithmetic::Xnumber>& to) {
                 for (size_t i = 0; i < to.size(); i++) {
                     to[i].log2_to(from[i]);
                 }
             }
 
-            void sum(const std::vector<floatingExp2Integer::Xnumber>& vector);
-            void multiply(const std::vector<floatingExp2Integer::Xnumber>& vector);
+            void sum(const std::vector<extended_range_arithmetic::Xnumber>& vector);
+            void multiply(const std::vector<extended_range_arithmetic::Xnumber>& vector);
 
             double as_double() const;
             double as_log2() const;

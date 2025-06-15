@@ -6,7 +6,7 @@
 
 #include "Xnumber.h"
 
-namespace floatingExp2Integer
+namespace extended_range_arithmetic
 {
     Xnumber::Xnumber() {
         scnfcnd = 1.0;
@@ -49,11 +49,11 @@ namespace floatingExp2Integer
         return std::log2(scnfcnd) + EXP_MULTIPLIER * exp;
     }
 
-    void Xnumber::sum(const std::vector<floatingExp2Integer::Xnumber>& vector) {
+    void Xnumber::sum(const std::vector<extended_range_arithmetic::Xnumber>& vector) {
         const size_t parallel_count = 4;
 
         if (2 * parallel_count > vector.size()) {
-            floatingExp2Integer::Xnumber sum = vector[0];
+            extended_range_arithmetic::Xnumber sum = vector[0];
             for (size_t i = 1; i < vector.size(); i++) {
                 sum += vector[i];
             }
@@ -108,10 +108,10 @@ namespace floatingExp2Integer
             }
         }
 
-        floatingExp2Integer::Xnumber sum(scnfcndSum[0], expSum[0]);
+        extended_range_arithmetic::Xnumber sum(scnfcndSum[0], expSum[0]);
 
         for (size_t k = 1; k < parallel_count; k++) {
-            floatingExp2Integer::Xnumber current(scnfcndSum[k], expSum[k]);
+            extended_range_arithmetic::Xnumber current(scnfcndSum[k], expSum[k]);
             sum += current;
         }
 
@@ -123,11 +123,11 @@ namespace floatingExp2Integer
         exp = sum.exp;
     }
 
-    void Xnumber::multiply(const std::vector<floatingExp2Integer::Xnumber>& vector) {
+    void Xnumber::multiply(const std::vector<extended_range_arithmetic::Xnumber>& vector) {
         const size_t parallel_count = 6;
 
         if (2 * parallel_count > vector.size()) {
-            floatingExp2Integer::Xnumber res = vector[0];
+            extended_range_arithmetic::Xnumber res = vector[0];
             for (size_t i = 1; i < vector.size(); i++) {
                 res *= vector[i];
             }
@@ -168,10 +168,10 @@ namespace floatingExp2Integer
             }
         }
 
-        floatingExp2Integer::Xnumber sum(scnfcndSum[0], expSum[0]);
+        extended_range_arithmetic::Xnumber sum(scnfcndSum[0], expSum[0]);
 
         for (size_t k = 1; k < parallel_count; k++) {
-            floatingExp2Integer::Xnumber current(scnfcndSum[k], expSum[k]);
+            extended_range_arithmetic::Xnumber current(scnfcndSum[k], expSum[k]);
             sum *= current;
         }
 

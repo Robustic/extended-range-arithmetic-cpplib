@@ -3,7 +3,7 @@
 
 #include <vector>
 
-namespace floatingExp2Integer
+namespace dbl
 {
     class Dbl {
         private:
@@ -13,7 +13,7 @@ namespace floatingExp2Integer
             Dbl(double d) { dbl = d; }
 
             void log2_to(const double from) { dbl = std::exp2(from); }
-            static void log2s_to(const std::vector<double>& from, std::vector<floatingExp2Integer::Dbl>& to) {
+            static void log2s_to(const std::vector<double>& from, std::vector<dbl::Dbl>& to) {
                 for (size_t i = 0; i < to.size(); i++) {
                     to[i].log2_to(from[i]);
                 }
@@ -32,15 +32,15 @@ namespace floatingExp2Integer
                 return *this;
             }
 
-            void sum(const std::vector<floatingExp2Integer::Dbl>& dblValues) {
-                floatingExp2Integer::Dbl dblSum1(0.0);
-                floatingExp2Integer::Dbl dblSum2(0.0);
-                floatingExp2Integer::Dbl dblSum3(0.0);
-                floatingExp2Integer::Dbl dblSum4(0.0);
-                floatingExp2Integer::Dbl dblSum5(0.0);
-                floatingExp2Integer::Dbl dblSum6(0.0);
-                floatingExp2Integer::Dbl dblSum7(0.0);
-                floatingExp2Integer::Dbl dblSum8(0.0);
+            void sum(const std::vector<dbl::Dbl>& dblValues) {
+                dbl::Dbl dblSum1(0.0);
+                dbl::Dbl dblSum2(0.0);
+                dbl::Dbl dblSum3(0.0);
+                dbl::Dbl dblSum4(0.0);
+                dbl::Dbl dblSum5(0.0);
+                dbl::Dbl dblSum6(0.0);
+                dbl::Dbl dblSum7(0.0);
+                dbl::Dbl dblSum8(0.0);
                 size_t i = 0;
                 for (i = 0; i + 7 < dblValues.size(); i += 8) {
                     dblSum1.dbl += dblValues[i].dbl;
@@ -58,15 +58,15 @@ namespace floatingExp2Integer
                 dbl = dblSum1.dbl + dblSum2.dbl + dblSum3.dbl + dblSum4.dbl + dblSum5.dbl + dblSum6.dbl + dblSum7.dbl + dblSum8.dbl;
             }
 
-            void multiply(const std::vector<floatingExp2Integer::Dbl>& dblValues) {
-                floatingExp2Integer::Dbl dblSum1(1.0);
-                floatingExp2Integer::Dbl dblSum2(1.0);
-                floatingExp2Integer::Dbl dblSum3(1.0);
-                floatingExp2Integer::Dbl dblSum4(1.0);
-                floatingExp2Integer::Dbl dblSum5(1.0);
-                floatingExp2Integer::Dbl dblSum6(1.0);
-                floatingExp2Integer::Dbl dblSum7(1.0);
-                floatingExp2Integer::Dbl dblSum8(1.0);
+            void multiply(const std::vector<dbl::Dbl>& dblValues) {
+                dbl::Dbl dblSum1(1.0);
+                dbl::Dbl dblSum2(1.0);
+                dbl::Dbl dblSum3(1.0);
+                dbl::Dbl dblSum4(1.0);
+                dbl::Dbl dblSum5(1.0);
+                dbl::Dbl dblSum6(1.0);
+                dbl::Dbl dblSum7(1.0);
+                dbl::Dbl dblSum8(1.0);
                 size_t i = 0;
                 for (i = 0; i + 7 < dblValues.size(); i += 8) {
                     dblSum1.dbl *= dblValues[i].dbl;

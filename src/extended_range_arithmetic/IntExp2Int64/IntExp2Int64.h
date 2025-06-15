@@ -3,7 +3,7 @@
 
 #include <vector>
 
-namespace floatingExp2Integer
+namespace extended_range_arithmetic
 {
     class IntExp2Int64 {
         private:
@@ -20,14 +20,14 @@ namespace floatingExp2Integer
 
             void double_to(double dbl);
             void log2_to(double log2);
-            static void log2s_to(const std::vector<double>& from, std::vector<floatingExp2Integer::IntExp2Int64>& to) {
+            static void log2s_to(const std::vector<double>& from, std::vector<extended_range_arithmetic::IntExp2Int64>& to) {
                 for (size_t i = 0; i < to.size(); i++) {
                     to[i].log2_to(from[i]);
                 }
             }
 
-            void sum(const std::vector<floatingExp2Integer::IntExp2Int64>& vector);
-            void multiply(const std::vector<floatingExp2Integer::IntExp2Int64>& vector);
+            void sum(const std::vector<extended_range_arithmetic::IntExp2Int64>& vector);
+            void multiply(const std::vector<extended_range_arithmetic::IntExp2Int64>& vector);
 
             double as_log2() const;
             double as_double() const;

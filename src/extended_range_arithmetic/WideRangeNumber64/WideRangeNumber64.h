@@ -5,7 +5,7 @@
 #include <cmath>
 #include <iostream>
 
-namespace floatingExp2Integer
+namespace extended_range_arithmetic
 {
     class WideRangeNumber64 {
         private:

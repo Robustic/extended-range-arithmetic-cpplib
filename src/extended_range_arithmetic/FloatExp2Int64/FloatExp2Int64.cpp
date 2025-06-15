@@ -11,7 +11,7 @@ typedef int64_t int64_4_t __attribute__((vector_size(4 * sizeof(int64_t))));
 constexpr int64_4_t int64_4_1023 { 1023LL, 1023LL, 1023LL, 1023LL };
 constexpr double4_t double4_0 { 0.0, 0.0, 0.0, 0.0 };
 
-namespace floatingExp2Integer
+namespace extended_range_arithmetic
 {
     FloatExp2Int64::FloatExp2Int64() {
         scnfcnd = 1.0;
@@ -31,11 +31,11 @@ namespace floatingExp2Integer
         this->scale();
     }
 
-    void FloatExp2Int64::sum(const std::vector<floatingExp2Integer::FloatExp2Int64>& vector) {
+    void FloatExp2Int64::sum(const std::vector<extended_range_arithmetic::FloatExp2Int64>& vector) {
         const size_t parallel_count = 4;
 
         if (2 * parallel_count > vector.size()) {
-            floatingExp2Integer::FloatExp2Int64 sum = vector[0];
+            extended_range_arithmetic::FloatExp2Int64 sum = vector[0];
             for (size_t i = 1; i < vector.size(); i++) {
                 sum += vector[i];
             }
@@ -105,10 +105,10 @@ namespace floatingExp2Integer
             scnfcndSum[k] = *reinterpret_cast<double*>(sgnfcnd_bits);
         }
 
-        floatingExp2Integer::FloatExp2Int64 sum(scnfcndSum[0], expSum[0]);
+        extended_range_arithmetic::FloatExp2Int64 sum(scnfcndSum[0], expSum[0]);
 
         for (size_t k = 1; k < parallel_count; k++) {
-            floatingExp2Integer::FloatExp2Int64 current(scnfcndSum[k], expSum[k]);
+            extended_range_arithmetic::FloatExp2Int64 current(scnfcndSum[k], expSum[k]);
             sum += current;
         }
 
@@ -172,11 +172,11 @@ namespace floatingExp2Integer
         return *this;
     }
 
-    void FloatExp2Int64::multiply(const std::vector<floatingExp2Integer::FloatExp2Int64>& vector) {
+    void FloatExp2Int64::multiply(const std::vector<extended_range_arithmetic::FloatExp2Int64>& vector) {
         const size_t parallel_count = 4;
 
         if (2 * parallel_count > vector.size()) {
-            floatingExp2Integer::FloatExp2Int64 sum = vector[0];
+            extended_range_arithmetic::FloatExp2Int64 sum = vector[0];
             for (size_t i = 1; i < vector.size(); i++) {
                 sum *= vector[i];
             }
@@ -224,10 +224,10 @@ namespace floatingExp2Integer
             scnfcndSum[k] = *reinterpret_cast<double*>(sgnfcnd_bits);
         }
 
-        floatingExp2Integer::FloatExp2Int64 sum(scnfcndSum[0], expSum[0]);
+        extended_range_arithmetic::FloatExp2Int64 sum(scnfcndSum[0], expSum[0]);
 
         for (size_t k = 1; k < parallel_count; k++) {
-            floatingExp2Integer::FloatExp2Int64 current(scnfcndSum[k], expSum[k]);
+            extended_range_arithmetic::FloatExp2Int64 current(scnfcndSum[k], expSum[k]);
             sum *= current;
         }
 

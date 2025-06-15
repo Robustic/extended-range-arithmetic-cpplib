@@ -5,7 +5,7 @@
 #include <ctime>
 #include <sstream>
 
-namespace floatingExp2Integer
+namespace timer
 {
     class Timer {
         private:

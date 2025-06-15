@@ -54,7 +54,7 @@ for _ in range(1):
     result = calculate_log_sum_exp(doubles[:30000000], 3)
     result = calculate_log_sum_exp(doubles, 1)
 
-# C:\msys64\home\FloatingExp2Integer\Python>python logsumexp.py
+# >python logsumexp.py
 # torch.get_num_threads(): 8
 # Count: 1000
 # Log-Sum-Exp: -21.3121011101092
@@ -90,4 +90,4 @@ for _ in range(1):
 # Log-Sum-Exp: -4.673451135115633
 # Execution time: 190469200.02438128 nanoseconds
 
-# C:\msys64\home\FloatingExp2Integer\Python>
+# >
