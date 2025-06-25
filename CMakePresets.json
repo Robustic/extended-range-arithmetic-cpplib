@@ -16,9 +16,9 @@
             }
         },
         {
-            "name": "release",
-            "displayName": "Release",
-            "binaryDir": "${sourceDir}/build_release",
+            "name": "release_sequential",
+            "displayName": "ReleaseSequential",
+            "binaryDir": "${sourceDir}/build_release_sequential",
             "generator": "Unix Makefiles",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
@@ -26,6 +26,20 @@
                 "CMAKE_CXX_STANDARD_REQUIRED": "ON",
                 "CMAKE_CXX_EXTENSIONS": "OFF",
                 "CMAKE_CXX_FLAGS_INIT": "-Wall -Wextra -Wpedantic -O3 -flto -march=native -fno-tree-vectorize -fno-tree-loop-vectorize -fno-tree-slp-vectorize -ffinite-math-only -fno-signed-zeros -fno-trapping-math -fno-math-errno -freciprocal-math -funsafe-math-optimizations -fcx-limited-range",
+                "CMAKE_EXE_LINKER_FLAGS": ""
+            }
+        },
+        {
+            "name": "release_parallel",
+            "displayName": "ReleaseParallel",
+            "binaryDir": "${sourceDir}/build_release_parallel",
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_CXX_STANDARD": "23",
+                "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+                "CMAKE_CXX_EXTENSIONS": "OFF",
+                "CMAKE_CXX_FLAGS_INIT": "-Wall -Wextra -Wpedantic -Ofast -flto -march=native -ffast-math",
                 "CMAKE_EXE_LINKER_FLAGS": ""
             }
         }

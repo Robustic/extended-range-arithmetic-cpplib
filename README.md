@@ -2,7 +2,7 @@
 
 ## License
 
-[extended-range-arithmetic-cpplib](https://github.com/Robustic/extended-range-arithmetic-cpplib) © 1999 by [Juha Malinen](https://github.com/Robustic) is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)<img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" style="max-width: 1.5em; max-height: 1.5em; margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" style="max-width: 1.5em; max-height: 1.5em; margin-left: .2em;">
+[extended-range-arithmetic-cpplib](https://github.com/Robustic/extended-range-arithmetic-cpplib) © 2025 by [Juha Malinen](https://github.com/Robustic) is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)<img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" style="max-width: 1.5em; max-height: 1.5em; margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" style="max-width: 1.5em; max-height: 1.5em; margin-left: .2em;">
 
 
 ## Automatic tests

@@ -35,4 +35,6 @@
 .vscode/
 build_debug/
 build_release/
+build_release_sequential/
+build_release_parallel/
 logsumexp-torch-test/*.bin
