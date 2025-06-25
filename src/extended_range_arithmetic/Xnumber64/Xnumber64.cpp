@@ -191,12 +191,10 @@ namespace extended_range_arithmetic
             int64_t id = aux - z.aux;
             if (id == 1) {
                 principal = principal + (z.principal * BIGI);
-            } else if (id > 1) {
-                principal = principal;
             } else if (id == -1) {
                 principal = z.principal + (principal * BIGI);
                 aux = z.aux;
-            } else {
+            } else if (id < -1) {
                 principal = z.principal;
                 aux = z.aux;
             }
