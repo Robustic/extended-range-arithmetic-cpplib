@@ -7,10 +7,10 @@ namespace extended_range_arithmetic
 {
     class IntExp2Int64 {
         private:
-            uint64_t scnfcnd;
-            int64_t exp;
+            uint64_t principal;
+            int64_t aux;
 
-            IntExp2Int64(double significand, uint64_t exponent);
+            IntExp2Int64(uint64_t principal_part, int64_t auxiliary_index);
             inline void fromDouble(double dbl);
             inline void checkRuleForScale();
             inline void scale();
@@ -32,8 +32,8 @@ namespace extended_range_arithmetic
             double as_log2() const;
             double as_double() const;
 
-            uint64_t sicnificand() const { return scnfcnd; };
-            int64_t exponent() const { return exp; };
+            uint64_t principal_part() const { return principal; };
+            int64_t auxiliary_index() const { return aux; };
 
             IntExp2Int64& operator+=(IntExp2Int64 z);
             IntExp2Int64& operator*=(IntExp2Int64 z);

@@ -9,18 +9,18 @@
 namespace extended_range_arithmetic
 {
     Xnumber64::Xnumber64() {
-        scnfcnd = 1.0;
-        exp = 0LL;
+        principal = 1.0;
+        aux = 0LL;
     }
 
     Xnumber64::Xnumber64(double dbl) {
-        scnfcnd = dbl;
-        exp = 0LL;
+        principal = dbl;
+        aux = 0LL;
     }
 
-    Xnumber64::Xnumber64(double dbl, int64_t exponent) {
-        scnfcnd = dbl;
-        exp = exponent;
+    Xnumber64::Xnumber64(double principal_part, int64_t auxiliary_index) {
+        principal = principal_part;
+        aux = auxiliary_index;
     }
 
     void Xnumber64::log2_to(const double from) {
@@ -29,24 +29,24 @@ namespace extended_range_arithmetic
         double multiplier = std::exp2(from - from_floored);
 
         if (exponent >= 0) {
-            exp = (exponent + EXP_MULTIPLIER / 2) / EXP_MULTIPLIER;
-            scnfcnd = multiplier * std::exp2(exponent - EXP_MULTIPLIER * exp);
+            aux = (exponent + EXP_MULTIPLIER / 2) / EXP_MULTIPLIER;
+            principal = multiplier * std::exp2(exponent - EXP_MULTIPLIER * aux);
         }
         else {
-            exp = (exponent - EXP_MULTIPLIER / 2) / EXP_MULTIPLIER;
-            if ((exponent - EXP_MULTIPLIER / 2) - EXP_MULTIPLIER * exp == 0LL && multiplier > 1.0) {
-                exp++;
+            aux = (exponent - EXP_MULTIPLIER / 2) / EXP_MULTIPLIER;
+            if ((exponent - EXP_MULTIPLIER / 2) - EXP_MULTIPLIER * aux == 0LL && multiplier > 1.0) {
+                aux++;
             }
-            scnfcnd = multiplier * std::exp2(exponent - EXP_MULTIPLIER * exp);
+            principal = multiplier * std::exp2(exponent - EXP_MULTIPLIER * aux);
         }
     }
 
     double Xnumber64::as_double() const {
-        return scnfcnd * std::exp2(EXP_MULTIPLIER * exp);
+        return principal * std::exp2(EXP_MULTIPLIER * aux);
     }
 
     double Xnumber64::as_log2() const {
-        return std::log2(scnfcnd) + EXP_MULTIPLIER * exp;
+        return std::log2(principal) + EXP_MULTIPLIER * aux;
     }
 
     void Xnumber64::sum(const std::vector<extended_range_arithmetic::Xnumber64>& vector) {
@@ -57,61 +57,61 @@ namespace extended_range_arithmetic
             for (size_t i = 1; i < vector.size(); i++) {
                 sum += vector[i];
             }
-            scnfcnd = sum.scnfcnd;
-            exp = sum.exp;
+            principal = sum.principal;
+            aux = sum.aux;
             return;
         }
 
-        double scnfcndSum[parallel_count];
-        int64_t expSum[parallel_count];
+        double principalSum[parallel_count];
+        int64_t auxSum[parallel_count];
 
         for (size_t k = 0; k < parallel_count; k++) {
-            scnfcndSum[k] = vector[k].scnfcnd;
-            expSum[k] = vector[k].exp;
+            principalSum[k] = vector[k].principal;
+            auxSum[k] = vector[k].aux;
         }
 
-        double scnfcndCurrent[parallel_count];
-        int64_t expCurrent[parallel_count];
+        double principalCurrent[parallel_count];
+        int64_t auxCurrent[parallel_count];
 
         size_t i = parallel_count;
 
         for (i = parallel_count; i + (parallel_count - 1) < vector.size(); i += parallel_count) {
             for (size_t k = 0; k < parallel_count; k++) {
-                scnfcndCurrent[k] = vector[i + k].scnfcnd;
-                expCurrent[k] = vector[i + k].exp;
+                principalCurrent[k] = vector[i + k].principal;
+                auxCurrent[k] = vector[i + k].aux;
 
-                if (expSum[k] == expCurrent[k]) {
-                    scnfcndSum[k] = scnfcndSum[k] + scnfcndCurrent[k];
+                if (auxSum[k] == auxCurrent[k]) {
+                    principalSum[k] = principalSum[k] + principalCurrent[k];
                 }
                 else {
-                    int64_t id = expSum[k] - expCurrent[k];
+                    int64_t id = auxSum[k] - auxCurrent[k];
                     if (id == 1) {
-                        scnfcndSum[k] = scnfcndSum[k] + (scnfcndCurrent[k] * BIGI);
+                        principalSum[k] = principalSum[k] + (principalCurrent[k] * BIGI);
                     }
                     else if (id > 1) {
-                        scnfcndSum[k] = scnfcndSum[k];
+                        principalSum[k] = principalSum[k];
                     }
                     else if (id == -1) {
-                        scnfcndSum[k] = scnfcndCurrent[k] + (scnfcndSum[k] * BIGI);
-                        expSum[k] = expCurrent[k];
+                        principalSum[k] = principalCurrent[k] + (principalSum[k] * BIGI);
+                        auxSum[k] = auxCurrent[k];
                     }
                     else {
-                        scnfcndSum[k] = scnfcndCurrent[k];
-                        expSum[k] = expCurrent[k];
+                        principalSum[k] = principalCurrent[k];
+                        auxSum[k] = auxCurrent[k];
                     }
                 }
 
-                if (scnfcndSum[k] >= BIGS) {
-                    scnfcndSum[k] *= BIGI;
-                    expSum[k] += 1;
+                if (principalSum[k] >= BIGS) {
+                    principalSum[k] *= BIGI;
+                    auxSum[k] += 1;
                 }
             }
         }
 
-        extended_range_arithmetic::Xnumber64 sum(scnfcndSum[0], expSum[0]);
+        extended_range_arithmetic::Xnumber64 sum(principalSum[0], auxSum[0]);
 
         for (size_t k = 1; k < parallel_count; k++) {
-            extended_range_arithmetic::Xnumber64 current(scnfcndSum[k], expSum[k]);
+            extended_range_arithmetic::Xnumber64 current(principalSum[k], auxSum[k]);
             sum += current;
         }
 
@@ -119,8 +119,8 @@ namespace extended_range_arithmetic
             sum += vector[i];
         }
 
-        scnfcnd = sum.scnfcnd;
-        exp = sum.exp;
+        principal = sum.principal;
+        aux = sum.aux;
     }
 
     void Xnumber64::multiply(const std::vector<extended_range_arithmetic::Xnumber64>& vector) {
@@ -131,47 +131,47 @@ namespace extended_range_arithmetic
             for (size_t i = 1; i < vector.size(); i++) {
                 res *= vector[i];
             }
-            scnfcnd = res.scnfcnd;
-            exp = res.exp;
+            principal = res.principal;
+            aux = res.aux;
             return;
         }
 
-        double scnfcndSum[parallel_count];
-        int64_t expSum[parallel_count];
+        double principalSum[parallel_count];
+        int64_t auxSum[parallel_count];
 
         for (size_t k = 0; k < parallel_count; k++) {
-            scnfcndSum[k] = vector[k].scnfcnd;
-            expSum[k] = vector[k].exp;
+            principalSum[k] = vector[k].principal;
+            auxSum[k] = vector[k].aux;
         }
 
-        double scnfcndCurrent[parallel_count];
-        int64_t expCurrent[parallel_count];
+        double principalCurrent[parallel_count];
+        int64_t auxCurrent[parallel_count];
 
         size_t i = parallel_count;
 
         for (i = parallel_count; i + (parallel_count - 1) < vector.size(); i += parallel_count) {
             for (size_t k = 0; k < parallel_count; k++) {
-                scnfcndCurrent[k] = vector[i + k].scnfcnd;
-                expCurrent[k] = vector[i + k].exp;
+                principalCurrent[k] = vector[i + k].principal;
+                auxCurrent[k] = vector[i + k].aux;
 
-                scnfcndSum[k] = scnfcndSum[k] * scnfcndCurrent[k];
-                expSum[k] = expSum[k] + expCurrent[k];
+                principalSum[k] = principalSum[k] * principalCurrent[k];
+                auxSum[k] = auxSum[k] + auxCurrent[k];
 
-                if (scnfcndSum[k] >= BIGS) {
-                    scnfcndSum[k] *= BIGI;
-                    expSum[k] += 1;
+                if (principalSum[k] >= BIGS) {
+                    principalSum[k] *= BIGI;
+                    auxSum[k] += 1;
                 }
-                else if (scnfcndSum[k] < BIGSI) {
-                    scnfcndSum[k] *= BIG;
-                    expSum[k] -= 1;
+                else if (principalSum[k] < BIGSI) {
+                    principalSum[k] *= BIG;
+                    auxSum[k] -= 1;
                 }
             }
         }
 
-        extended_range_arithmetic::Xnumber64 sum(scnfcndSum[0], expSum[0]);
+        extended_range_arithmetic::Xnumber64 sum(principalSum[0], auxSum[0]);
 
         for (size_t k = 1; k < parallel_count; k++) {
-            extended_range_arithmetic::Xnumber64 current(scnfcndSum[k], expSum[k]);
+            extended_range_arithmetic::Xnumber64 current(principalSum[k], auxSum[k]);
             sum *= current;
         }
 
@@ -179,40 +179,40 @@ namespace extended_range_arithmetic
             sum *= vector[i];
         }
 
-        scnfcnd = sum.scnfcnd;
-        exp = sum.exp;
+        principal = sum.principal;
+        aux = sum.aux;
     }
 
     Xnumber64& Xnumber64::operator+=(Xnumber64 z) {
-        if (exp == z.exp) {
-            scnfcnd = scnfcnd + z.scnfcnd;
+        if (aux == z.aux) {
+            principal = principal + z.principal;
         } 
         else {
-            int64_t id = exp - z.exp;
+            int64_t id = aux - z.aux;
             if (id == 1) {
-                scnfcnd = scnfcnd + (z.scnfcnd * BIGI);
+                principal = principal + (z.principal * BIGI);
             } else if (id > 1) {
-                scnfcnd = scnfcnd;
+                principal = principal;
             } else if (id == -1) {
-                scnfcnd = z.scnfcnd + (scnfcnd * BIGI);
-                exp = z.exp;
+                principal = z.principal + (principal * BIGI);
+                aux = z.aux;
             } else {
-                scnfcnd = z.scnfcnd;
-                exp = z.exp;
+                principal = z.principal;
+                aux = z.aux;
             }
         }
 
-        if (scnfcnd >= BIGS) {
-            scnfcnd *= BIGI;
-            exp += 1;
+        if (principal >= BIGS) {
+            principal *= BIGI;
+            aux += 1;
         }
 
         return *this;
     }
 
     Xnumber64& Xnumber64::operator*=(Xnumber64 z) {
-        scnfcnd = scnfcnd * z.scnfcnd;
-        exp = exp + z.exp;
+        principal = principal * z.principal;
+        aux = aux + z.aux;
 
         xnorm();
 
@@ -220,12 +220,12 @@ namespace extended_range_arithmetic
     }
 
     inline void Xnumber64::xnorm() {
-        if (scnfcnd >= BIGS) {
-            scnfcnd *= BIGI;
-            exp += 1;
-        } else if (scnfcnd < BIGSI) {
-            scnfcnd *= BIG;
-            exp -= 1;
+        if (principal >= BIGS) {
+            principal *= BIGI;
+            aux += 1;
+        } else if (principal < BIGSI) {
+            principal *= BIG;
+            aux -= 1;
         }
     }
 

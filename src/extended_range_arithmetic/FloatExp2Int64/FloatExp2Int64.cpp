@@ -14,20 +14,20 @@ constexpr double4_t double4_0 { 0.0, 0.0, 0.0, 0.0 };
 namespace extended_range_arithmetic
 {
     FloatExp2Int64::FloatExp2Int64() {
-        scnfcnd = 1.0;
-        exp = 0;
+        principal = 1.0;
+        aux = 0;
         this->scale();
     }
 
     FloatExp2Int64::FloatExp2Int64(double dbl) {
-        scnfcnd = dbl;
-        exp = 0;
+        principal = dbl;
+        aux = 0;
         this->scale();
     }
 
     FloatExp2Int64::FloatExp2Int64(double sicnificand, int64_t exponent) {
-        scnfcnd = sicnificand;
-        exp = exponent;
+        principal = sicnificand;
+        aux = exponent;
         this->scale();
     }
 
@@ -39,76 +39,76 @@ namespace extended_range_arithmetic
             for (size_t i = 1; i < vector.size(); i++) {
                 sum += vector[i];
             }
-            scnfcnd = sum.scnfcnd;
-            exp = sum.exp;
+            principal = sum.principal;
+            aux = sum.aux;
             return;
         }
 
-        double scnfcndSum[parallel_count];
-        int64_t expSum[parallel_count];
+        double principalSum[parallel_count];
+        int64_t auxSum[parallel_count];
 
         for (size_t k = 0; k < parallel_count; k++) {
-            scnfcndSum[k] = vector[k].scnfcnd;
-            expSum[k] = vector[k].exp;
+            principalSum[k] = vector[k].principal;
+            auxSum[k] = vector[k].aux;
         }
 
-        double scnfcndCurrent[parallel_count];
-        int64_t expCurrent[parallel_count];
+        double principalCurrent[parallel_count];
+        int64_t auxCurrent[parallel_count];
 
         size_t i = parallel_count;
 
         for (i = parallel_count; i + (parallel_count - 1) < vector.size(); i += parallel_count) {
             for (size_t k = 0; k < parallel_count; k++) {
-                scnfcndCurrent[k] = vector[i + k].scnfcnd;
-                expCurrent[k] = vector[i + k].exp;
+                principalCurrent[k] = vector[i + k].principal;
+                auxCurrent[k] = vector[i + k].aux;
 
-                int64_t exp_diff = expSum[k] - expCurrent[k];
-                uint64_t* sgnfcnd_bits = reinterpret_cast<uint64_t*>(&scnfcndSum[k]);
-                uint64_t* sgnfcnd_bits_z = reinterpret_cast<uint64_t*>(&scnfcndCurrent[k]);
+                int64_t aux_diff = auxSum[k] - auxCurrent[k];
+                uint64_t* principal_bits = reinterpret_cast<uint64_t*>(&principalSum[k]);
+                uint64_t* principal_bits_z = reinterpret_cast<uint64_t*>(&principalCurrent[k]);
 
-                if (exp_diff >= 0) {
-                    if (exp_diff > 64) {
+                if (aux_diff >= 0) {
+                    if (aux_diff > 64) {
                         //
                     }
                     else {
-                        *sgnfcnd_bits_z -= exp_diff << 52;
-                        scnfcndSum[k] += scnfcndCurrent[k];
+                        *principal_bits_z -= aux_diff << 52;
+                        principalSum[k] += principalCurrent[k];
                     }
                 }
                 else {
-                    if (exp_diff < -64) {
-                        scnfcndSum[k] = scnfcndCurrent[k];
-                        expSum[k] = expCurrent[k];
+                    if (aux_diff < -64) {
+                        principalSum[k] = principalCurrent[k];
+                        auxSum[k] = auxCurrent[k];
                     }
                     else {
-                        expSum[k] = expCurrent[k];
-                        *sgnfcnd_bits -= (-exp_diff) << 52;
-                        scnfcndSum[k] += scnfcndCurrent[k];
+                        auxSum[k] = auxCurrent[k];
+                        *principal_bits -= (-aux_diff) << 52;
+                        principalSum[k] += principalCurrent[k];
                     }
                 }
 
-                if (scnfcndSum[k] >= 0x1p12) {
-                    uint64_t* sgnfcnd_bits = reinterpret_cast<uint64_t*>(&scnfcndSum[k]);
-                    expSum[k] += ((*sgnfcnd_bits & 0x7FF0000000000000ull) >> 52) - 1023;
-                    *sgnfcnd_bits &= 0x800FFFFFFFFFFFFFull;
-                    *sgnfcnd_bits |= 0x3FF0000000000000ull;
-                    scnfcndSum[k] = *reinterpret_cast<double*>(sgnfcnd_bits);
+                if (principalSum[k] >= 0x1p12) {
+                    uint64_t* principal_bits = reinterpret_cast<uint64_t*>(&principalSum[k]);
+                    auxSum[k] += ((*principal_bits & 0x7FF0000000000000ull) >> 52) - 1023;
+                    *principal_bits &= 0x800FFFFFFFFFFFFFull;
+                    *principal_bits |= 0x3FF0000000000000ull;
+                    principalSum[k] = *reinterpret_cast<double*>(principal_bits);
                 }
             }
         }
 
         for (size_t k = 0; k < parallel_count; k++) {
-            uint64_t* sgnfcnd_bits = reinterpret_cast<uint64_t*>(&scnfcndSum[k]);
-            expSum[k] += ((*sgnfcnd_bits & 0x7FF0000000000000ull) >> 52) - 1023;
-            *sgnfcnd_bits &= 0x800FFFFFFFFFFFFFull;
-            *sgnfcnd_bits |= 0x3FF0000000000000ull;
-            scnfcndSum[k] = *reinterpret_cast<double*>(sgnfcnd_bits);
+            uint64_t* principal_bits = reinterpret_cast<uint64_t*>(&principalSum[k]);
+            auxSum[k] += ((*principal_bits & 0x7FF0000000000000ull) >> 52) - 1023;
+            *principal_bits &= 0x800FFFFFFFFFFFFFull;
+            *principal_bits |= 0x3FF0000000000000ull;
+            principalSum[k] = *reinterpret_cast<double*>(principal_bits);
         }
 
-        extended_range_arithmetic::FloatExp2Int64 sum(scnfcndSum[0], expSum[0]);
+        extended_range_arithmetic::FloatExp2Int64 sum(principalSum[0], auxSum[0]);
 
         for (size_t k = 1; k < parallel_count; k++) {
-            extended_range_arithmetic::FloatExp2Int64 current(scnfcndSum[k], expSum[k]);
+            extended_range_arithmetic::FloatExp2Int64 current(principalSum[k], auxSum[k]);
             sum += current;
         }
 
@@ -116,58 +116,58 @@ namespace extended_range_arithmetic
             sum += vector[i];
         }
 
-        scnfcnd = sum.scnfcnd;
-        exp = sum.exp;
+        principal = sum.principal;
+        aux = sum.aux;
 
         // scaling already done
     }
 
     void FloatExp2Int64::double_to(double dbl) {
-        scnfcnd = dbl;
-        exp = 0;
+        principal = dbl;
+        aux = 0;
         this->scale();
     }
 
     void FloatExp2Int64::log2_to(double log2) {
-        exp = (int64_t)log2;
-        scnfcnd = std::exp2(log2 - exp);
+        aux = (int64_t)log2;
+        principal = std::exp2(log2 - aux);
         this->scale();
     }
 
     double FloatExp2Int64::as_log2() const {
-        return std::log2(scnfcnd) + exp;
+        return std::log2(principal) + aux;
     }
 
     double FloatExp2Int64::as_double() const {
-        return scnfcnd * std::pow(2.0, exp);
+        return principal * std::pow(2.0, aux);
     }
 
     FloatExp2Int64& FloatExp2Int64::operator+=(FloatExp2Int64 z) {
-        int64_t exp_diff = exp - z.exp;
-        uint64_t* sgnfcnd_bits = reinterpret_cast<uint64_t*>(&scnfcnd);
-        uint64_t* sgnfcnd_bits_z = reinterpret_cast<uint64_t*>(&z.scnfcnd);
+        int64_t aux_diff = aux - z.aux;
+        uint64_t* principal_bits = reinterpret_cast<uint64_t*>(&principal);
+        uint64_t* principal_bits_z = reinterpret_cast<uint64_t*>(&z.principal);
 
-        if (exp_diff >= 0) {
-            if (exp_diff > 52) {
+        if (aux_diff >= 0) {
+            if (aux_diff > 52) {
                 return *this;
             }
-            *sgnfcnd_bits_z -= exp_diff << 52;
-            scnfcnd += z.scnfcnd;
+            *principal_bits_z -= aux_diff << 52;
+            principal += z.principal;
         }
         else {
-            if (exp_diff < -52) {
-                scnfcnd = z.scnfcnd;
-                exp = z.exp;
+            if (aux_diff < -52) {
+                principal = z.principal;
+                aux = z.aux;
                 return *this;
             }
-            exp = z.exp;
-            *sgnfcnd_bits -= (-exp_diff) << 52;
-            scnfcnd += z.scnfcnd;
+            aux = z.aux;
+            *principal_bits -= (-aux_diff) << 52;
+            principal += z.principal;
         }
 
-        if (scnfcnd >= 2.0) {
-            scnfcnd *= 0.5;
-            exp++;
+        if (principal >= 2.0) {
+            principal *= 0.5;
+            aux++;
         }
         return *this;
     }
@@ -180,54 +180,54 @@ namespace extended_range_arithmetic
             for (size_t i = 1; i < vector.size(); i++) {
                 sum *= vector[i];
             }
-            scnfcnd = sum.scnfcnd;
-            exp = sum.exp;
+            principal = sum.principal;
+            aux = sum.aux;
             return;
         }
 
-        double scnfcndSum[parallel_count];
-        int64_t expSum[parallel_count];
+        double principalSum[parallel_count];
+        int64_t auxSum[parallel_count];
 
         for (size_t k = 0; k < parallel_count; k++) {
-            scnfcndSum[k] = vector[k].scnfcnd;
-            expSum[k] = vector[k].exp;
+            principalSum[k] = vector[k].principal;
+            auxSum[k] = vector[k].aux;
         }
 
-        double scnfcndCurrent[parallel_count];
-        int64_t expCurrent[parallel_count];
+        double principalCurrent[parallel_count];
+        int64_t auxCurrent[parallel_count];
 
         size_t i = parallel_count;
 
         for (i = parallel_count; i + (parallel_count - 1) < vector.size(); i += parallel_count) {
             for (size_t k = 0; k < parallel_count; k++) {
-                scnfcndCurrent[k] = vector[i + k].scnfcnd;
-                expCurrent[k] = vector[i + k].exp;
+                principalCurrent[k] = vector[i + k].principal;
+                auxCurrent[k] = vector[i + k].aux;
 
-                scnfcndSum[k] *= scnfcndCurrent[k];
-                expSum[k] += expCurrent[k];
+                principalSum[k] *= principalCurrent[k];
+                auxSum[k] += auxCurrent[k];
 
-                if (scnfcndSum[k] >= 0x1p500) {
-                    uint64_t* sgnfcnd_bits = reinterpret_cast<uint64_t*>(&scnfcndSum[k]);
-                    expSum[k] += ((*sgnfcnd_bits & 0x7FF0000000000000ull) >> 52) - 1023;
-                    *sgnfcnd_bits &= 0x800FFFFFFFFFFFFFull;
-                    *sgnfcnd_bits |= 0x3FF0000000000000ull;
-                    scnfcndSum[k] = *reinterpret_cast<double*>(sgnfcnd_bits);
+                if (principalSum[k] >= 0x1p500) {
+                    uint64_t* principal_bits = reinterpret_cast<uint64_t*>(&principalSum[k]);
+                    auxSum[k] += ((*principal_bits & 0x7FF0000000000000ull) >> 52) - 1023;
+                    *principal_bits &= 0x800FFFFFFFFFFFFFull;
+                    *principal_bits |= 0x3FF0000000000000ull;
+                    principalSum[k] = *reinterpret_cast<double*>(principal_bits);
                 }
             }
         }
 
         for (size_t k = 0; k < parallel_count; k++) {
-            uint64_t* sgnfcnd_bits = reinterpret_cast<uint64_t*>(&scnfcndSum[k]);
-            expSum[k] += ((*sgnfcnd_bits & 0x7FF0000000000000ull) >> 52) - 1023;
-            *sgnfcnd_bits &= 0x800FFFFFFFFFFFFFull;
-            *sgnfcnd_bits |= 0x3FF0000000000000ull;
-            scnfcndSum[k] = *reinterpret_cast<double*>(sgnfcnd_bits);
+            uint64_t* principal_bits = reinterpret_cast<uint64_t*>(&principalSum[k]);
+            auxSum[k] += ((*principal_bits & 0x7FF0000000000000ull) >> 52) - 1023;
+            *principal_bits &= 0x800FFFFFFFFFFFFFull;
+            *principal_bits |= 0x3FF0000000000000ull;
+            principalSum[k] = *reinterpret_cast<double*>(principal_bits);
         }
 
-        extended_range_arithmetic::FloatExp2Int64 sum(scnfcndSum[0], expSum[0]);
+        extended_range_arithmetic::FloatExp2Int64 sum(principalSum[0], auxSum[0]);
 
         for (size_t k = 1; k < parallel_count; k++) {
-            extended_range_arithmetic::FloatExp2Int64 current(scnfcndSum[k], expSum[k]);
+            extended_range_arithmetic::FloatExp2Int64 current(principalSum[k], auxSum[k]);
             sum *= current;
         }
 
@@ -235,42 +235,42 @@ namespace extended_range_arithmetic
             sum *= vector[i];
         }
 
-        scnfcnd = sum.scnfcnd;
-        exp = sum.exp;
+        principal = sum.principal;
+        aux = sum.aux;
 
         // scaling already done
     }
 
     FloatExp2Int64& FloatExp2Int64::operator*=(FloatExp2Int64 z) {
-        scnfcnd *= z.scnfcnd;
-        exp += z.exp;
-        if (scnfcnd >= 2.0) {
-            scnfcnd *= 0.5;
-            exp++;
+        principal *= z.principal;
+        aux += z.aux;
+        if (principal >= 2.0) {
+            principal *= 0.5;
+            aux++;
         }
         return *this;
     }
 
     FloatExp2Int64& FloatExp2Int64::operator*=(double& dbl) {
         FloatExp2Int64 z(dbl);
-        scnfcnd *= z.scnfcnd;
-        exp += z.exp;
+        principal *= z.principal;
+        aux += z.aux;
         this->checkRuleForScale();
         return *this;
     }
 
     inline void FloatExp2Int64::checkRuleForScale() {
-        if (0x1p12 <= scnfcnd) {
+        if (0x1p12 <= principal) {
             this->scale();
         }
     }
 
     inline void FloatExp2Int64::scale() {
-        uint64_t* sgnfcnd_bits = reinterpret_cast<uint64_t*>(&scnfcnd);
-        exp += ((*sgnfcnd_bits & 0x7FF0000000000000ull) >> 52) - 1023;
-        *sgnfcnd_bits &= 0x800FFFFFFFFFFFFFull;
-        *sgnfcnd_bits |= 0x3FF0000000000000ull;
-        scnfcnd = *reinterpret_cast<double*>(sgnfcnd_bits);
+        uint64_t* principal_bits = reinterpret_cast<uint64_t*>(&principal);
+        aux += ((*principal_bits & 0x7FF0000000000000ull) >> 52) - 1023;
+        *principal_bits &= 0x800FFFFFFFFFFFFFull;
+        *principal_bits |= 0x3FF0000000000000ull;
+        principal = *reinterpret_cast<double*>(principal_bits);
     }
 
     FloatExp2Int64 operator+(FloatExp2Int64 a, const FloatExp2Int64 b) { return a+=b; }

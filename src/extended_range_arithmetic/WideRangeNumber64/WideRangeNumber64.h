@@ -9,20 +9,20 @@ namespace extended_range_arithmetic
 {
     class WideRangeNumber64 {
         private:
-            double scnfcnd;
-            int64_t exp;
+            double principal;
+            int64_t aux;
             double encoded;
         public:
             WideRangeNumber64() {
-                exp = 0;
-                scnfcnd = 1;
+                aux = 0;
+                principal = 1;
                 encoded = 0;
             }
 
             void set_encoded(double encoded_value) {
                 double floored = std::floor(encoded_value);
-                exp = (int64_t)floored;
-                scnfcnd = encoded_value - floored + 1;
+                aux = (int64_t)floored;
+                principal = encoded_value - floored + 1;
                 encoded = encoded_value;
             }
 

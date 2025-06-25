@@ -7,10 +7,10 @@ namespace extended_range_arithmetic
 {
     class Xnumber64 {
         private:
-            double scnfcnd;
-            int64_t exp;
+            double principal;
+            int64_t aux;
 
-            Xnumber64(double dbl, int64_t exponent);
+            Xnumber64(double principal_part, int64_t auxiliary_index);
             inline void xnorm();
 
             static constexpr int64_t EXP_MULTIPLIER = 960;
@@ -35,8 +35,8 @@ namespace extended_range_arithmetic
             double as_double() const;
             double as_log2() const;
 
-            double sicnificand() const { return scnfcnd; };
-            int64_t exponent() const { return exp; };
+            double principal_part() const { return principal; };
+            int64_t auxiliary_index() const { return aux; };
 
             Xnumber64& operator+=(Xnumber64 z);
             Xnumber64& operator*=(Xnumber64 z);

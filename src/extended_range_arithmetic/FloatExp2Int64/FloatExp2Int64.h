@@ -7,10 +7,10 @@ namespace extended_range_arithmetic
 {
     class FloatExp2Int64 {
         private:
-            double scnfcnd;
-            int64_t exp;
+            double principal;
+            int64_t aux;
 
-            FloatExp2Int64(double sicnificand, int64_t exponent);
+            FloatExp2Int64(double principal_part, int64_t auxiliary_index);
             inline void checkRuleForScale();
             inline void scale();
         public:
@@ -31,8 +31,8 @@ namespace extended_range_arithmetic
             double as_double() const;
             double as_log2() const;
 
-            double sicnificand() const { return scnfcnd; };
-            int64_t exponent() const { return exp; };
+            double principal_part() const { return principal; };
+            int64_t auxiliary_index() const { return aux; };
 
             FloatExp2Int64& operator+=(FloatExp2Int64 z);
             FloatExp2Int64& operator*=(FloatExp2Int64 z);
