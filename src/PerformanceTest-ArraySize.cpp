@@ -21,16 +21,8 @@
 
 // CHANGE THESE VALUES TO CALCULATE WITH DIFFERENT VALUE RANGE AND DIFFERENT COUNT OF NUMBERS
 
-//constexpr double min_log2 = -33;//-10000;
-//constexpr double max_log2 = -30;//-10;
-
-constexpr size_t n[] = { 10000 };
-constexpr size_t n_rounds[] = { 1 };
-//constexpr size_t n[] = { 1000, 3000, 10000, 30000, 100000, 300000, 1000000, 3000000, 10000000, 30000000, 100000000 };
-//constexpr size_t n_rounds[] = { 10000, 10000, 10000, 3000, 1000, 300, 100, 30, 10, 3, 1 };
-//constexpr size_t n_rounds[] = { 10000, 10000, 10000, 3000, 1000, 1000, 1000, 300, 100, 30, 10 };
-//constexpr size_t n[] = { 1, 2, 3, 27, 33, 2000, 3000, 10000000 };
-//constexpr size_t n_rounds[] = { 1, 1, 1, 1, 1, 1, 1, 1 };
+constexpr size_t n[] = { 1000, 3000, 10000, 30000, 100000, 300000, 1000000, 3000000, 10000000, 30000000, 100000000 };
+constexpr size_t n_rounds[] = { 10000, 10000, 10000, 3000, 1000, 300, 100, 30, 10, 3, 1 };
 
 // *******  COMMON FUNCTIONS  *******
 
@@ -945,8 +937,8 @@ int main(int argc, char* argv[]) {
     double max_log2;
 
     if (argc != 3) {
-        min_log2 = -33.0;//-10000;
-        max_log2 = -30.0;//-10;
+        min_log2 = -110.0;
+        max_log2 = -100.0;
     }
     else {
         min_log2 = std::atof(argv[1]);

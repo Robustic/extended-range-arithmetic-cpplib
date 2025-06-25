@@ -9,15 +9,31 @@
 
 Run the following commands in the cloned repository root:
 
+Set environment
+
 ```
 cmake --preset debug
 // some output
-cmake --preset release
+cmake --preset release_sequential
 // some output
+cmake --preset release_parallel
+// some output
+```
+
+Build
+
+```
 cmake --build build_debug
 // some output
-cmake --build build_release
+cmake --build build_release_sequential
 // some output
+cmake --build build_release_parallel
+// some output
+```
+
+Run tests
+
+```
 ./build_debug/FloatExp2Int64.test
 Running main() from /extended-range-arithmetic-cpplib/build_debug/_deps/googletest-src/googletest/src/gtest_main.cc
 [==========] Running 4 tests from 1 test suite.
@@ -38,9 +54,16 @@ Running main() from /extended-range-arithmetic-cpplib/build_debug/_deps/googlete
 [  PASSED  ] 4 tests.
 ```
 
-In Windows 11 you can give high priority with:
+Run test cases (running these take very long time)
 
 ```
-start "build_release/PerformanceTest-ArraySize.exe" /high
- ```
+./build_release_sequential/PerformanceTest-ArraySize -110 100
+./build_release_parallel/PerformanceTest-ArraySize -110 100
+
+./PerformanceTestSequential-Range-MinusExponent.sh
+./PerformanceTestSequential-Range-PlusExponent.sh
+./PerformanceTestParallel-Range-MinusExponent.sh
+./PerformanceTestParallel-Range-PlusExponent.sh
+```
+
 
