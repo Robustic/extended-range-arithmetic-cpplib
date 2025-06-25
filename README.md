@@ -57,8 +57,8 @@ Running main() from /extended-range-arithmetic-cpplib/build_debug/_deps/googlete
 Run test cases (running these take very long time)
 
 ```
-./build_release_sequential/PerformanceTest-ArraySize -110 100
-./build_release_parallel/PerformanceTest-ArraySize -110 100
+./build_release_sequential/PerformanceTest-ArraySize -110 -100
+./build_release_parallel/PerformanceTest-ArraySize -110 -100
 
 ./PerformanceTestSequential-Range-MinusExponent.sh
 ./PerformanceTestSequential-Range-PlusExponent.sh
